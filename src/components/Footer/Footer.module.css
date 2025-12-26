@@ -1,0 +1,293 @@
+.footer {
+    background: linear-gradient(180deg, #0f172a 0%, #020617 100%);
+    color: #e2e8f0;
+    padding: 5rem 0 2rem 0;
+    margin-top: 5rem;
+    border-radius: 2rem 2rem 0 0;
+    position: relative;
+    overflow: hidden;
+}
+
+.footer::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+}
+
+.container {
+    max-width: 100%;
+    margin: 0;
+    padding: 0 3rem;
+}
+
+.topSection {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr;
+    gap: 4rem;
+    padding-bottom: 4rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.mainContent {
+    display: flex;
+    flex-direction: column;
+    gap: 3rem;
+}
+
+.brandCol {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    max-width: 400px;
+}
+
+.brandLogo {
+    height: 90px;
+    width: auto;
+    object-fit: contain;
+    filter: brightness(0) invert(1);
+    opacity: 0.9;
+}
+
+.brandDesc {
+    color: #94a3b8;
+    font-size: var(--text-lg);
+    line-height: 1.7;
+    font-weight: 300;
+}
+
+.socials {
+    display: flex;
+    gap: 1rem;
+}
+
+.socialLink {
+    background: rgba(255, 255, 255, 0.05);
+    color: #cbd5e1;
+    width: 42px;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.socialLink:hover {
+    background: #60a5fa;
+    color: #0f172a;
+    transform: translateY(-2px);
+    border-color: #60a5fa;
+    box-shadow: 0 4px 12px rgba(96, 165, 250, 0.3);
+}
+
+.linksGroup {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 4rem;
+}
+
+.linksCol {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.colTitle {
+    font-size: var(--text-sm);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #64748b;
+    margin-bottom: 0.5rem;
+}
+
+.linksCol a {
+    color: #cbd5e1;
+    font-size: var(--text-base);
+    transition: all 0.2s;
+    text-decoration: none;
+    position: relative;
+    width: fit-content;
+}
+
+.linksCol a:hover {
+    color: white;
+    transform: translateX(4px);
+}
+
+/* Newsletter Section */
+.newsletterCol {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    background: rgba(255, 255, 255, 0.02);
+    padding: 2.5rem;
+    border-radius: 1.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.newsletterTitle {
+    font-size: var(--text-2xl);
+    font-weight: 700;
+    color: white;
+    letter-spacing: -0.02em;
+}
+
+.newsletterDesc {
+    color: #94a3b8;
+    line-height: 1.6;
+}
+
+.form {
+    width: 100%;
+}
+
+.inputGroup {
+    display: flex;
+    position: relative;
+    gap: 0.5rem;
+}
+
+.inputIcon {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #64748b;
+    z-index: 10;
+}
+
+.input {
+    width: 100%;
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 1rem 1rem 1rem 3rem;
+    border-radius: 12px;
+    color: white;
+    font-family: inherit;
+    transition: all 0.3s;
+}
+
+.input:focus {
+    outline: none;
+    border-color: #60a5fa;
+    background: rgba(15, 23, 42, 0.8);
+    box-shadow: 0 0 0 4px rgba(96, 165, 250, 0.1);
+}
+
+.submitBtn {
+    position: absolute;
+    right: 0.5rem;
+    top: 0.5rem;
+    bottom: 0.5rem;
+    background: #60a5fa;
+    color: #0f172a;
+    border: none;
+    padding: 0 1.25rem;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.submitBtn:hover {
+    background: #93c5fd;
+    transform: scale(1.02);
+}
+
+.contactInfo {
+    margin-top: auto;
+}
+
+.contactItem {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #94a3b8;
+    font-size: var(--text-sm);
+}
+
+/* Bottom Section */
+.bottomSection {
+    padding-top: 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+    color: #64748b;
+    font-size: var(--text-sm);
+}
+
+.legalLinks {
+    display: flex;
+    gap: 2rem;
+}
+
+.legalLinks a {
+    color: #64748b;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.legalLinks a:hover {
+    color: #94a3b8;
+}
+
+@media (min-width: 768px) {
+    .bottomSection {
+        flex-direction: row;
+        justify-content: space-between;
+    }
+}
+
+@media (max-width: 1024px) {
+    .topSection {
+        grid-template-columns: 1fr;
+        gap: 3rem;
+    }
+
+    .newsletterCol {
+        padding: 2rem;
+    }
+}
+
+@media (max-width: 640px) {
+    .linksGroup {
+        grid-template-columns: 1fr;
+        gap: 2.5rem;
+    }
+
+    .brandName {
+        font-size: var(--text-3xl);
+    }
+
+    .newsletterCol {
+        padding: 1.5rem;
+    }
+
+    .inputGroup {
+        flex-direction: column;
+    }
+
+    .submitBtn {
+        position: static;
+        width: 100%;
+        padding: 1rem;
+        margin-top: 5px;
+    }
+
+    .input {
+        padding: 1rem 1rem 1rem 3rem;
+    }
+
+    .inputIcon {
+        top: 26px;
+        transform: translateY(-50%);
+    }
+}

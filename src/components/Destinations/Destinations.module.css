@@ -1,0 +1,190 @@
+.section {
+    padding: var(--spacing-xl) 0;
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    margin: var(--spacing-md);
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 var(--spacing-md);
+}
+
+.header {
+    margin-bottom: var(--spacing-lg);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+}
+
+.heading {
+    font-size: var(--text-3xl);
+    color: var(--primary);
+    margin-bottom: var(--spacing-xs);
+}
+
+.subheading {
+    color: var(--primary-light);
+    max-width: 600px;
+    font-size: var(--text-sm);
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    /* Force 4 columns as requested */
+    gap: var(--spacing-md);
+    padding: var(--spacing-md) 0;
+}
+
+@media (max-width: 1024px) {
+    .grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 640px) {
+    .grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.carouselViewport {
+    overflow: hidden;
+    margin: 0 -10px;
+    /* offset padding for cleaner edges */
+    padding: 10px;
+    /* space for shadow */
+}
+
+.carouselTrack {
+    display: flex;
+    transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+    gap: var(--spacing-md);
+}
+
+.card {
+    position: relative;
+    height: 400px;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    cursor: pointer;
+    box-shadow: var(--shadow-md);
+    transition: transform 0.3s;
+
+    /* Carousel sizing */
+    flex: 0 0 calc(25% - var(--spacing-md));
+    /* 4 items per row minus gap */
+}
+
+.card:hover {
+    transform: translateY(-5px);
+}
+
+.image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s;
+}
+
+.card:hover .image {
+    transform: scale(1.05);
+}
+
+.overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent 60%);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: var(--spacing-md);
+    z-index: 10;
+}
+
+.tag {
+    align-self: flex-end;
+    background: rgba(255, 255, 255, 0.9);
+    color: var(--primary);
+    padding: 4px 10px;
+    border-radius: var(--radius-full);
+    font-size: var(--text-xs);
+    font-weight: 600;
+}
+
+.content {
+    color: white;
+}
+
+.name {
+    font-size: var(--text-2xl);
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+
+.metaRow {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: var(--text-sm);
+    opacity: 0.9;
+    margin-bottom: 8px;
+}
+
+.dot {
+    font-size: var(--text-sm);
+}
+
+.rating {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.location {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: var(--text-xs);
+    opacity: 0.8;
+}
+
+.footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: var(--spacing-lg);
+}
+
+.viewMoreBtn {
+    background: var(--primary);
+    color: white;
+    padding: 0.6rem 1.5rem;
+    border-radius: var(--radius-full);
+    font-size: 0.9rem;
+}
+
+.arrows {
+    display: flex;
+    gap: var(--spacing-sm);
+}
+
+.arrowBtn {
+    background: transparent;
+    border: 1px solid var(--primary);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--primary);
+    transition: background 0.2s, color 0.2s;
+}
+
+.arrowBtn:hover {
+    background: var(--primary);
+    color: white;
+}

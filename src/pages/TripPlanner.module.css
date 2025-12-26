@@ -1,0 +1,497 @@
+.pageContainer {
+    min-height: 100vh;
+    padding-top: 8rem;
+    padding-bottom: 4rem;
+    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+}
+
+.contentWrapper {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 2rem;
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 4rem;
+}
+
+.title {
+    font-size: 3rem;
+    font-weight: 800;
+    color: var(--text-main);
+    margin-bottom: 1rem;
+}
+
+.subtitle {
+    font-size: 1.2rem;
+    color: var(--text-muted);
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+/* Progress Bar */
+.progressContainer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 5rem;
+    gap: 0.5rem;
+    position: relative;
+    z-index: 10;
+}
+
+.stepDot {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: #94a3b8;
+    border: 1px solid #e2e8f0;
+    transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+    position: relative;
+    z-index: 2;
+}
+
+.stepDot.active {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+    transform: scale(1.1);
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15);
+}
+
+.stepDot.completed {
+    background: #10b981;
+    color: white;
+    border-color: #10b981;
+}
+
+.stepLine {
+    height: 2px;
+    width: 80px;
+    background: #f1f5f9;
+    border-radius: 2px;
+}
+
+.stepLine.filled {
+    background: #10b981;
+}
+
+/* Selection Grid (Countries/States) */
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 2rem;
+    margin-bottom: 4rem;
+}
+
+.card {
+    background: white;
+    border-radius: 24px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+    border: 1px solid rgba(0, 0, 0, 0.04);
+    position: relative;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 10px 10px -5px rgba(0, 0, 0, 0.03);
+}
+
+.card.selected {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px var(--primary), 0 20px 25px -5px rgba(37, 99, 235, 0.15);
+}
+
+.cardImage {
+    height: 220px;
+    width: 100%;
+    object-fit: cover;
+    transition: transform 0.6s ease;
+}
+
+.card:hover .cardImage {
+    transform: scale(1.05);
+}
+
+.cardContent {
+    padding: 1.75rem;
+    text-align: left;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.cardTitle {
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: var(--text-main);
+    margin-bottom: 0.5rem;
+    letter-spacing: -0.01em;
+}
+
+.cardDesc {
+    font-size: 0.95rem;
+    color: var(--text-muted);
+    line-height: 1.6;
+}
+
+.checkIcon {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: var(--primary);
+    color: white;
+    border-radius: 50%;
+    padding: 6px;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transform: translateY(10px) scale(0.8);
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    z-index: 10;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+}
+
+.card.selected .checkIcon {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+}
+
+/* Itinerary Timeline */
+.itineraryContainer {
+    max-width: 850px;
+    margin: 0 auto;
+    position: relative;
+    padding: 3rem 0;
+}
+
+.itineraryContainer::before {
+    content: '';
+    position: absolute;
+    left: 24px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: #cbd5e1;
+    /* Darker line */
+    background: linear-gradient(to bottom, transparent, #cbd5e1 10%, #cbd5e1 90%, transparent);
+}
+
+.dayCard {
+    background: white;
+    border-radius: 20px;
+    padding: 2rem;
+    margin-bottom: 2.5rem;
+    margin-left: 4rem;
+    position: relative;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 10px 15px -3px rgba(0, 0, 0, 0.03);
+    border: 1px solid rgba(0, 0, 0, 0.03);
+    transition: transform 0.3s ease;
+}
+
+.dayCard:hover {
+    transform: translateY(-2px);
+}
+
+.dayMarker {
+    position: absolute;
+    left: -4rem;
+    top: 1.5rem;
+    width: 48px;
+    height: 48px;
+    background: var(--primary);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 1.1rem;
+    z-index: 10;
+    box-shadow: 0 0 0 6px #f1f5f9;
+}
+
+.dayTitle {
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: var(--primary);
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.activityItem {
+    display: flex;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.activityItem:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.activityTime {
+    font-weight: 700;
+    color: var(--text-muted);
+    min-width: 90px;
+    font-size: 0.95rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding-top: 4px;
+}
+
+.activityContent h4 {
+    font-weight: 700;
+    color: var(--text-main);
+    margin-bottom: 0.5rem;
+    font-size: 1.1rem;
+}
+
+.activityContent p {
+    color: var(--text-muted);
+    font-size: 1rem;
+    line-height: 1.6;
+}
+
+/* Category Headers */
+.sectionHeader {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--text-main);
+    margin: 4rem 0 2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    letter-spacing: -0.02em;
+}
+
+.tagsRow {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+}
+
+.tagBadge {
+    background: #f8fafc;
+    color: #475569;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border: 1px solid #e2e8f0;
+}
+
+.crowdBadge {
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    border: 1px solid transparent;
+}
+
+.crowdBadge[data-level='High'] {
+    background: #fef2f2;
+    color: #dc2626;
+    border-color: #fee2e2;
+}
+
+.crowdBadge[data-level='Medium'] {
+    background: #fff7ed;
+    color: #ea580c;
+    border-color: #ffedd5;
+}
+
+.crowdBadge[data-level='Low'] {
+    background: #f0fdf4;
+    color: #16a34a;
+    border-color: #dcfce7;
+}
+
+.summaryCard {
+    background: white;
+    border-radius: 24px;
+    padding: 2rem;
+    margin-bottom: 4rem;
+    box-shadow: 0 20px 40px -5px rgba(0, 0, 0, 0.05);
+    /* Premium shadow */
+    border: 1px solid rgba(0, 0, 0, 0.02);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 2rem;
+}
+
+.summaryItem {
+    background: #f8fafc;
+    padding: 1rem 1.5rem;
+    border-radius: 16px;
+    min-width: 140px;
+    text-align: center;
+}
+
+.summaryLabel {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    display: block;
+    margin-bottom: 0.25rem;
+}
+
+.summaryValue {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: var(--text-main);
+    display: block;
+}
+
+.smartInsight {
+    background: linear-gradient(135deg, #eff6ff 0%, #e0f2fe 100%);
+    border: 1px solid #bae6fd;
+    padding: 1.25rem;
+    border-radius: 16px;
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    font-size: 0.95rem;
+    color: #0c4a6e;
+    max-width: 450px;
+    box-shadow: 0 4px 6px -1px rgba(14, 165, 233, 0.1);
+}
+
+.viewDetailsBtn {
+    background: white;
+    border: 1px solid #e2e8f0;
+    color: var(--text-main);
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-top: auto;
+    /* Push to bottom */
+    cursor: pointer;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    text-decoration: none;
+}
+
+.viewDetailsBtn:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+    background: #eff6ff;
+}
+
+
+/* Navigation Actions */
+.actions {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid #e2e8f0;
+}
+
+.backBtn {
+    background: transparent;
+    color: var(--text-muted);
+    border: none;
+    font-size: 1rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.backBtn:hover {
+    color: var(--text-main);
+}
+
+.nextBtn {
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 1rem 3rem;
+    border-radius: 50px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.nextBtn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: #cbd5e1;
+}
+
+.nextBtn:not(:disabled):hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(37, 99, 235, 0.2);
+}
+
+@media (max-width: 768px) {
+    .title {
+        font-size: 2rem;
+    }
+
+    .grid {
+        gap: 1rem;
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    }
+
+    .cardImage {
+        height: 120px;
+    }
+
+    .itineraryContainer::before {
+        left: 15px;
+    }
+
+    .dayMarker {
+        width: 30px;
+        height: 30px;
+        font-size: 0.9rem;
+        left: -2.3rem;
+    }
+
+    .dayCard {
+        margin-left: 2rem;
+        padding: 1rem;
+    }
+}

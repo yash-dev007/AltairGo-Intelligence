@@ -1,0 +1,159 @@
+.hero {
+    position: relative;
+    /* Card Layout Style */
+    margin: 20px 20px;
+    height: 85vh;
+    min-height: 500px;
+    border-radius: 20px;
+
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    /* Align left */
+    text-align: left;
+    /* Align left */
+    color: white;
+    padding-left: 20px;
+    /* Reduced padding for mobile default */
+
+    /* Background: Dramatic Mountain */
+    background:
+        linear-gradient(rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.3)),
+        url('https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?q=80&w=2800&auto=format&fit=crop');
+
+    background-size: cover;
+    background-position: center;
+    overflow: hidden;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+
+    /* Ensure content is above bg */
+    z-index: 1;
+    margin-top: 80px;
+}
+
+.container {
+    max-width: 800px;
+    padding: var(--spacing-sm);
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+}
+
+.badge {
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(8px);
+    padding: 6px 16px;
+    border-radius: 99px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: #e2e8f0;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    margin-bottom: 0.5rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.title {
+    font-family: var(--font-main);
+    font-weight: 500;
+    font-size: clamp(var(--text-4xl), 5vw, 4rem);
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+    text-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    position: relative;
+    width: 100%;
+    color: white;
+}
+
+.highlight {
+    color: #4ade80;
+    font-weight: 600;
+}
+
+.ph {
+    display: none;
+}
+
+.subtitle {
+    font-size: clamp(var(--text-sm), 2vw, var(--text-base));
+    font-weight: 100;
+    max-width: 500px;
+    line-height: 1.4;
+    text-align: left;
+    letter-spacing: 0.05em;
+    opacity: 0.9;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.actions {
+    display: flex;
+    flex-wrap: wrap;
+    /* Stack buttons on small screens */
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.btnWhite {
+    background: #f1f5f9;
+    color: #0f172a;
+    padding: 0.8rem 2rem;
+    border-radius: 50px;
+    font-weight: 700;
+    font-size: var(--text-sm);
+    transition: all 0.2s;
+    border: none;
+}
+
+.btnWhite:hover {
+    background: white;
+    transform: scale(1.05);
+}
+
+.btnOutline {
+    background: transparent;
+    border: 2px solid white;
+    color: white;
+    padding: 0.8rem 2rem;
+    border-radius: 50px;
+    font-weight: 600;
+    font-size: var(--text-sm);
+    transition: all 0.2s;
+    backdrop-filter: blur(4px);
+}
+
+.btnOutline:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: scale(1.05);
+}
+
+/* Tablet / Desktop */
+@media (min-width: 768px) {
+    .hero {
+        margin: 20px 40px;
+        padding-left: 60px;
+        border-radius: 40px;
+        margin-top: 100px;
+    }
+
+    .container {
+        padding: var(--spacing-md);
+    }
+
+    .title {
+        line-height: 0.9;
+    }
+
+    .actions {
+        gap: 1.5rem;
+    }
+
+    .btnWhite,
+    .btnOutline {
+        padding: 1rem 2.5rem;
+    }
+}
