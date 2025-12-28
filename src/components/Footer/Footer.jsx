@@ -56,7 +56,7 @@ const Footer = () => {
                         <div className={styles.contactInfo}>
                             <div className={styles.contactItem}>
                                 <MapPin size={16} />
-                                <span>Nashik, </span>
+                                <span>Nashik, Maharashtra, India</span>
                             </div>
                         </div>
                     </div>

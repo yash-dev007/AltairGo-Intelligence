@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ChevronLeft, ChevronRight, Check, MapPin, Star, Sparkles, ExternalLink, Calendar, Users, Search } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Check, MapPin, Star, Sparkles, ExternalLink, Calendar, Users, Search, ArrowUp, ArrowDown } from 'lucide-react';
 import { TripAI } from '../services/TripAI';
 import styles from './TripPlanner.module.css';
 
@@ -66,8 +66,8 @@ const TripPlannerPage = () => {
             const rep = destinations.find(d => d.location === region.name);
             const count = destinations.filter(d => d.location === region.name).length;
 
-            // Handle image path if it's relative or absolute
-            let imgUrl = rep ? rep.image : fallbackImg;
+            // Prioritize explicit region image, then representative destination, then fallback
+            let imgUrl = region.image || (rep ? rep.image : fallbackImg);
 
             return {
                 id: region.name, // Keeping ID as name for compatibility with existing logic
@@ -190,6 +190,7 @@ const TripPlannerPage = () => {
 
                 <div className={styles.actions} style={{ justifyContent: 'flex-end' }}>
                     <button
+                        id="next-step-btn"
                         className={styles.nextBtn}
                         disabled={!selectedCountry || !countries.find(c => c.id === selectedCountry)?.available}
                         onClick={() => {
@@ -231,6 +232,27 @@ const TripPlannerPage = () => {
                     </div>
                 </div>
 
+                {/* Numbered Selection Section for Regions */}
+                {selectedStates.length > 0 && (
+                    <div className={styles.selectionSection}>
+                        <div className={styles.selectionHeader}>
+                            <span>Your Selections ({selectedStates.length})</span>
+                            <span style={{ fontSize: '0.8rem', cursor: 'pointer', color: 'var(--primary)' }} onClick={() => setSelectedStates([])}>Clear All</span>
+                        </div>
+                        <div className={styles.selectionList}>
+                            {selectedStates.map((id, idx) => {
+                                const item = availableStates.find(s => s.id === id);
+                                return item ? (
+                                    <div key={id} className={styles.selectionChip}>
+                                        <span className={styles.index}>{idx + 1}</span>
+                                        {item.name}
+                                    </div>
+                                ) : null;
+                            })}
+                        </div>
+                    </div>
+                )}
+
                 <div className={styles.grid} style={{ marginTop: '1rem' }}>
                     {filteredStates.map(state => (
                         <div
@@ -255,6 +277,7 @@ const TripPlannerPage = () => {
                         <ChevronLeft size={18} /> Back
                     </button>
                     <button
+                        id="next-step-btn"
                         className={styles.nextBtn}
                         disabled={selectedStates.length === 0}
                         onClick={() => {
@@ -340,6 +363,27 @@ const TripPlannerPage = () => {
                         {filtered.length} Open
                     </div>
                 </div>
+
+                {/* Numbered Selection Section for Destinations */}
+                {selectedDestinations.length > 0 && (
+                    <div className={styles.selectionSection}>
+                        <div className={styles.selectionHeader}>
+                            <span>Your Itinerary List ({selectedDestinations.length})</span>
+                            <span style={{ fontSize: '0.8rem', cursor: 'pointer', color: 'var(--primary)' }} onClick={() => setSelectedDestinations([])}>Clear All</span>
+                        </div>
+                        <div className={styles.selectionList}>
+                            {selectedDestinations.map((id, idx) => {
+                                const item = destinations.find(d => d.id === id);
+                                return item ? (
+                                    <div key={id} className={styles.selectionChip}>
+                                        <span className={styles.index}>{idx + 1}</span>
+                                        {item.name}
+                                    </div>
+                                ) : null;
+                            })}
+                        </div>
+                    </div>
+                )}
 
                 {destSearch ? (
                     <div className={styles.grid}>
@@ -469,9 +513,46 @@ const TripPlannerPage = () => {
                 {step === 3 && renderStep3()}
                 {step === 4 && renderStep4()}
 
+                {/* Floating Scroll Button */}
+                {(step === 1 || step === 2) && (
+                    <button
+                        className={styles.floatingBtn}
+                        onClick={() => {
+                            if (window.scrollY > 300) {
+                                window.scrollTo({ top: 0, behavior: 'smooth' });
+                            } else {
+                                const nextBtn = document.getElementById('next-step-btn');
+                                if (nextBtn) {
+                                    nextBtn.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                } else {
+                                    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+                                }
+                            }
+                        }}
+                        title={window.scrollY > 300 ? "Scroll to Top" : "Scroll to Next Step"}
+                    >
+                        <ScrollIcon />
+                    </button>
+                )}
+
             </div>
         </div>
     );
+};
+
+// Helper component for the icon to avoid re-rendering the whole page on scroll
+const ScrollIcon = () => {
+    const [isScrolled, setIsScrolled] = useState(false);
+
+    useEffect(() => {
+        const handleScroll = () => {
+            setIsScrolled(window.scrollY > 300);
+        };
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
+
+    return isScrolled ? <ArrowUp size={24} /> : <ArrowDown size={24} />;
 };
 
 export default TripPlannerPage;

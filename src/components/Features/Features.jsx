@@ -8,7 +8,7 @@ const Features = () => {
             <div className={styles.container}>
                 <div className={styles.leftContent}>
                     <h2 className={styles.heading}>
-                        Why Travelers Plan Smarter Trips with APINS
+                        Why Travelers Plan Smarter Trips with <span className={styles.brandGradient}>AltairGo</span>
                     </h2>
                     <p className={styles.description}>
                         We help travelers decide what’s worth visiting, when to go, and what to skip — using crowd insights, smart itineraries, and real travel data.
