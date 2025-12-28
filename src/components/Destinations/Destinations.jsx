@@ -2,11 +2,18 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import styles from './Destinations.module.css';
 import { MapPin, Star, ArrowRight, ArrowLeft } from 'lucide-react';
-import { destinationsData } from '../../data/destinations';
 
 const Destinations = () => {
+    const [destinationsData, setDestinationsData] = useState([]);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [itemsPerPage, setItemsPerPage] = useState(4);
+
+    useEffect(() => {
+        fetch('http://127.0.0.1:5000/destinations')
+            .then(res => res.json())
+            .then(data => setDestinationsData(data))
+            .catch(err => console.error("Failed to fetch destinations:", err));
+    }, []);
 
     // Responsive items per page
     useEffect(() => {

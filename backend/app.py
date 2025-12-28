@@ -1,6 +1,10 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from data import destinations_data
+from destinations import destinations_data
+from countries import countries_data
+from regions import regions_data
+from packages import packages_data
+from blogs import blogs_data
 
 app = Flask(__name__)
 # Enable CORS for all routes, allowing requests from any origin
@@ -85,6 +89,47 @@ def smart_insight():
             "type": "info",
             "text": "Great choices! These destinations offer a balanced mix of adventure and relaxation with manageable crowds."
         })
+
+@app.route('/countries', methods=['GET'])
+def get_countries():
+    return jsonify(countries_data)
+
+@app.route('/regions', methods=['GET'])
+def get_regions():
+    return jsonify(regions_data)
+
+@app.route('/destinations', methods=['GET'])
+def get_destinations():
+    return jsonify(destinations_data)
+
+@app.route('/destinations/<int:dest_id>', methods=['GET'])
+def get_destination_detail(dest_id):
+    dest = next((d for d in destinations_data if d['id'] == dest_id), None)
+    if dest:
+        return jsonify(dest)
+    return jsonify({"error": "Destination not found"}), 404
+
+@app.route('/packages', methods=['GET'])
+def get_packages():
+    return jsonify(packages_data)
+
+@app.route('/packages/<int:package_id>', methods=['GET'])
+def get_package_detail(package_id):
+    package = next((p for p in packages_data if p['id'] == package_id), None)
+    if package:
+        return jsonify(package)
+    return jsonify({"error": "Package not found"}), 404
+
+@app.route('/blogs', methods=['GET'])
+def get_blogs():
+    return jsonify(blogs_data)
+
+@app.route('/blogs/<int:blog_id>', methods=['GET'])
+def get_blog_detail(blog_id):
+    blog = next((b for b in blogs_data if b['id'] == blog_id), None)
+    if blog:
+        return jsonify(blog)
+    return jsonify({"error": "Blog not found"}), 404
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)

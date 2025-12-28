@@ -2,11 +2,17 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import styles from './Packages.module.css';
 import { ArrowRight } from 'lucide-react';
-import { packagesData } from '../../data/packages';
 
 const Packages = () => {
     // Show only first 4 packages for the homepage preview
-    const previewPackages = packagesData.slice(0, 4);
+    const [previewPackages, setPreviewPackages] = React.useState([]);
+
+    React.useEffect(() => {
+        fetch('http://127.0.0.1:5000/packages')
+            .then(res => res.json())
+            .then(data => setPreviewPackages(data.slice(0, 4)))
+            .catch(err => console.error("Failed to fetch packages:", err));
+    }, []);
 
     return (
         <section className={styles.section} id="packages">

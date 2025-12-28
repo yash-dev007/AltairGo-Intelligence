@@ -1,13 +1,29 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { destinationsData } from '../data/destinations';
 import { MapPin, Star, Calendar, CheckCircle, ArrowLeft } from 'lucide-react';
 
 import styles from './DestinationDetails.module.css';
 
 const DestinationDetails = () => {
     const { id } = useParams();
-    const destination = destinationsData.find(d => d.id === parseInt(id));
+    const [destination, setDestination] = useState(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetch(`http://127.0.0.1:5000/destinations/${id}`)
+            .then(res => {
+                if (!res.ok) throw new Error("Destination not found");
+                return res.json();
+            })
+            .then(data => {
+                setDestination(data);
+                setLoading(false);
+            })
+            .catch(err => {
+                console.error("Failed to fetch destination:", err);
+                setLoading(false);
+            });
+    }, [id]);
 
     useEffect(() => {
         window.scrollTo(0, 0);

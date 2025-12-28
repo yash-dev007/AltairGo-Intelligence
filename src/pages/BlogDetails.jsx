@@ -1,11 +1,27 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { blogsData } from '../data/blogs';
 import styles from '../components/Blogs/Blogs.module.css';
 
 const BlogDetails = () => {
     const { id } = useParams();
-    const blog = blogsData.find(b => b.id === parseInt(id));
+    const [blog, setBlog] = useState(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetch(`http://127.0.0.1:5000/blogs/${id}`)
+            .then(res => {
+                if (!res.ok) throw new Error("Blog not found");
+                return res.json();
+            })
+            .then(data => {
+                setBlog(data);
+                setLoading(false);
+            })
+            .catch(err => {
+                console.error("Failed to fetch blog:", err);
+                setLoading(false);
+            });
+    }, [id]);
 
     useEffect(() => {
         window.scrollTo(0, 0);

@@ -2,10 +2,17 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Search, Map, ArrowRight } from 'lucide-react';
 import styles from '../components/Packages/Packages.module.css'; // Reusing styles
-import { packagesData } from '../data/packages';
 
 const PackagesPage = () => {
     const [searchTerm, setSearchTerm] = useState('');
+    const [packagesData, setPackagesData] = useState([]);
+
+    useEffect(() => {
+        fetch('http://127.0.0.1:5000/packages')
+            .then(res => res.json())
+            .then(data => setPackagesData(data))
+            .catch(err => console.error("Failed to fetch packages:", err));
+    }, []);
 
     // Scroll to top on mount
     useEffect(() => {

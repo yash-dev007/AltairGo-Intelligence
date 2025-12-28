@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Search, MapPin, Star } from 'lucide-react';
-import { destinationsData } from '../data/destinations';
 import styles from '../components/Destinations/Destinations.module.css'; // Reusing styles where possible
 
 // We might need some page-specific styles, so we can inline them or create a new module. 
@@ -11,6 +10,14 @@ import styles from '../components/Destinations/Destinations.module.css'; // Reus
 
 const DestinationsPage = () => {
     const [searchTerm, setSearchTerm] = useState('');
+    const [destinationsData, setDestinationsData] = useState([]);
+
+    useEffect(() => {
+        fetch('http://127.0.0.1:5000/destinations')
+            .then(res => res.json())
+            .then(data => setDestinationsData(data))
+            .catch(err => console.error("Failed to fetch destinations:", err));
+    }, []);
 
     useEffect(() => {
         window.scrollTo(0, 0);

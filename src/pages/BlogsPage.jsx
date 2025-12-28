@@ -1,9 +1,16 @@
 import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import styles from '../components/Blogs/Blogs.module.css'; // Reusing styles
-import { blogsData } from '../data/blogs';
 
 const BlogsPage = () => {
+    const [blogsData, setBlogsData] = React.useState([]);
+
+    useEffect(() => {
+        fetch('http://127.0.0.1:5000/blogs')
+            .then(res => res.json())
+            .then(data => setBlogsData(data))
+            .catch(err => console.error("Failed to fetch blogs:", err));
+    }, []);
     // Scroll to top on mount
     useEffect(() => {
         window.scrollTo(0, 0);
