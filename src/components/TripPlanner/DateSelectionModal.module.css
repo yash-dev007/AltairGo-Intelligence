@@ -1,0 +1,545 @@
+/* Glassmorphism Backdrop */
+.overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    backdrop-filter: blur(8px);
+    opacity: 0;
+    animation: fadeIn 0.3s ease-out forwards;
+}
+
+@keyframes fadeIn {
+    to {
+        opacity: 1;
+    }
+}
+
+.modal {
+    background: white;
+    max-width: 90vw;
+    border-radius: 28px;
+    padding: 2rem;
+    /* Reduced padding */
+    position: relative;
+    box-shadow:
+        0 20px 25px -5px rgba(0, 0, 0, 0.1),
+        0 8px 10px -6px rgba(0, 0, 0, 0.1),
+        0 0 0 1px rgba(0, 0, 0, 0.03);
+    transform: scale(0.95);
+    opacity: 0;
+    animation: scaleIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    /* Removed max-height constraint to let it fit content naturally if possible, 
+       but kept max-height for safety on very small screens. 
+       Reduced padding. */
+    max-height: 95vh;
+    overflow-y: hidden;
+    /* Force no scroll as requested - content MUST fit */
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    flex-direction: column;
+}
+
+.modalStandard {
+    width: 800px;
+}
+
+.modalCompact {
+    width: 420px;
+}
+
+.modal::-webkit-scrollbar {
+    display: none;
+}
+
+@keyframes scaleIn {
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.closeBtn {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: #f1f5f9;
+    border: none;
+    cursor: pointer;
+    color: #64748b;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 20;
+}
+
+.closeBtn:hover {
+    background: #e2e8f0;
+    color: #0f172a;
+    transform: rotate(90deg);
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 1rem;
+    /* Reduced from 2.5rem */
+    flex-shrink: 0;
+}
+
+.title {
+    font-size: 1.5rem;
+    /* Reduced size */
+    font-weight: 800;
+    color: #0f172a;
+    margin-bottom: 0.25rem;
+    /* Reduced */
+    letter-spacing: -0.02em;
+}
+
+.dateDisplay {
+    font-size: 1rem;
+    color: #64748b;
+    font-weight: 600;
+    min-height: 1.5rem;
+    background: #f8fafc;
+    padding: 0.4rem 0.8rem;
+    border-radius: 10px;
+    display: inline-block;
+    border: 1px solid #e2e8f0;
+}
+
+/* Tabs */
+.tabs {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+    /* Reduced from 3rem */
+    background: #f1f5f9;
+    padding: 4px;
+    border-radius: 100px;
+    width: fit-content;
+    margin-left: auto;
+    margin-right: auto;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.03);
+    flex-shrink: 0;
+}
+
+.tab {
+    padding: 0.5rem 1.5rem;
+    border-radius: 100px;
+    border: none;
+    background: transparent;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #64748b;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    z-index: 1;
+}
+
+.tab.active {
+    background: white;
+    color: #0f172a;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+}
+
+/* Calendar Container */
+.calendarContainer {
+    display: flex;
+    justify-content: space-between;
+    gap: 2rem;
+    margin-bottom: 1rem;
+    /* Reduced */
+    position: relative;
+    padding: 0 0.5rem;
+    flex-grow: 1;
+}
+
+.navBtn {
+    position: absolute;
+    top: -5px;
+    background: white;
+    border: 1px solid #e2e8f0;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #0f172a;
+    transition: all 0.2s;
+    z-index: 10;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.03);
+}
+
+.navBtn:hover {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+    transform: scale(1.1);
+}
+
+.prevBtn {
+    left: -10px;
+}
+
+.nextBtn {
+    right: -10px;
+}
+
+.monthSection {
+    flex: 1;
+    opacity: 0;
+    animation: fadeIn 0.4s ease-out 0.1s forwards;
+}
+
+.monthTitle {
+    text-align: center;
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: #0f172a;
+    margin-bottom: 1rem;
+    /* Reduced from 1.5rem */
+    letter-spacing: -0.01em;
+}
+
+.weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    text-align: center;
+    margin-bottom: 0.75rem;
+}
+
+.weekday {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.daysGrid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    row-gap: 4px;
+    /* Tighter gap */
+    column-gap: 0;
+    /* No column gap for connecting strips */
+}
+
+/* Day Button Styling Fix */
+.dayBtn {
+    width: 100%;
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    font-size: 0.95rem;
+    color: #334155;
+    cursor: pointer;
+    position: relative;
+    /* Context for pseudo-elements */
+    font-weight: 500;
+    z-index: 1;
+    isolation: isolate;
+    /* Create new stacking context */
+}
+
+/* Text Layer */
+.dayBtn span {
+    position: relative;
+    z-index: 2;
+}
+
+/* If spans aren't used in JSX, we rely on text being z-index 2 implicitly? No. 
+   We will rely on proper stacking of ::before/::after. 
+   Actually, standard DayBtn usually doesn't wrap text in span.
+   Let's check JSX: {day}. It's just text.
+   So we'll use ::after for the CIRCLE (background) and ::before for the STRIP (connector).
+*/
+
+/* Circle Background (Selection) */
+.dayBtn::after {
+    content: '';
+    position: absolute;
+    inset: 4px;
+    /* Create margin */
+    border-radius: 50%;
+    background: transparent;
+    z-index: -1;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.dayBtn:hover:not(.disabled)::after {
+    background: #f1f5f9;
+}
+
+.dayBtn.selected::after {
+    background: #0f172a;
+    box-shadow: 0 4px 10px rgba(15, 23, 42, 0.2);
+    transform: scale(1.05);
+}
+
+.dayBtn.selected {
+    color: white;
+    font-weight: 700;
+}
+
+/* Range Strip Background */
+.dayBtn::before {
+    content: '';
+    position: absolute;
+    top: 4px;
+    bottom: 4px;
+    left: 0;
+    right: 0;
+    background: transparent;
+    z-index: -2;
+}
+
+.dayBtn.inRange::before {
+    background: #f1f5f9;
+}
+
+.dayBtn.rangeStart::before {
+    background: #f1f5f9;
+    left: 50%;
+    /* Only right half */
+}
+
+.dayBtn.rangeEnd::before {
+    background: #f1f5f9;
+    right: 50%;
+    /* Only left half */
+}
+
+.dayBtn.disabled {
+    color: #cbd5e1;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+/* Clean up previous overlapping/conflicting styles */
+.dayBtn.rangeStart,
+.dayBtn.rangeEnd,
+.dayBtn.inRange {
+    background: transparent !important;
+    border-radius: 0;
+}
+
+
+/* Actions */
+.footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    border-top: 1px solid #f1f5f9;
+    padding-top: 1rem;
+    /* Reduced */
+    margin-top: 0.5rem;
+    /* Reduced */
+    flex-shrink: 0;
+}
+
+.clearBtn {
+    padding: 0.75rem 1.75rem;
+    border-radius: 12px;
+    border: 1px solid transparent;
+    background: transparent;
+    font-weight: 600;
+    color: #64748b;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.clearBtn:hover {
+    color: #0f172a;
+    background: #f8fafc;
+}
+
+.applyBtn {
+    padding: 0.75rem 2.5rem;
+    border-radius: 50px;
+    border: none;
+    background: #0f172a;
+    color: white;
+    font-weight: 700;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.3s;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.2);
+}
+
+.applyBtn:hover {
+    background: #1e293b;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px -5px rgba(15, 23, 42, 0.4);
+}
+
+@media (max-width: 768px) {
+    .calendarContainer {
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+}
+
+
+
+/* Flexible View Styles */
+.flexibleContent {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    /* Crucial for nested flex scrolling */
+    overflow: hidden;
+    margin-bottom: 0.5rem;
+}
+
+.anytimeContent {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 0;
+}
+
+.monthGrid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+    overflow-y: auto;
+    padding: 2px;
+    flex: 1;
+    /* Take remaining space */
+}
+
+/* Hide scrollbar for grid */
+.monthGrid::-webkit-scrollbar {
+    display: none;
+}
+
+.monthCard {
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 0.75rem 0.5rem;
+    /* Tighter padding */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+    /* Minimal gap */
+    cursor: pointer;
+    background: white;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    text-align: center;
+}
+
+.monthCard:hover {
+    border-color: #cbd5e1;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.monthCard.selected {
+    background: #fef08a;
+    /* Yellow-200 */
+    border-color: #fde047;
+    /* Yellow-300 */
+    box-shadow: 0 4px 12px rgba(253, 224, 71, 0.3);
+    /* Make text dark and distinct */
+}
+
+.monthIcon {
+    margin-bottom: 0.5rem;
+    color: #64748b;
+}
+
+.monthName {
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: #0f172a;
+}
+
+.yearLabel {
+    font-size: 0.8rem;
+    color: #64748b;
+}
+
+.monthCard.selected .monthName,
+.monthCard.selected .yearLabel,
+.monthCard.selected .monthIcon {
+    color: #0f172a;
+}
+
+/* Duration Control */
+.durationSection {
+    text-align: center;
+    margin-top: 1rem;
+    /* Reduced from 2rem */
+    background: #f8fafc;
+    border-radius: 16px;
+    padding: 1rem;
+    /* Reduced padding */
+}
+
+.durationLabel {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #0f172a;
+    margin-bottom: 0.5rem;
+}
+
+.durationControl {
+    display: inline-flex;
+    align-items: center;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 50px;
+    padding: 0.5rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+.durationBtn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: none;
+    background: transparent;
+    color: #0f172a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.durationBtn:hover {
+    background: #f1f5f9;
+}
+
+.durationValue {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: #0f172a;
+    width: 60px;
+    text-align: center;
+}
+
+@media (max-width: 768px) {
+    .monthGrid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}

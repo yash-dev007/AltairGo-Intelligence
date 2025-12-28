@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ChevronLeft, ChevronRight, Check, MapPin, Star, Sparkles, ExternalLink, Calendar, Users, Search, ArrowUp, ArrowDown } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Check, MapPin, Star, Sparkles, ExternalLink, Calendar, Users, Search, ArrowUp, ArrowDown, X } from 'lucide-react';
 import { TripAI } from '../services/TripAI';
+import DateSelectionModal from '../components/TripPlanner/DateSelectionModal';
 import styles from './TripPlanner.module.css';
 
 const TripPlannerPage = () => {
@@ -22,6 +23,45 @@ const TripPlannerPage = () => {
     const [countrySearch, setCountrySearch] = useState('');
     const [regionSearch, setRegionSearch] = useState('');
     const [destSearch, setDestSearch] = useState('');
+    const [startLocation, setStartLocation] = useState('Mumbai'); // Default
+    const [isCustomLocation, setIsCustomLocation] = useState(false);
+
+    // OSM Search State
+    const [locationSuggestions, setLocationSuggestions] = useState([]);
+    const [isSearching, setIsSearching] = useState(false);
+
+    const START_LOCATIONS = [
+        'Mumbai', 'Delhi', 'Bangalore', 'Chennai', 'Kolkata',
+        'Hyderabad', 'Ahmedabad', 'Pune', 'Kochi', 'Jaipur'
+    ];
+
+    // Debounce helper for search
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            if (isCustomLocation && startLocation.length > 2) {
+                fetchLocations(startLocation);
+            }
+        }, 300);
+        return () => clearTimeout(timer);
+    }, [startLocation, isCustomLocation]);
+
+    const fetchLocations = async (query) => {
+        if (!query) return;
+        setIsSearching(true);
+        try {
+            const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5&addressdetails=1`);
+            const data = await res.json();
+            setLocationSuggestions(data);
+        } catch (err) {
+            console.error("Location search failed", err);
+        } finally {
+            setIsSearching(false);
+        }
+    };
+
+    // Date Selection State
+    const [showDateModal, setShowDateModal] = useState(false);
+    const [travelDates, setTravelDates] = useState({ start: null, end: null });
 
     // Fetch Initial Data
     useEffect(() => {
@@ -134,6 +174,11 @@ const TripPlannerPage = () => {
         }
     };
 
+    const handleDateApply = (dateData) => {
+        // dateData = { type, start, end, duration, month }
+        setTravelDates(dateData);
+    };
+
     const renderStep1 = () => {
         const filteredCountries = countries.filter(c =>
             c.name.toLowerCase().includes(countrySearch.trim().toLowerCase())
@@ -143,6 +188,89 @@ const TripPlannerPage = () => {
             <>
                 <h2 className={styles.title}>Where to?</h2>
                 <p className={styles.subtitle}>Select a country to start planning your adventure.</p>
+
+                {/* Start Location Selection */}
+                <div style={{ marginBottom: '2rem' }}>
+                    <div className={styles.sectionLabel}>
+                        <MapPin size={16} style={{ color: 'var(--primary)' }} /> Starting from
+                    </div>
+
+                    {!isCustomLocation ? (
+                        <div className={styles.locationScroll}>
+                            <button
+                                className={styles.locationChip}
+                                style={{ borderStyle: 'dashed', borderColor: 'var(--primary)', color: 'var(--primary)' }}
+                                onClick={() => {
+                                    setIsCustomLocation(true);
+                                    setStartLocation('');
+                                }}
+                            >
+                                + Other
+                            </button>
+                            {START_LOCATIONS.map(loc => (
+                                <button
+                                    key={loc}
+                                    className={`${styles.locationChip} ${startLocation === loc ? styles.active : ''}`}
+                                    onClick={() => setStartLocation(loc)}
+                                >
+                                    {loc}
+                                </button>
+                            ))}
+                        </div>
+                    ) : (
+                        <div style={{ position: 'relative' }}>
+                            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                                <div className={styles.searchWrapper} style={{ margin: 0, flex: 1 }}>
+                                    <input
+                                        type="text"
+                                        placeholder="Enter your city, town, or village..."
+                                        value={startLocation}
+                                        onChange={(e) => setStartLocation(e.target.value)}
+                                        className={styles.searchInput}
+                                        autoFocus
+                                        style={{ paddingLeft: '1rem' }}
+                                    />
+                                    {isSearching && <div className={styles.loadingSpinner} />}
+                                </div>
+                                <button
+                                    className={styles.locationChip}
+                                    onClick={() => {
+                                        setIsCustomLocation(false);
+                                        setStartLocation('Mumbai');
+                                        setLocationSuggestions([]);
+                                    }}
+                                >
+                                    <X size={16} /> Cancel
+                                </button>
+                            </div>
+
+                            {/* Suggestions Dropdown */}
+                            {locationSuggestions.length > 0 && isCustomLocation && (
+                                <div className={styles.suggestionsDropdown}>
+                                    {locationSuggestions.map((place) => (
+                                        <div
+                                            key={place.place_id}
+                                            className={styles.suggestionItem}
+                                            onClick={() => {
+                                                setStartLocation(place.display_name.split(',')[0]); // Use just the main name
+                                                setLocationSuggestions([]); // Clear suggestions to close dropdown
+                                                // Keep in custom mode
+                                            }}
+                                        >
+                                            <MapPin size={14} color="#64748b" />
+                                            <div>
+                                                <strong>{place.display_name.split(',')[0]}</strong>
+                                                <span style={{ fontSize: '0.8rem', color: '#94a3b8', display: 'block' }}>
+                                                    {place.display_name.split(',').slice(1).join(',')}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    )}
+                </div>
 
                 <div className={styles.searchSection}>
                     <div className={styles.searchWrapper}>
@@ -415,14 +543,42 @@ const TripPlannerPage = () => {
                     <button className={styles.backBtn} onClick={() => setStep(2)}>
                         <ChevronLeft size={18} /> Back
                     </button>
-                    <button
-                        className={styles.nextBtn}
-                        disabled={selectedDestinations.length === 0}
-                        onClick={generateItinerary}
-                    >
-                        {loading ? 'Consulting AI Agent...' : 'Generate AI Plan'} <Sparkles size={18} style={{ display: 'inline', marginLeft: '5px' }} />
-                    </button>
+                    <div style={{ display: 'flex', gap: '1rem' }}>
+                        <button
+                            className={styles.nextBtn}
+                            style={{ background: 'white', color: 'var(--text-main)', border: '1px solid #e2e8f0' }}
+                            onClick={() => setShowDateModal(true)}
+                        >
+                            <Calendar size={18} style={{ display: 'inline', marginRight: '5px' }} />
+                            {(() => {
+                                if (travelDates.type === 'flexible' && travelDates.month) {
+                                    return `${travelDates.month.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })} (${travelDates.duration} days)`;
+                                }
+                                if (travelDates.type === 'anytime') {
+                                    return `Anytime (${travelDates.duration} days)`;
+                                }
+                                // Default/Fixed
+                                if (travelDates.start) {
+                                    return `${travelDates.start.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${travelDates.end ? travelDates.end.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '...'}`;
+                                }
+                                return 'Date of Travel';
+                            })()}
+                        </button>
+                        <button
+                            className={styles.nextBtn}
+                            disabled={selectedDestinations.length === 0 || !travelDates.type}
+                            onClick={generateItinerary}
+                        >
+                            {loading ? 'Consulting AI Agent...' : 'Generate AI Plan'} <Sparkles size={18} style={{ display: 'inline', marginLeft: '5px' }} />
+                        </button>
+                    </div>
                 </div>
+
+                <DateSelectionModal
+                    isOpen={showDateModal}
+                    onClose={() => setShowDateModal(false)}
+                    onApply={handleDateApply}
+                />
             </>
         );
     };

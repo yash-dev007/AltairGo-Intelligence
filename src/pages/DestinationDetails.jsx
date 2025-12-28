@@ -97,31 +97,7 @@ const DestinationDetails = () => {
                 </div>
 
                 {/* Sidebar */}
-                <aside>
-                    <div className={styles.stickySidebar}>
-                        <div style={{ marginBottom: '2rem' }}>
-                            <span style={{ display: 'block', fontSize: '0.9rem', color: '#64748b', marginBottom: '0.5rem' }}>Best time to visit</span>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '1.1rem', fontWeight: '600', color: '#0f172a' }}>
-                                <Calendar size={20} /> {destination.bestTime || 'Year Round'}
-                            </div>
-                        </div>
 
-                        <div style={{ marginBottom: '2rem' }}>
-                            <span style={{ display: 'block', fontSize: '0.9rem', color: '#64748b', marginBottom: '0.5rem' }}>Starting from</span>
-                            <div style={{ fontSize: '2.5rem', fontWeight: '800', color: 'var(--primary)' }}>
-                                ₹{destination.price}
-                            </div>
-                            <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>per person</span>
-                        </div>
-
-                        <button className="btnPrimary" style={{ width: '100%', padding: '1rem', fontSize: '1.1rem', justifyContent: 'center' }}>
-                            Book This Trip
-                        </button>
-                        <p style={{ textAlign: 'center', fontSize: '0.8rem', color: '#94a3b8', marginTop: '1rem' }}>
-                            Customizable packages available
-                        </p>
-                    </div>
-                </aside>
 
             </div>
         </main>
