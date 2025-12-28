@@ -7,25 +7,29 @@
 
 ## 🚀 Key Features
 
-*   **🤖 Smart Trip Planner**: An AI-powered tool that generates personalized itineraries based on your destination and preferences.
-*   **💰 Budget Calculator**: Estimate your daily travel costs with our integrated budget simulation tool.
-*   **crowd-aware Intelligence**: Get real-time advice on crowd levels and "smart insights" to avoid peak tourist traffic.
-*   **🌏 Multi-Country Support**: Detailed guides and planning for destinations like **India**, **Vietnam**, **Thailand**, and the **Philippines**.
-*   **📦 Curated Packages**: Explore pre-built travel packages for seamless adventure.
-*   **📝 Travel Blog**: Read inspiring stories and tips from fellow travelers.
+*   **🤖 Smart Trip Planner**: AI-powered itinerary generation that creates personalized day-by-day plans based on your interests.
+*   **🌍 Global Start Location**: Integrated **OpenStreetMap (Nominatim)** search allows you to pinpoint your exact starting origin, from major cities to rural villages.
+*   **📅 Intelligent Date Selection**: 
+    *   **Flexible Dates**: Plan by duration (e.g., "7 days in June").
+    *   **Anytime**: Perfect for early-stage planning.
+    *   **Fixed Dates**: Precise scheduling.
+*   **💰 Budget Calculator**: Real-time estimation of travel costs based on your itinerary.
+*   **👥 Crowd Intelligence**: unique "Smart Insights" that warn you about high tourist density and suggest optimal times to visit.
+*   **🌏 Multi-Country Support**: Curated data for **India**, **Vietnam**, **Thailand**, **Philippines**, **Japan**, **France**, **Spain**, and **Italy**.
 
 ## 🛠️ Tech Stack
 
 ### Frontend
-*   **Fraimwork**: React 19 (via Vite)
-*   **Routing**: React Router DOM 7
-*   **Styling**: CSS Modules, Modern CSS3
+*   **Framework**: React 19 (via Vite)
+*   **Styling**: CSS Modules with modern Glassmorphism UI
 *   **Icons**: Lucide React
+*   **State**: React Hooks (useState, useEffect)
 
 ### Backend
 *   **Server**: Python Flask
+*   **AI Logic**: Custom heuristic algorithms for itinerary generation
 *   **API**: RESTful endpoints (`/generate-itinerary`, `/calculate-budget`, `/smart-insight`)
-*   **Data**: JSON-based destination data
+*   **Data**: JSON-based destination data & OSM Nominatim API integration
 
 ## 🏁 Getting Started
 
@@ -68,7 +72,7 @@ npm install
 # Start the development server
 npm run dev
 ```
-> The frontend will be available at `http://localhost:5173` (or the port shown in your terminal).
+> The frontend will be available at `http://localhost:5173`
 
 ## 📂 Project Structure
 
@@ -76,15 +80,16 @@ npm run dev
 AltairGo-Intelligence/
 ├── backend/                # Python Flask Application
 │   ├── app.py             # Main application entry point & API routes
-│   ├── data.py            # Static data source for destinations
+│   ├── destinations.py    # Destination data source
+│   ├── regions.py         # Region data source
 │   └── requirements.txt   # Python dependencies
 ├── src/                    # React Frontend Source
-│   ├── components/        # Reusable UI components (Navbar, Footer, etc.)
-│   ├── data/              # Frontend static data
-│   ├── pages/             # Page components (Home, TripPlanner, Blogs, etc.)
+│   ├── components/        # Reusable UI components
+│   │   └── TripPlanner/   # Complex planner components (DateModal, etc.)
+│   ├── pages/             # Page components (TripPlannerPage, etc.)
+│   ├── services/          # API integration services (TripAI.js)
 │   ├── App.jsx            # Main App Layout
 │   └── main.jsx           # Entry point
-├── public/                 # Static assets
 └── package.json            # Node.js dependencies
 ```
 
@@ -100,4 +105,4 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the MIT License.
