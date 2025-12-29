@@ -1,7 +1,8 @@
 .hero {
     position: relative;
     /* Card Layout Style */
-    margin: 20px 20px;
+    margin: 10px;
+    /* Reduced for mobile */
     height: 85vh;
     min-height: 500px;
     border-radius: 20px;
@@ -13,7 +14,8 @@
     text-align: left;
     /* Align left */
     color: white;
-    padding-left: 20px;
+    color: white;
+    padding-left: var(--spacing-md);
     /* Reduced padding for mobile default */
 
     /* Background: Dramatic Mountain */

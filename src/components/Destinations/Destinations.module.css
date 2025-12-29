@@ -11,6 +11,58 @@
     padding: 0 var(--spacing-md);
 }
 
+.pageHeader {
+    text-align: center;
+    margin-bottom: 3rem;
+    padding: 0 var(--spacing-sm);
+}
+
+.pageTitle {
+    font-size: clamp(2rem, 5vw, 2.5rem);
+    font-weight: 800;
+    color: var(--text-main);
+    margin-bottom: 1rem;
+}
+
+.pageSubtitle {
+    color: var(--text-muted);
+    max-width: 600px;
+    margin: 0 auto 2rem;
+    font-size: 1rem;
+    line-height: 1.6;
+}
+
+.searchWrapper {
+    position: relative;
+    max-width: 500px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.searchInput {
+    width: 100%;
+    padding: 1rem 1rem 1rem 3rem;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    font-size: 1rem;
+    outline: none;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.2s;
+}
+
+.searchInput:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(30, 41, 59, 0.1);
+}
+
+.searchIcon {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+}
+
 .header {
     margin-bottom: var(--spacing-lg);
     display: flex;
@@ -51,31 +103,66 @@
 }
 
 .carouselViewport {
-    overflow: hidden;
+    overflow-x: auto;
+    overflow-y: hidden;
     margin: 0 -10px;
-    /* offset padding for cleaner edges */
     padding: 10px;
-    /* space for shadow */
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+    scrollbar-width: none;
+    /* Hide scrollbar Firefox */
+    -ms-overflow-style: none;
+    /* Hide scrollbar IE/Edge */
+}
+
+.carouselViewport::-webkit-scrollbar {
+    display: none;
+    /* Hide scrollbar Chrome/Safari */
 }
 
 .carouselTrack {
     display: flex;
-    transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+    width: max-content;
+    /* Ensure track expands */
     gap: var(--spacing-md);
 }
 
 .card {
     position: relative;
-    height: 400px;
+    height: 380px;
+    /* Reduced height to prevent stretched look */
     border-radius: var(--radius-lg);
     overflow: hidden;
     cursor: pointer;
     box-shadow: var(--shadow-md);
     transition: transform 0.3s;
+    width: 100%;
+    /* Fill the container (Grid cell or Flex item) */
+    text-decoration: none;
+    /* Ensure link underline is removed */
+}
 
-    /* Carousel sizing */
-    flex: 0 0 calc(25% - var(--spacing-md));
-    /* 4 items per row minus gap */
+/* Carousel specific layout */
+.carouselItem {
+    flex: 0 0 auto;
+    width: 280px;
+    /* Fixed width prevents expansion issues */
+    scroll-snap-align: start;
+}
+
+@media (max-width: 1024px) {
+    .carouselItem {
+        width: 260px;
+        /* Slightly smaller on tablet */
+    }
+}
+
+@media (max-width: 640px) {
+    .carouselItem {
+        width: 85vw;
+        /* Mobile: Show mostly one card with a peek */
+        max-width: 350px;
+    }
 }
 
 .card:hover {
@@ -187,4 +274,33 @@
 .arrowBtn:hover {
     background: var(--primary);
     color: white;
+}
+
+.desktopArrows {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.mobileOnly {
+    display: none;
+}
+
+@media (max-width: 640px) {
+    .desktopArrows {
+        display: none;
+    }
+
+    .mobileOnly {
+        display: flex;
+        justify-content: center;
+        width: 100%;
+        margin-top: 2rem;
+    }
+
+    .header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
 }

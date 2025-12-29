@@ -32,32 +32,24 @@ const DestinationsPage = () => {
     return (
         <main style={{ paddingTop: '8rem', paddingBottom: '4rem', minHeight: '100vh', backgroundColor: '#fff' }}>
             <div className={styles.container}>
-                <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
-                    <h1 style={{ fontSize: '2.5rem', fontWeight: '800', color: '#0f172a', marginBottom: '1rem' }}>
+                <div className={styles.pageHeader}>
+                    <h1 className={styles.pageTitle}>
                         All Destinations
                     </h1>
-                    <p style={{ color: '#64748b', maxWidth: '600px', margin: '0 auto 2rem' }}>
+                    <p className={styles.pageSubtitle}>
                         Discover our full range of breathtaking locations handcrafted for your perfect getaway.
                     </p>
 
                     {/* Search Bar */}
-                    <div style={{ position: 'relative', maxWidth: '500px', margin: '0 auto' }}>
+                    <div className={styles.searchWrapper}>
                         <input
                             type="text"
                             placeholder="Search by name, location, or vibe..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            style={{
-                                width: '100%',
-                                padding: '1rem 1rem 1rem 3rem',
-                                borderRadius: '999px',
-                                border: '1px solid #e2e8f0',
-                                fontSize: '1rem',
-                                outline: 'none',
-                                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)'
-                            }}
+                            className={styles.searchInput}
                         />
-                        <Search size={20} color="#94a3b8" style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)' }} />
+                        <Search size={20} className={styles.searchIcon} />
                     </div>
                 </div>
 

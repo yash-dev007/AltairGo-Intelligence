@@ -12,7 +12,8 @@
 .container {
     max-width: 1280px;
     margin: 0 auto;
-    padding: 0 2rem;
+    padding: 0 var(--spacing-sm);
+    /* Default mobile friendly */
     display: grid;
     gap: 4rem;
     width: 100%;

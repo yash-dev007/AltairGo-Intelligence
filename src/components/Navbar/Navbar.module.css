@@ -1,3 +1,16 @@
+/* Keyframes for Dropdown Effect */
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 .navbar {
     background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(10px);
@@ -10,7 +23,11 @@
     height: 80px;
     display: flex;
     align-items: center;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    /* Added Shadow for visibility */
 }
+
+
 
 .container {
     max-width: 1200px;
@@ -143,32 +160,138 @@
     position: relative;
     max-width: 360px;
     margin-left: auto;
+    min-width: 40px;
+    /* Ensure space for icon */
+    height: 40px;
+    /* Explicit height */
 }
 
-.searchInput {
+.searchWrapper {
+    position: relative;
     width: 100%;
+    display: flex;
+    align-items: center;
+}
+
+
+.searchInput {
+    width: 280px;
+    max-width: 100%;
+    /* Prevent overflow */
     padding: 0.6rem 1rem;
     padding-right: 2.5rem;
-    background: var(--surface);
-    border: 1px solid transparent;
+    background: white;
+    /* Clearer background */
+    border: 1px solid var(--border);
+    /* Visible border */
     border-radius: var(--radius-full);
-    font-size: var(--text-sm);
+    font-size: 0.9rem;
     font-family: inherit;
     outline: none;
-    transition: all 0.2s;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    color: var(--text-main);
+    box-shadow: var(--shadow-sm);
 }
 
 .searchInput:focus {
     background: white;
-    border-color: var(--border);
-    box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.05);
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(30, 41, 59, 0.1);
+    width: 320px;
+    /* Slight expansion on focus still feels nice */
 }
 
 .searchIcon {
     position: absolute;
     right: 12px;
-    top: 50%;
-    transform: translateY(-50%);
+    color: var(--text-muted);
+    pointer-events: none;
+    transition: color 0.2s;
+}
+
+/* Dropdown Results */
+.searchResults {
+    position: absolute;
+    top: 120%;
+    right: 0;
+    left: auto;
+    /* Allow it to anchor right since input expands right-to-left or vice versa */
+    width: 320px;
+    /* Fixed width for dropdown */
+    margin-top: 0;
+    background: white;
+    border-radius: var(--radius-md);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+    border: 1px solid var(--border);
+    overflow: hidden;
+    z-index: 1000;
+    max-height: 400px;
+
+    /* Hide Scrollbar */
+    scrollbar-width: none;
+    /* Firefox */
+    -ms-overflow-style: none;
+    /* IE and Edge */
+    overflow-y: scroll;
+    /* Ensure scrolling works */
+
+    /* Animation */
+    animation: slideDown 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    transform-origin: top right;
+}
+
+.searchResults::-webkit-scrollbar {
+    display: none;
+    /* Chrome, Safari, Opera */
+}
+
+.searchResultItem {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    gap: 12px;
+    text-decoration: none;
+    color: inherit;
+    transition: background 0.15s;
+    border-bottom: 1px solid var(--surface);
+}
+
+.searchResultItem:last-child {
+    border-bottom: none;
+}
+
+.searchResultItem:hover {
+    background: var(--surface);
+}
+
+.resultImage {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.resultImage img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.resultInfo {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.resultName {
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--text-main);
+}
+
+.resultLocation {
+    font-size: 0.8rem;
     color: var(--text-muted);
 }
 
@@ -234,6 +357,8 @@
 
     .searchContainer {
         display: flex;
+        /* Ensure it fits alongside other items */
+        flex-shrink: 0;
     }
 
     .desktopBtn {

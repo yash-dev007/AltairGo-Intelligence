@@ -4,7 +4,26 @@ from destinations import destinations_data
 from countries import countries_data
 from regions import regions_data
 from packages import packages_data
+from packages import packages_data
+from packages import packages_data
 from blogs import blogs_data
+import json
+import os
+
+REVIEWS_FILE = 'backend/reviews.json'
+
+def load_reviews():
+    if not os.path.exists(REVIEWS_FILE):
+        return {}
+    try:
+        with open(REVIEWS_FILE, 'r') as f:
+            return json.load(f)
+    except:
+        return {}
+
+def save_reviews(data):
+    with open(REVIEWS_FILE, 'w') as f:
+        json.dump(data, f, indent=4)
 
 app = Flask(__name__)
 # Enable CORS for all routes, allowing requests from any origin
@@ -106,8 +125,36 @@ def get_destinations():
 def get_destination_detail(dest_id):
     dest = next((d for d in destinations_data if d['id'] == dest_id), None)
     if dest:
-        return jsonify(dest)
+        # Merge reviews into the response
+        reviews_data = load_reviews()
+        # Use destination name as key
+        dest_reviews = reviews_data.get(dest['name'], [])
+        
+        response = dest.copy()
+        response['reviews_data'] = dest_reviews
+        return jsonify(response)
     return jsonify({"error": "Destination not found"}), 404
+
+@app.route('/destinations/<int:dest_id>/reviews', methods=['POST'])
+def add_review(dest_id):
+    data = request.json
+    if not data or 'name' not in data or 'rating' not in data or 'text' not in data:
+        return jsonify({"error": "Invalid review data"}), 400
+    
+    dest = next((d for d in destinations_data if d['id'] == dest_id), None)
+    if not dest:
+        return jsonify({"error": "Destination not found"}), 404
+
+    reviews_data = load_reviews()
+    dest_key = dest['name']
+    
+    if dest_key not in reviews_data:
+        reviews_data[dest_key] = []
+        
+    reviews_data[dest_key].insert(0, data) # Add to beginning
+    save_reviews(reviews_data)
+    
+    return jsonify({"message": "Review added successfully", "review": data}), 201
 
 @app.route('/packages', methods=['GET'])
 def get_packages():

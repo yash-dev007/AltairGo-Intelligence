@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import styles from './Navbar.module.css';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, Search } from 'lucide-react';
 
 import logo from '../../assets/logo.png'; // Import Logo
 
@@ -15,6 +15,44 @@ const Navbar = () => {
     // If on other pages, go to Home then ID (simple approach: just Link to /#id)
     // Note: Standard anchor tags with /#id work well with React Router for this if HashLink isn't used.
     // However, to ensure smooth scrolling on the same page, we need to handle it.
+
+    const [searchQuery, setSearchQuery] = useState('');
+    const [destinations, setDestinations] = useState([]);
+    const [filteredDestinations, setFilteredDestinations] = useState([]);
+    const [showSuggestions, setShowSuggestions] = useState(false);
+
+    // Fetch destinations for search
+    React.useEffect(() => {
+        fetch('http://127.0.0.1:5000/destinations')
+            .then(res => res.json())
+            .then(data => setDestinations(data))
+            .catch(err => console.error("Failed to fetch destinations for search:", err));
+    }, []);
+
+    const handleSearchChange = (e) => {
+        const query = e.target.value;
+        setSearchQuery(query);
+        if (query.length > 0) {
+            const filtered = destinations.filter(dest =>
+                dest.name.toLowerCase().includes(query.toLowerCase()) ||
+                dest.location.toLowerCase().includes(query.toLowerCase())
+            );
+            setFilteredDestinations(filtered);
+            setShowSuggestions(true);
+        } else {
+            setShowSuggestions(false);
+        }
+    };
+
+    const handleSearchSubmit = (e) => {
+        e.preventDefault();
+        // optionally handle enter key to go to first result or search page
+        if (filteredDestinations.length > 0) {
+            // Navigate to first result? Or just let user pick.
+            // For now, let's just close suggestions if they hit enter without picking
+            setShowSuggestions(false);
+        }
+    };
 
     const isHome = location.pathname === '/';
 
@@ -74,6 +112,46 @@ const Navbar = () => {
                 </div>
 
 
+
+                {/* Search Bar (Desktop) */}
+                <div className={styles.searchContainer}>
+                    <div className={styles.searchWrapper}>
+                        <Search
+                            className={styles.searchIcon}
+                            size={18}
+                        />
+                        <input
+                            type="text"
+                            placeholder="Search..."
+                            className={styles.searchInput}
+                            value={searchQuery}
+                            onChange={handleSearchChange}
+                            onFocus={() => { if (searchQuery) setShowSuggestions(true); }}
+                            onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                        />
+                    </div>
+
+                    {showSuggestions && filteredDestinations.length > 0 && (
+                        <div className={styles.searchResults}>
+                            {filteredDestinations.map(dest => (
+                                <Link
+                                    to={`/destinations/${dest.id}`}
+                                    className={styles.searchResultItem}
+                                    key={dest.id}
+                                    onClick={() => { setShowSuggestions(false); setSearchQuery(''); }}
+                                >
+                                    <div className={styles.resultImage}>
+                                        <img src={dest.image} alt={dest.name} />
+                                    </div>
+                                    <div className={styles.resultInfo}>
+                                        <span className={styles.resultName}>{dest.name}</span>
+                                        <span className={styles.resultLocation}>{dest.location}</span>
+                                    </div>
+                                </Link>
+                            ))}
+                        </div>
+                    )}
+                </div>
 
                 {/* CTA (Desktop) */}
                 <Link to="/booking" className={`${styles.bookBtn} ${styles.desktopBtn} `}>Book now</Link>

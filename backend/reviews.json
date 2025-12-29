@@ -1,0 +1,50 @@
+{
+    "El Nido": [
+        {
+            "name": "Sarah Jenkins",
+            "date": "October 2023",
+            "text": "Absolutely breathtaking! The details were spot on. Highly recommend checking out the local food spots mentioned.",
+            "rating": 5
+        },
+        {
+            "name": "David Chen",
+            "date": "September 2023",
+            "text": "Great experience overall. The crowd was a bit much at the main attractions, but the hidden gems suggested were totally worth it.",
+            "rating": 4
+        },
+        {
+            "name": "Elena Rodriguez",
+            "date": "August 2023",
+            "text": "A dream come true. The booking process was seamless, and everything matched the description perfectly.",
+            "rating": 5
+        }
+    ],
+    "Siargao": [
+        {
+            "name": "gff",
+            "rating": 3,
+            "text": "fgfg",
+            "date": "December 2025"
+        },
+        {
+            "name": "gfg",
+            "rating": 3,
+            "text": "fg",
+            "date": "December 2025"
+        }
+    ],
+    "Paris": [
+        {
+            "name": "fdf",
+            "rating": 2,
+            "text": "ds",
+            "date": "December 2025"
+        },
+        {
+            "name": "sfsd",
+            "rating": 4,
+            "text": "sdfs",
+            "date": "December 2025"
+        }
+    ]
+}

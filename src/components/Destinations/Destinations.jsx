@@ -5,8 +5,7 @@ import { MapPin, Star, ArrowRight, ArrowLeft } from 'lucide-react';
 
 const Destinations = () => {
     const [destinationsData, setDestinationsData] = useState([]);
-    const [currentIndex, setCurrentIndex] = useState(0);
-    const [itemsPerPage, setItemsPerPage] = useState(4);
+    const scrollRef = React.useRef(null);
 
     useEffect(() => {
         fetch('http://127.0.0.1:5000/destinations')
@@ -15,33 +14,20 @@ const Destinations = () => {
             .catch(err => console.error("Failed to fetch destinations:", err));
     }, []);
 
-    // Responsive items per page
-    useEffect(() => {
-        const handleResize = () => {
-            if (window.innerWidth < 640) {
-                setItemsPerPage(1);
-            } else if (window.innerWidth < 1024) {
-                setItemsPerPage(2);
-            } else {
-                setItemsPerPage(4);
-            }
-        };
-
-        // Initial call
-        handleResize();
-
-        window.addEventListener('resize', handleResize);
-        return () => window.removeEventListener('resize', handleResize);
-    }, []);
-
-    const maxIndex = Math.max(0, destinationsData.length - itemsPerPage);
-
     const handleNext = () => {
-        setCurrentIndex(prev => Math.min(prev + 1, maxIndex));
+        if (scrollRef.current) {
+            const viewport = scrollRef.current;
+            const scrollAmount = viewport.clientWidth; // Scroll one viewport width
+            viewport.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+        }
     };
 
     const handlePrev = () => {
-        setCurrentIndex(prev => Math.max(prev - 1, 0));
+        if (scrollRef.current) {
+            const viewport = scrollRef.current;
+            const scrollAmount = viewport.clientWidth;
+            viewport.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
+        }
     };
 
     return (
@@ -54,24 +40,14 @@ const Destinations = () => {
                     </div>
                 </div>
 
-                <div className={styles.carouselViewport}>
-                    <div
-                        className={styles.carouselTrack}
-                        style={{
-                            transform: `translateX(-${currentIndex * (100 / itemsPerPage)}%)`
-                        }}
-                    >
+                <div className={styles.carouselViewport} ref={scrollRef}>
+                    <div className={styles.carouselTrack}>
                         {destinationsData.map(dest => (
                             <Link
                                 to={`/destinations/${dest.id}`}
                                 key={dest.id}
-                                className={styles.card}
-                                style={{
-                                    // Override flex-basis dynamically for responsiveness
-                                    // We subtract spacing to account for the gap in flex container
-                                    flex: `0 0 calc(${100 / itemsPerPage}% - var(--spacing-md))`,
-                                    textDecoration: 'none'
-                                }}
+                                className={`${styles.card} ${styles.carouselItem}`}
+                                style={{ textDecoration: 'none' }}
                             >
                                 <img src={dest.image} alt={dest.name} className={styles.image} />
                                 <div className={styles.overlay}>
@@ -99,25 +75,13 @@ const Destinations = () => {
 
                 <div className={styles.footer}>
                     <Link to="/destinations" className={styles.viewMoreBtn} style={{ textDecoration: 'none', textAlign: 'center' }}>
-                        View more
+                        View all destinations
                     </Link>
-                    <div className={styles.arrows}>
-                        <button
-                            className={styles.arrowBtn}
-                            onClick={handlePrev}
-                            disabled={currentIndex === 0}
-                            style={{ opacity: currentIndex === 0 ? 0.5 : 1, cursor: currentIndex === 0 ? 'default' : 'pointer' }}
-                        >
-                            <ArrowLeft size={20} />
-                        </button>
-                        <button
-                            className={styles.arrowBtn}
-                            onClick={handleNext}
-                            disabled={currentIndex >= maxIndex}
-                            style={{ opacity: currentIndex >= maxIndex ? 0.5 : 1, cursor: currentIndex >= maxIndex ? 'default' : 'pointer' }}
-                        >
-                            <ArrowRight size={20} />
-                        </button>
+
+                    {/* Desktop Arrows Positioned Bottom Right */}
+                    <div className={`${styles.arrows} ${styles.desktopArrows}`}>
+                        <button className={styles.arrowBtn} onClick={handlePrev}><ArrowLeft size={20} /></button>
+                        <button className={styles.arrowBtn} onClick={handleNext}><ArrowRight size={20} /></button>
                     </div>
                 </div>
             </div>
