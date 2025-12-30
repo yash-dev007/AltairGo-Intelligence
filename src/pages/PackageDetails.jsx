@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { API_BASE_URL } from '../config';
 
 const PackageDetails = () => {
     const { id } = useParams();
@@ -7,7 +8,7 @@ const PackageDetails = () => {
     // const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        fetch(`http://127.0.0.1:5000/packages/${id}`)
+        fetch(`${API_BASE_URL}/packages/${id}`)
             .then(res => {
                 if (!res.ok) throw new Error("Package not found");
                 return res.json();

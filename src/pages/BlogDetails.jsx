@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { API_BASE_URL } from '../config';
 
 // import styles from '../components/Blogs/Blogs.module.css';
 
@@ -9,7 +10,7 @@ const BlogDetails = () => {
     // const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        fetch(`http://127.0.0.1:5000/blogs/${id}`)
+        fetch(`${API_BASE_URL}/blogs/${id}`)
             .then(res => {
                 if (!res.ok) throw new Error("Blog not found");
                 return res.json();

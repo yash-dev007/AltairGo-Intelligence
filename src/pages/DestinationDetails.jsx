@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { MapPin, Star, Calendar, CheckCircle, ArrowLeft, Sparkles } from 'lucide-react';
+import { API_BASE_URL } from '../config';
 
 import styles from './DestinationDetails.module.css';
 
@@ -19,7 +20,7 @@ const DestinationDetails = () => {
     const [sortBy, setSortBy] = useState('newest');
 
     useEffect(() => {
-        fetch(`http://127.0.0.1:5000/destinations/${id}`)
+        fetch(`${API_BASE_URL}/destinations/${id}`)
             .then(res => {
                 if (!res.ok) throw new Error("Destination not found");
                 return res.json();
@@ -84,7 +85,7 @@ const DestinationDetails = () => {
         };
 
         // Send to backend
-        fetch(`http://127.0.0.1:5000/destinations/${id}/reviews`, {
+        fetch(`${API_BASE_URL}/destinations/${id}/reviews`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
