@@ -24,7 +24,7 @@ const DestinationCard = memo(({ dest, isSelected, onToggle }) => {
                     </span>
                 </div>
                 <div className={styles.cardTitle}>{dest.name}</div>
-                <div className={styles.cardDesc} style={{ marginBottom: '1rem' }}>
+                <div className={styles.cardDesc}>
                     {dest.desc}
                 </div>
                 {/* View Details Button that stops propagation to prevent selection toggle when clicked */}

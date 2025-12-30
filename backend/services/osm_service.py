@@ -46,7 +46,7 @@ def fetch_osm_raw(region_name, country_name, country_code=None):
     """
     
     for url in OVERPASS_URLS:
-        print(f"🌍 querying OSM ({url}) for: {region_name}, {country_name}...")
+        print(f"querying OSM ({url}) for: {region_name}, {country_name}...")
         try:
             response = requests.get(url, params={'data': query})
             if response.status_code == 200:
@@ -54,13 +54,13 @@ def fetch_osm_raw(region_name, country_name, country_code=None):
                 elems = data.get('elements', [])
                 if elems:
                     return elems
-                print("   ⚠️ No elements found on this mirror.")
+                print("   No elements found on this mirror.")
             else:
-                print(f"   ❌ Error {response.status_code} on {url}")
+                print(f"   Error {response.status_code} on {url}")
         except Exception as e:
-            print(f"   ❌ Connection Error on {url}: {e}")
+            print(f"   Connection Error on {url}: {e}")
             
-    print("❌ All OSM mirrors failed or returned no data.")
+    print("All OSM mirrors failed or returned no data.")
     return []
 
 def populate_region_data(state_id):
@@ -87,7 +87,7 @@ def populate_region_data(state_id):
     elements = fetch_osm_raw(region_name, country_name, country_code)
     
     if not elements:
-        print(f"   ⚠️ No results for {region_name}")
+        print(f"   No results for {region_name}")
         return []
 
     new_destinations = []
@@ -95,8 +95,15 @@ def populate_region_data(state_id):
     
     for el in elements:
         tags = el.get('tags', {})
-        # Prioritize English names: name:en -> int_name -> name
-        name = tags.get('name:en') or tags.get('int_name') or tags.get('name')
+
+        # Prioritize English names: name:en -> int_name -> name (only if Latin)
+        name = tags.get('name:en') or tags.get('int_name')
+        if not name:
+             raw_name = tags.get('name')
+             # Check if raw_name is mostly Latin/ASCII (simple heuristic)
+             if raw_name and all(ord(c) < 128 for c in raw_name):
+                 name = raw_name
+        
         if not name: continue
         
         # Avoid duplicates
@@ -149,14 +156,18 @@ def populate_region_data(state_id):
         count += 1
         
         # NO BREAK CONDITION. WE EAT EVERYTHING.
+        if count >= 3:
+            print(f"   ...reached limit of 3 items")
+            break
+            
         if count % 50 == 0:
             print(f"   ...processed {count} items")
             
     try:
         db_session.commit()
-        print(f"   ✅ Added {count} destinations to {region_name}")
+        print(f"   Added {count} destinations to {region_name}")
         return [d.to_dict() for d in new_destinations]
     except Exception as e:
         db_session.rollback()
-        print(f"   ❌ DB Error: {e}")
+        print(f"   DB Error: {e}")
         return []

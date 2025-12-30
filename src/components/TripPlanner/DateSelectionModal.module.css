@@ -35,25 +35,39 @@
     /* Removed max-height constraint to let it fit content naturally if possible, 
        but kept max-height for safety on very small screens. 
        Reduced padding. */
-    max-height: 95vh;
-    overflow-y: hidden;
-    /* Force no scroll as requested - content MUST fit */
+    max-height: 90vh;
+    /* Leave room for margins */
+    overflow-y: auto;
+    /* Enable scrolling */
     transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     display: flex;
     flex-direction: column;
 }
 
 .modalStandard {
-    width: 800px;
+    width: 95%;
+    max-width: 800px;
 }
 
 .modalCompact {
-    width: 420px;
+    width: 95%;
+    max-width: 420px;
+}
+
+/* Hide scrollbar but allow scroll */
+.modal {
+    scrollbar-width: none;
+    /* Firefox */
+    -ms-overflow-style: none;
+    /* IE/Edge */
 }
 
 .modal::-webkit-scrollbar {
     display: none;
+    /* Chrome/Safari */
 }
+
+
 
 @keyframes scaleIn {
     to {

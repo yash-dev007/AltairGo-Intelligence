@@ -86,7 +86,8 @@
 /* Selection Grid (Countries/States) */
 .grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    /* More flexible for smaller screens */
     gap: 2rem;
     margin-bottom: 4rem;
 }
@@ -146,6 +147,13 @@
     font-size: 0.95rem;
     color: var(--text-muted);
     line-height: 1.6;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    /* Limit to 2 lines */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    margin-bottom: 0.5rem;
+    /* Reduced margin */
 }
 
 .checkIcon {
@@ -388,6 +396,8 @@
     color: #0c4a6e;
     max-width: 450px;
     box-shadow: 0 4px 6px -1px rgba(14, 165, 233, 0.1);
+    flex-wrap: wrap;
+    /* Allow content to wrap */
 }
 
 .viewDetailsBtn {
@@ -433,9 +443,13 @@
     font-weight: 600;
     display: flex;
     align-items: center;
+    justify-content: center;
+    /* Center on mobile if full width */
     gap: 0.5rem;
     cursor: pointer;
     transition: color 0.2s;
+    padding: 0.5rem 1rem;
+    /* Add padding for touch target */
 }
 
 .backBtn:hover {
@@ -446,12 +460,17 @@
     background: var(--primary);
     color: white;
     border: none;
-    padding: 1rem 3rem;
+    height: 54px;
+    padding: 0 2rem;
     border-radius: 50px;
     font-size: 1.1rem;
     font-weight: 700;
     cursor: pointer;
     transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 160px;
 }
 
 .nextBtn:disabled {
@@ -466,13 +485,59 @@
 }
 
 @media (max-width: 768px) {
+    .pageContainer {
+        padding-top: 6rem;
+        padding-bottom: 2rem;
+    }
+
+    .contentWrapper {
+        padding: 0 1rem;
+    }
+
     .title {
         font-size: 2rem;
     }
 
+    .subtitle {
+        font-size: 1rem;
+    }
+
     .grid {
         gap: 1rem;
-        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        /* Allow smaller cards on mobile */
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    }
+
+    .searchSection {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1rem;
+    }
+
+    .searchWrapper {
+        width: 100%;
+        order: 1;
+    }
+
+    .countBadge,
+    .addBtn {
+        width: 100%;
+        justify-content: center;
+        order: 2;
+    }
+
+    /* Action Buttons in Footer */
+    .actions {
+        flex-direction: column-reverse;
+        gap: 1.5rem;
+        align-items: stretch;
+    }
+
+    .backBtn {
+        width: 100%;
+        padding: 1rem;
+        border: 1px solid #e2e8f0;
+        border-radius: 50px;
     }
 
     .cardImage {
@@ -493,6 +558,50 @@
     .dayCard {
         margin-left: 2rem;
         padding: 1rem;
+    }
+
+    /* Fix Long Containers on Mobile */
+    .smartInsight {
+        max-width: 100%;
+        width: 100%;
+    }
+
+    .activityItem {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .activityTime {
+        min-width: 0;
+        color: var(--primary);
+        /* Highlight time when stacked */
+    }
+
+    .summaryCard {
+        gap: 1rem;
+        padding: 1.5rem;
+        /* Reduce padding */
+    }
+
+    .summaryItem {
+        flex: 1 1 100%;
+        /* Stack on very small screens or fit 2 per row */
+        width: 100%;
+    }
+
+    .cardContent {
+        padding: 0.85rem;
+        /* Tighter padding */
+    }
+
+    .cardImage {
+        height: 100px;
+        /* Shorter image */
+    }
+
+    .tagsRow {
+        margin-bottom: 0.5rem;
+        /* Tighter spacing */
     }
 }
 
@@ -628,6 +737,8 @@
     display: flex;
     align-items: center;
     gap: 1rem;
+    flex-wrap: wrap;
+    /* Allow wrapping on mobile */
 }
 
 .searchWrapper {
@@ -844,4 +955,50 @@
 .radarEffect {
     border-radius: 50%;
     animation: radar 2s infinite;
+}
+
+/* Action Buttons Group */
+.actionButtonsGroup {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    width: 100%;
+}
+
+.secondaryBtn {
+    background: white;
+    color: var(--text-main);
+    border: 1px solid #e2e8f0;
+    height: 54px;
+    padding: 0 2rem;
+    border-radius: 50px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 1 1 auto;
+    min-width: 160px;
+}
+
+.secondaryBtn:hover {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+    color: var(--primary);
+}
+
+@media (max-width: 768px) {
+    .actionButtonsGroup {
+        flex-direction: column-reverse;
+        gap: 0.75rem;
+    }
+
+    .nextBtn,
+    .secondaryBtn {
+        width: 100%;
+        min-width: 0;
+        padding: 0.85rem 1rem;
+    }
 }

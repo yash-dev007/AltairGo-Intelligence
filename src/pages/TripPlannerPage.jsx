@@ -732,10 +732,9 @@ const TripPlannerPage = () => {
                     <button className={styles.backBtn} onClick={() => setStep(2)}>
                         <ChevronLeft size={18} /> Back
                     </button>
-                    <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', width: '100%' }}>
+                    <div className={styles.actionButtonsGroup}>
                         <button
-                            className={styles.nextBtn}
-                            style={{ background: 'white', color: 'var(--text-main)', border: '1px solid #e2e8f0', flex: '1 1 auto', minWidth: '140px' }}
+                            className={styles.secondaryBtn}
                             onClick={() => setShowDateModal(true)}
                         >
                             <Calendar size={18} style={{ display: 'inline', marginRight: '5px' }} />
