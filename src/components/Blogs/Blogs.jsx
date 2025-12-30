@@ -2,12 +2,14 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import styles from './Blogs.module.css';
 
+import { API_BASE_URL } from '../../config';
+
 const Blogs = () => {
     // Show only first 3 blogs for the preview section
     const [previewBlogs, setPreviewBlogs] = React.useState([]);
 
     React.useEffect(() => {
-        fetch('http://127.0.0.1:5000/blogs')
+        fetch(`${API_BASE_URL}/blogs`)
             .then(res => res.json())
             .then(data => setPreviewBlogs(data.slice(0, 3)))
             .catch(err => console.error("Failed to fetch blogs:", err));

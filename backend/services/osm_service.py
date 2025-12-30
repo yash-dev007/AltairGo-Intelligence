@@ -16,7 +16,7 @@ def fetch_osm_raw(region_name, country_name, country_code=None):
     # Overpass Query: Simplified (Nodes only for speed)
     # Timeout 25s to fail fast and retry next mirror
     query = f"""
-    [out:json][timeout:90];
+    [out:json][timeout:120];
     // OPTIMIZED QUERY
     // 1. Find Country Area
     area["ISO3166-1"="{country_code.upper()}"]->.country;

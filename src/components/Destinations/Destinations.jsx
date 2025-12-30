@@ -3,12 +3,14 @@ import { Link } from 'react-router-dom';
 import styles from './Destinations.module.css';
 import { MapPin, Star, ArrowRight, ArrowLeft } from 'lucide-react';
 
+import { API_BASE_URL } from '../../config';
+
 const Destinations = () => {
     const [destinationsData, setDestinationsData] = useState([]);
     const scrollRef = React.useRef(null);
 
     useEffect(() => {
-        fetch('http://127.0.0.1:5000/destinations')
+        fetch(`${API_BASE_URL}/destinations`)
             .then(res => res.json())
             .then(data => setDestinationsData(data))
             .catch(err => console.error("Failed to fetch destinations:", err));

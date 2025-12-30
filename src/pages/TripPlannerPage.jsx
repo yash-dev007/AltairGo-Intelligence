@@ -732,10 +732,10 @@ const TripPlannerPage = () => {
                     <button className={styles.backBtn} onClick={() => setStep(2)}>
                         <ChevronLeft size={18} /> Back
                     </button>
-                    <div style={{ display: 'flex', gap: '1rem' }}>
+                    <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', width: '100%' }}>
                         <button
                             className={styles.nextBtn}
-                            style={{ background: 'white', color: 'var(--text-main)', border: '1px solid #e2e8f0' }}
+                            style={{ background: 'white', color: 'var(--text-main)', border: '1px solid #e2e8f0', flex: '1 1 auto', minWidth: '140px' }}
                             onClick={() => setShowDateModal(true)}
                         >
                             <Calendar size={18} style={{ display: 'inline', marginRight: '5px' }} />
@@ -758,6 +758,7 @@ const TripPlannerPage = () => {
                             className={styles.nextBtn}
                             disabled={selectedDestinations.length === 0 || !travelDates.type}
                             onClick={generateItinerary}
+                            style={{ flex: '1 1 auto', minWidth: '140px' }}
                         >
                             {loading ? 'Consulting AI Agent...' : 'Generate AI Plan'} <Sparkles size={18} style={{ display: 'inline', marginLeft: '5px' }} />
                         </button>
