@@ -17,8 +17,8 @@ const DateSelectionModal = ({ isOpen, onClose, onApply }) => {
     // Reset view when reopened
     useEffect(() => {
         if (isOpen) {
-            setViewDate(new Date());
-            // Optional: Reset selections or keep them? Keeping them is better UX usually.
+            // Defer to avoid synchronous state update warning
+            setTimeout(() => setViewDate(new Date()), 0);
         }
     }, [isOpen]);
 
@@ -78,17 +78,7 @@ const DateSelectionModal = ({ isOpen, onClose, onApply }) => {
         }
     };
 
-    const isSameDay = (d1, d2) => {
-        if (!d1 || !d2) return false;
-        return d1.getDate() === d2.getDate() &&
-            d1.getMonth() === d2.getMonth() &&
-            d1.getFullYear() === d2.getFullYear();
-    };
 
-    const isDateInRange = (date) => {
-        if (!startDate || !endDate) return false;
-        return date > startDate && date < endDate;
-    };
 
     // Optimized: Use timestamps for faster comparison
     const startDateTs = startDate ? startDate.getTime() : null;

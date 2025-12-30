@@ -1,7 +1,9 @@
 // This service communicates with the Python Backend (Flask)
 // Ensure the backend is running on http://localhost:5000
 
-const API_BASE = 'http://127.0.0.1:5000';
+import { API_BASE_URL } from '../config';
+
+const API_BASE = API_BASE_URL;
 
 export const TripAI = {
     // Generates a day-by-day itinerary based on selected destinations

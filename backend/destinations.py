@@ -24,7 +24,14 @@ destinations_data = [
         "crowdLevel": 'High',
         "tag": 'Must Visit',
         "estimatedCostPerDay": 5000,
-        "bestTimeMonths": ['Nov', 'Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May']
+        "bestTimeMonths": ['Nov', 'Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May'],
+        "vibe_tags": [
+            {"category": "Nature", "sentiment": "Positive", "count": 142, "tag": "Stunning Views"},
+            {"category": "Adventure", "sentiment": "Positive", "count": 98, "tag": "Lagoon Tours"},
+            {"category": "Connectivity", "sentiment": "Negative", "count": 45, "tag": "Spotty WiFi"},
+            {"category": "Food", "sentiment": "Positive", "count": 76, "tag": "Fresh Seafood"},
+            {"category": "Crowds", "sentiment": "Neutral", "count": 50, "tag": "Busy in Peaks"}
+        ]
     },
     {
         "id": 2,
@@ -49,7 +56,14 @@ destinations_data = [
         "crowdLevel": 'High',
         "tag": 'Popular',
         "estimatedCostPerDay": 3500,
-        "bestTimeMonths": ['Dec', 'Jan', 'Feb']
+        "bestTimeMonths": ['Dec', 'Jan', 'Feb'],
+        "vibe_tags": [
+            {"category": "Climate", "sentiment": "Positive", "count": 210, "tag": "Cool Breeze"},
+            {"category": "Food", "sentiment": "Positive", "count": 150, "tag": "Strawberry Taho"},
+            {"category": "Traffic", "sentiment": "Negative", "count": 85, "tag": "City Congestion"},
+            {"category": "Nature", "sentiment": "Positive", "count": 120, "tag": "Pine Trees"},
+            {"category": "Vibe", "sentiment": "Positive", "count": 90, "tag": "Cozy Feel"}
+        ]
     },
     {
         "id": 3,
@@ -74,7 +88,14 @@ destinations_data = [
         "crowdLevel": 'Medium',
         "tag": 'Surfer\'s Paradise',
         "estimatedCostPerDay": 4500,
-        "bestTimeMonths": ['Jul', 'Aug', 'Sep', 'Oct', 'Nov']
+        "bestTimeMonths": ['Jul', 'Aug', 'Sep', 'Oct', 'Nov'],
+        "vibe_tags": [
+            {"category": "Surf", "sentiment": "Positive", "count": 180, "tag": "World Class Waves"},
+            {"category": "Vibe", "sentiment": "Positive", "count": 160, "tag": "Island Life"},
+            {"category": "Nightlife", "sentiment": "Positive", "count": 130, "tag": "Jungle Parties"},
+            {"category": "Connectivity", "sentiment": "Neutral", "count": 40, "tag": "Variable Speed"},
+            {"category": "Transport", "sentiment": "Neutral", "count": 60, "tag": "Rent a Bike"}
+        ]
     },
     {
         "id": 4,

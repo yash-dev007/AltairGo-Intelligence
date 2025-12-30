@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import styles from '../components/Blogs/Blogs.module.css';
+
+// import styles from '../components/Blogs/Blogs.module.css';
 
 const BlogDetails = () => {
     const { id } = useParams();
     const [blog, setBlog] = useState(null);
-    const [loading, setLoading] = useState(true);
+    // const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         fetch(`http://127.0.0.1:5000/blogs/${id}`)
@@ -15,11 +16,11 @@ const BlogDetails = () => {
             })
             .then(data => {
                 setBlog(data);
-                setLoading(false);
+                // setLoading(false);
             })
             .catch(err => {
                 console.error("Failed to fetch blog:", err);
-                setLoading(false);
+                // setLoading(false);
             });
     }, [id]);
 

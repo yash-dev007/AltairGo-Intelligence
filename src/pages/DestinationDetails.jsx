@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { MapPin, Star, Calendar, CheckCircle, ArrowLeft } from 'lucide-react';
+import { MapPin, Star, Calendar, CheckCircle, ArrowLeft, Sparkles } from 'lucide-react';
 
 import styles from './DestinationDetails.module.css';
 
@@ -92,7 +92,7 @@ const DestinationDetails = () => {
             body: JSON.stringify(reviewToAdd),
         })
             .then(res => res.json())
-            .then(data => {
+            .then(() => {
                 // Optimistically update UI
                 setReviews([reviewToAdd, ...reviews]);
                 setNewReview({ name: '', rating: 5, text: '' });
@@ -174,6 +174,35 @@ const DestinationDetails = () => {
                     </div>
 
                     {/* SUGGESTED ITINERARY REMOVED AS REQUESTED */}
+
+                    {/* Vibe Tags / Review Highlights */}
+                    {destination.vibe_tags && destination.vibe_tags.length > 0 && (
+                        <div className={styles.vibeSection}>
+                            <h3 className={styles.vibeTitle}>
+                                <Star size={24} color="var(--primary)" fill="var(--primary)" style={{ opacity: 0.2 }} />
+                                Traveler Highlights
+                            </h3>
+                            <div className={styles.vibeGrid}>
+                                {destination.vibe_tags.map((vibe, idx) => (
+                                    <div key={idx} className={styles.vibeCard}>
+                                        <div className={styles.vibeHeader}>
+                                            <span className={styles.categoryLabel}>{vibe.category}</span>
+                                            <span className={`${styles.sentimentBadge} ${vibe.sentiment === 'Positive' ? styles.sentimentPositive :
+                                                vibe.sentiment === 'Negative' ? styles.sentimentNegative :
+                                                    styles.sentimentNeutral
+                                                }`}>
+                                                {vibe.sentiment}
+                                            </span>
+                                        </div>
+                                        <div className={styles.vibeTag}>{vibe.tag}</div>
+                                        <div className={styles.vibeFooter}>
+                                            <span>Mentioned by <strong>{vibe.count}</strong> travelers</span>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
 
                     {/* Reviews Section */}
                     <div className={styles.reviewsSection}>

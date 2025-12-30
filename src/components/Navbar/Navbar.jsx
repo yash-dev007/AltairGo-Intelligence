@@ -44,15 +44,7 @@ const Navbar = () => {
         }
     };
 
-    const handleSearchSubmit = (e) => {
-        e.preventDefault();
-        // optionally handle enter key to go to first result or search page
-        if (filteredDestinations.length > 0) {
-            // Navigate to first result? Or just let user pick.
-            // For now, let's just close suggestions if they hit enter without picking
-            setShowSuggestions(false);
-        }
-    };
+
 
     const isHome = location.pathname === '/';
 

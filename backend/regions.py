@@ -6818,5 +6818,85 @@ regions_data = [
         "name": "Capital District (Caracas)",
         "country": "ve",
         "image": "https://images.unsplash.com/photo-1538964173425-93884d739596?q=80&w=1935&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+    },
+    {
+        "name": "Baden-Württemberg",
+        "country": "de",
+        "image": "https://images.unsplash.com/photo-1467269204594-9661b134dd2b?q=80&w=1170"
+    },
+    {
+        "name": "Bavaria",
+        "country": "de",
+        "image": "https://images.unsplash.com/photo-1467269204594-9661b134dd2b?q=80&w=1170"
+    },
+    {
+        "name": "Berlin",
+        "country": "de",
+        "image": "https://images.unsplash.com/photo-1467269204594-9661b134dd2b?q=80&w=1170"
+    },
+    {
+        "name": "Brandenburg",
+        "country": "de",
+        "image": "https://images.unsplash.com/photo-1467269204594-9661b134dd2b?q=80&w=1170"
+    },
+    {
+        "name": "Bremen",
+        "country": "de",
+        "image": "https://images.unsplash.com/photo-1467269204594-9661b134dd2b?q=80&w=1170"
+    },
+    {
+        "name": "Hamburg",
+        "country": "de",
+        "image": "https://images.unsplash.com/photo-1467269204594-9661b134dd2b?q=80&w=1170"
+    },
+    {
+        "name": "Hesse",
+        "country": "de",
+        "image": "https://images.unsplash.com/photo-1467269204594-9661b134dd2b?q=80&w=1170"
+    },
+    {
+        "name": "Lower Saxony",
+        "country": "de",
+        "image": "https://images.unsplash.com/photo-1467269204594-9661b134dd2b?q=80&w=1170"
+    },
+    {
+        "name": "Mecklenburg-Vorpommern",
+        "country": "de",
+        "image": "https://images.unsplash.com/photo-1467269204594-9661b134dd2b?q=80&w=1170"
+    },
+    {
+        "name": "North Rhine-Westphalia",
+        "country": "de",
+        "image": "https://images.unsplash.com/photo-1467269204594-9661b134dd2b?q=80&w=1170"
+    },
+    {
+        "name": "Rhineland-Palatinate",
+        "country": "de",
+        "image": "https://images.unsplash.com/photo-1467269204594-9661b134dd2b?q=80&w=1170"
+    },
+    {
+        "name": "Saarland",
+        "country": "de",
+        "image": "https://images.unsplash.com/photo-1467269204594-9661b134dd2b?q=80&w=1170"
+    },
+    {
+        "name": "Saxony",
+        "country": "de",
+        "image": "https://images.unsplash.com/photo-1467269204594-9661b134dd2b?q=80&w=1170"
+    },
+    {
+        "name": "Saxony-Anhalt",
+        "country": "de",
+        "image": "https://images.unsplash.com/photo-1467269204594-9661b134dd2b?q=80&w=1170"
+    },
+    {
+        "name": "Schleswig-Holstein",
+        "country": "de",
+        "image": "https://images.unsplash.com/photo-1467269204594-9661b134dd2b?q=80&w=1170"
+    },
+    {
+        "name": "Thuringia",
+        "country": "de",
+        "image": "https://images.unsplash.com/photo-1467269204594-9661b134dd2b?q=80&w=1170"
     }
 ]

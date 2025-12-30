@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ChevronLeft, ChevronRight, Check, MapPin, Star, Sparkles, ExternalLink, Calendar, Users, Search, ArrowUp, ArrowDown, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Check, MapPin, Star, Sparkles, ExternalLink, Calendar, Users, Search, ArrowUp, ArrowDown, X, Plus } from 'lucide-react';
 import { TripAI } from '../services/TripAI';
+import { API_BASE_URL } from '../config';
+import AddDestinationModal from '../components/AddDestinationModal';
 import DateSelectionModal from '../components/TripPlanner/DateSelectionModal';
+import DestinationCard from '../components/TripPlanner/DestinationCard';
 import styles from './TripPlanner.module.css';
 
 const TripPlannerPage = () => {
@@ -18,6 +21,7 @@ const TripPlannerPage = () => {
     const [loading, setLoading] = useState(false);
     const [budget, setBudget] = useState(0);
     const [insight, setInsight] = useState(null);
+    const [visibleCount, setVisibleCount] = useState(24);
 
     // Search States
     const [countrySearch, setCountrySearch] = useState('');
@@ -61,6 +65,7 @@ const TripPlannerPage = () => {
 
     // Date Selection State
     const [showDateModal, setShowDateModal] = useState(false);
+    const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [travelDates, setTravelDates] = useState({ start: null, end: null });
 
     // Fetch Initial Data
@@ -68,9 +73,9 @@ const TripPlannerPage = () => {
         const fetchData = async () => {
             try {
                 const [countriesRes, destsRes, regionsRes] = await Promise.all([
-                    fetch('http://127.0.0.1:5000/countries'),
-                    fetch('http://127.0.0.1:5000/destinations'),
-                    fetch('http://127.0.0.1:5000/regions')
+                    fetch(`${API_BASE_URL}/countries`),
+                    fetch(`${API_BASE_URL}/destinations`),
+                    fetch(`${API_BASE_URL}/regions`)
                 ]);
                 const countriesData = await countriesRes.json();
                 const destsData = await destsRes.json();
@@ -92,10 +97,72 @@ const TripPlannerPage = () => {
         fetchData();
     }, []);
 
+    // Lazy Load Data
+    const [fetchingRegion, setFetchingRegion] = useState(false);
+
+    useEffect(() => {
+        if (step === 3 && selectedStates.length > 0) {
+            checkAndFetchData();
+        }
+    }, [step, selectedStates]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    const checkAndFetchData = async () => {
+        let stateId = selectedStates[0];
+        if (!stateId) return;
+
+        // FIX: If stateId is a Name (String), find the Numeric ID from regions list
+        const regionObj = regions.find(r => r.id === stateId || r.name === stateId);
+        if (regionObj) {
+            // console.log(`Mapping State: ${stateId} -> ${regionObj.id}`);
+            stateId = regionObj.id;
+        }
+
+        // Force fetch for debug
+        const url = `${API_BASE_URL}/regions/${stateId}/populate`;
+        // console.log("Fetching live data for ID:", stateId);
+        setFetchingRegion(true);
+        try {
+            const res = await fetch(url, {
+                method: 'POST'
+            });
+
+            const contentType = res.headers.get("content-type");
+
+
+            if (contentType && contentType.includes("application/json")) {
+                const result = await res.json();
+
+
+                if (result.status === 'success' && result.data.length > 0) {
+                    // Deduplicate before adding
+                    setDestinations(prev => {
+                        const existingIds = new Set(prev.map(d => d.name)); // name as unique key for now
+                        const newItems = result.data.filter(d => !existingIds.has(d.name));
+                        return [...prev, ...newItems];
+                    });
+                }
+            } else {
+                // It's HTML or Text (Error Page)
+                const text = await res.text();
+                console.error("Non-JSON Response:", text.substring(0, 100));
+
+            }
+
+        } catch (err) {
+            console.error("Auto-population failed", err);
+
+        } finally {
+            setFetchingRegion(false);
+        }
+    };
+
     const getStatesForCountry = (countryId) => {
+        if (!countries || !regions || !destinations) return [];
+
         // Find component country to get fallback image
         const countryObj = countries.find(c => c.id === countryId);
-        const fallbackImg = countryObj ? countryObj.image : 'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800';
+        // Safety: If country not found, use generic fallback
+        const fallbackImg = (countryObj && countryObj.image) ? countryObj.image : 'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800';
 
         // Filter regions by the selected country ID
         const countryRegions = regions.filter(r => r.country === countryId);
@@ -128,7 +195,7 @@ const TripPlannerPage = () => {
             setSelectedStates([]);
             setSelectedDestinations([]);
         }
-    }, [selectedCountry]);
+    }, [selectedCountry]); // eslint-disable-line react-hooks/exhaustive-deps
 
     // Fetch budget and insights when entering Step 4
     useEffect(() => {
@@ -187,7 +254,7 @@ const TripPlannerPage = () => {
         return (
             <>
                 <h2 className={styles.title}>Where to?</h2>
-                <p className={styles.subtitle}>Select a country to start planning your adventure.</p>
+                <p className={styles.subtitle}>Select a country or territory to start planning your adventure.</p>
 
                 {/* Start Location Selection */}
                 <div style={{ marginBottom: '2rem' }}>
@@ -276,7 +343,7 @@ const TripPlannerPage = () => {
                     <div className={styles.searchWrapper}>
                         <input
                             type="text"
-                            placeholder="Search countries..."
+                            placeholder="Search locations..."
                             value={countrySearch}
                             onChange={(e) => setCountrySearch(e.target.value)}
                             className={styles.searchInput}
@@ -285,7 +352,7 @@ const TripPlannerPage = () => {
                     </div>
                     <div className={styles.countBadge}>
                         <Check size={16} strokeWidth={3} />
-                        {filteredCountries.length} Countries
+                        {filteredCountries.length} Locations
                     </div>
                 </div>
 
@@ -298,7 +365,11 @@ const TripPlannerPage = () => {
                             style={{ opacity: country.available ? 1 : 0.6 }}
                         >
                             <div style={{ position: 'relative' }}>
-                                <img src={country.image} alt={country.name} className={styles.cardImage} />
+                                <img
+                                    src={country.image || 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&q=80&w=800'}
+                                    alt={country.name}
+                                    className={styles.cardImage}
+                                />
                                 {selectedCountry === country.id && <div className={styles.checkIcon}><Check size={16} /></div>}
                                 {!country.available && (
                                     <div style={{
@@ -382,22 +453,33 @@ const TripPlannerPage = () => {
                 )}
 
                 <div className={styles.grid} style={{ marginTop: '1rem' }}>
-                    {filteredStates.map(state => (
-                        <div
-                            key={state.id}
-                            className={`${styles.card} ${selectedStates.includes(state.id) ? styles.selected : ''}`}
-                            onClick={() => handleStateToggle(state.id)}
-                        >
-                            <div style={{ position: 'relative' }}>
-                                <img src={state.image} alt={state.name} className={styles.cardImage} />
-                                {selectedStates.includes(state.id) && <div className={styles.checkIcon}><Check size={16} /></div>}
+                    {filteredStates.length > 0 ? (
+                        filteredStates.map(state => (
+                            <div
+                                key={state.id}
+                                className={`${styles.card} ${selectedStates.includes(state.id) ? styles.selected : ''}`}
+                                onClick={() => handleStateToggle(state.id)}
+                            >
+                                <div style={{ position: 'relative' }}>
+                                    <img src={state.image} alt={state.name} className={styles.cardImage} />
+                                    {selectedStates.includes(state.id) && <div className={styles.checkIcon}><Check size={20} /></div>}
+                                </div>
+                                <div className={styles.cardContent}>
+                                    <div className={styles.cardTitle}>{state.name}</div>
+                                    <div className={styles.cardDesc}>{state.desc}</div>
+                                </div>
                             </div>
-                            <div className={styles.cardContent}>
-                                <div className={styles.cardTitle}>{state.name}</div>
-                                <div className={styles.cardDesc}>{state.desc}</div>
-                            </div>
+                        ))
+                    ) : (
+                        <div className={styles.emptyState}>
+                            <MapPin size={48} strokeWidth={1} />
+                            <div className={styles.emptyTitle}>No Regions Found</div>
+                            <p>We couldn't find any regions matching "{regionSearch}".</p>
+                            <button onClick={() => setRegionSearch('')} className={styles.viewDetailsBtn} style={{ marginTop: '1rem' }}>
+                                Clear Search
+                            </button>
                         </div>
-                    ))}
+                    )}
                 </div>
 
                 <div className={styles.actions}>
@@ -422,53 +504,31 @@ const TripPlannerPage = () => {
 
     const renderStep3 = () => {
         // First filter by selected regions
-        const regionFiltered = destinations.filter(d => selectedStates.includes(d.location));
-        // Then filter by search query
+
+        // 3. Filter Destinations based on Selected States & Search
+        // Robust Filter: Map selected keys (which might be names "Assam") to IDs (251)
+        const regionFiltered = destinations.filter(d =>
+            selectedStates.some(key => {
+                // If key matches state_id directly
+                if (String(key) === String(d.state_id)) return true;
+                // If key is a Name, look it up in 'regions' list
+                const region = regions.find(r => r.name === key);
+                return region && String(region.id) === String(d.state_id);
+            })
+        );
+
         const filtered = regionFiltered.filter(d =>
             d.name.toLowerCase().includes(destSearch.trim().toLowerCase()) ||
             d.desc.toLowerCase().includes(destSearch.trim().toLowerCase())
         );
 
+        // Debug UI (Temporary)
         const trending = filtered.filter(d => d.rating >= 4.8);
         const others = filtered.filter(d => d.rating < 4.8);
 
-        const DestinationCard = ({ dest }) => (
-            <div
-                className={`${styles.card} ${selectedDestinations.includes(dest.id) ? styles.selected : ''}`}
-                onClick={() => handleDestinationToggle(dest.id)}
-            >
-                <div style={{ position: 'relative' }}>
-                    <img src={dest.image} alt={dest.name} className={styles.cardImage} />
-                    {selectedDestinations.includes(dest.id) && <div className={styles.checkIcon}><Check size={16} /></div>}
-                    <div style={{ position: 'absolute', top: '10px', left: '10px', background: 'rgba(255,255,255,0.9)', padding: '4px 8px', borderRadius: '12px', fontSize: '0.8rem', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '3px' }}>
-                        <Star size={12} fill="#fbbf24" color="#fbbf24" /> {dest.rating}
-                    </div>
-                </div>
-                <div className={styles.cardContent}>
-                    <div className={styles.tagsRow}>
-                        <span className={styles.tagBadge}>{dest.tag}</span>
-                        <span className={styles.crowdBadge} data-level={dest.crowdLevel}>
-                            <Users size={12} strokeWidth={2.5} />
-                            {dest.crowdLevel === 'High' ? 'Busy (Book Ahead)' : dest.crowdLevel === 'Low' ? 'Quiet & Relaxing' : 'Moderate Crowd'}
-                        </span>
-                    </div>
-                    <div className={styles.cardTitle}>{dest.name}</div>
-                    <div className={styles.cardDesc} style={{ marginBottom: '1rem' }}>
-                        {dest.desc}
-                    </div>
-                    {/* View Details Button that stops propagation to prevent selection toggle when clicked */}
-                    <a
-                        href={`/destinations/${dest.id}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className={styles.viewDetailsBtn}
-                        onClick={(e) => e.stopPropagation()}
-                    >
-                        View Details <ExternalLink size={14} />
-                    </a>
-                </div>
-            </div>
-        );
+        // Pagination Logic
+        const displayedDestinations = destSearch ? filtered.slice(0, visibleCount) : filtered;
+        const hasMore = destSearch ? filtered.length > visibleCount : false;
 
         return (
             <>
@@ -490,7 +550,42 @@ const TripPlannerPage = () => {
                         <Sparkles size={16} strokeWidth={3} />
                         {filtered.length} Open
                     </div>
+
+                    <button
+                        className={styles.addBtn}
+                        onClick={() => setIsAddModalOpen(true)}
+                        title="Add a new destination"
+                    >
+                        <Plus size={24} strokeWidth={2.5} />
+                    </button>
                 </div>
+
+
+
+
+                {/* Persistent Loading Indicator */}
+                {fetchingRegion && (
+                    <div style={{
+                        background: '#eff6ff',
+                        border: '1px solid #bfdbfe',
+                        borderRadius: '16px',
+                        padding: '1rem',
+                        marginBottom: '2rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '1rem',
+                        animation: 'slideDown 0.3s ease-out'
+                    }}>
+                        <div style={{ position: 'relative', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <div className={styles.radarEffect} style={{ position: 'absolute', width: '100%', height: '100%', border: '2px solid #3b82f6', opacity: 0.5 }}></div>
+                            <Sparkles size={20} className={styles.pulse} color="#3b82f6" />
+                        </div>
+                        <div>
+                            <div style={{ fontWeight: '700', color: '#1e40af', fontSize: '0.95rem' }}>Scanning Satellite Data in Progress...</div>
+                            <div style={{ fontSize: '0.85rem', color: '#3b82f6' }}>Found {destinations.length} spots so far. Still searching...</div>
+                        </div>
+                    </div>
+                )}
 
                 {/* Numbered Selection Section for Destinations */}
                 {selectedDestinations.length > 0 && (
@@ -515,26 +610,120 @@ const TripPlannerPage = () => {
 
                 {destSearch ? (
                     <div className={styles.grid}>
-                        {filtered.map(dest => <DestinationCard key={dest.id} dest={dest} />)}
+                        {displayedDestinations.length > 0 ? (
+                            <>
+                                {displayedDestinations.map(dest => (
+                                    <DestinationCard
+                                        key={dest.id}
+                                        dest={dest}
+                                        isSelected={selectedDestinations.includes(dest.id)}
+                                        onToggle={handleDestinationToggle}
+                                    />
+                                ))}
+                                {hasMore && (
+                                    <div style={{ gridColumn: '1 / -1', display: 'flex', justifyContent: 'center', marginTop: '2rem' }}>
+                                        <button
+                                            onClick={() => setVisibleCount(prev => prev + 24)}
+                                            className={styles.viewDetailsBtn}
+                                            style={{ padding: '0.75rem 2rem', fontSize: '1rem' }}
+                                        >
+                                            Show More Results
+                                        </button>
+                                    </div>
+                                )}
+                            </>
+                        ) : (
+                            <div className={styles.emptyState}>
+                                <div className={styles.emptyTitle}>No Matches</div>
+                                <p>We couldn't find any destinations matching "{destSearch}".</p>
+                            </div>
+                        )}
                     </div>
                 ) : (
                     <>
-                        {trending.length > 0 && (
+                        {/* LOCAL MATCHES */}
+                        {filtered.length > 0 ? (
                             <>
-                                <div className={styles.sectionHeader}><Sparkles size={20} color="#fbbf24" /> Trending in your regions</div>
-                                <div className={styles.grid}>
-                                    {trending.map(dest => <DestinationCard key={dest.id} dest={dest} />)}
-                                </div>
+                                {trending.length > 0 && (
+                                    <>
+                                        <div className={styles.sectionHeader}><Sparkles size={20} color="#fbbf24" /> Trending in Region</div>
+                                        <div className={styles.grid}>
+                                            {trending.map(dest => (
+                                                <DestinationCard
+                                                    key={dest.id}
+                                                    dest={dest}
+                                                    isSelected={selectedDestinations.includes(dest.id)}
+                                                    onToggle={handleDestinationToggle}
+                                                />
+                                            ))}
+                                        </div>
+                                    </>
+                                )}
+                                {others.length > 0 && (
+                                    <>
+                                        <div className={styles.sectionHeader}><MapPin size={20} color="#64748b" /> More in Region</div>
+                                        <div className={styles.grid}>
+                                            {others.slice(0, visibleCount).map(dest => (
+                                                <DestinationCard
+                                                    key={dest.id}
+                                                    dest={dest}
+                                                    isSelected={selectedDestinations.includes(dest.id)}
+                                                    onToggle={handleDestinationToggle}
+                                                />
+                                            ))}
+                                            {others.length > visibleCount && (
+                                                <div style={{ gridColumn: '1 / -1', display: 'flex', justifyContent: 'center', marginTop: '2rem' }}>
+                                                    <button
+                                                        onClick={() => setVisibleCount(prev => prev + 24)}
+                                                        className={styles.viewDetailsBtn}
+                                                        style={{ padding: '0.75rem 2rem', fontSize: '1rem' }}
+                                                    >
+                                                        Show More Results
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </>
+                                )}
                             </>
-                        )}
+                        ) : (
+                            /* GLOBAL FALLBACK or LOADING */
+                            <div className={styles.emptyState}>
+                                {fetchingRegion ? (
+                                    /* Hidden or minimal loader if needed, but for now we remove it as per user request */
+                                    null
+                                ) : (
+                                    <>
+                                        <Sparkles size={48} strokeWidth={1} style={{ color: '#fbbf24' }} />
+                                        <div className={styles.emptyTitle}>New Region Detected!</div>
+                                        <p style={{ maxWidth: '400px', margin: '0 auto 1.5rem' }}>
+                                            This region doesn't have curated spots yet. Be the first to add one, or explore our global favorites below.
+                                        </p>
+                                        <button
+                                            className={styles.nextBtn}
+                                            onClick={() => setIsAddModalOpen(true)}
+                                            style={{ marginBottom: '3rem' }}
+                                        >
+                                            Add a Destination <ExternalLink size={16} />
+                                        </button>
 
-                        {others.length > 0 && (
-                            <>
-                                <div className={styles.sectionHeader}><MapPin size={20} color="#64748b" /> Explore More</div>
-                                <div className={styles.grid}>
-                                    {others.map(dest => <DestinationCard key={dest.id} dest={dest} />)}
-                                </div>
-                            </>
+                                        <div className={styles.sectionHeader} style={{ justifyContent: 'center', width: '100%', borderTop: '1px solid #e2e8f0', paddingTop: '2rem' }}>
+                                            <MapPin size={20} color="#64748b" /> Global Favorites
+                                        </div>
+                                        <div className={styles.grid} style={{ width: '100%', marginTop: '1rem' }}>
+                                            {/* Show random 6 destinations from global list */}
+                                            {destinations.slice(0, 6).map(dest => (
+                                                <DestinationCard
+                                                    key={dest.id}
+                                                    dest={dest}
+                                                    isSelected={selectedDestinations.includes(dest.id)}
+                                                    onToggle={handleDestinationToggle}
+                                                />
+                                            ))}
+                                        </div>
+                                    </>
+                                )}
+                            </div>
                         )}
                     </>
                 )}
@@ -565,6 +754,7 @@ const TripPlannerPage = () => {
                             })()}
                         </button>
                         <button
+                            id="next-step-btn"
                             className={styles.nextBtn}
                             disabled={selectedDestinations.length === 0 || !travelDates.type}
                             onClick={generateItinerary}
@@ -578,6 +768,21 @@ const TripPlannerPage = () => {
                     isOpen={showDateModal}
                     onClose={() => setShowDateModal(false)}
                     onApply={handleDateApply}
+                />
+
+                <AddDestinationModal
+                    isOpen={isAddModalOpen}
+                    onClose={() => setIsAddModalOpen(false)}
+                    onSubmit={(newDest) => {
+                        setDestinations(prev => [newDest, ...prev]);
+                        // Optionally select it automatically
+                        setSelectedDestinations(prev => [...prev, newDest.id]);
+                    }}
+                    selectedRegionId={selectedStates[0] ?
+                        // Map name to ID if needed
+                        (regions.find(r => r.name === selectedStates[0])?.id || selectedStates[0])
+                        : null
+                    }
                 />
             </>
         );
@@ -670,7 +875,7 @@ const TripPlannerPage = () => {
                 {step === 4 && renderStep4()}
 
                 {/* Floating Scroll Button */}
-                {(step === 1 || step === 2) && (
+                {(step === 1 || step === 2 || step === 3) && (
                     <button
                         className={styles.floatingBtn}
                         onClick={() => {

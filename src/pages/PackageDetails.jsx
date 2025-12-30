@@ -4,7 +4,7 @@ import { useParams, Link } from 'react-router-dom';
 const PackageDetails = () => {
     const { id } = useParams();
     const [pkg, setPkg] = useState(null);
-    const [loading, setLoading] = useState(true);
+    // const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         fetch(`http://127.0.0.1:5000/packages/${id}`)
@@ -14,11 +14,11 @@ const PackageDetails = () => {
             })
             .then(data => {
                 setPkg(data);
-                setLoading(false);
+                // setLoading(false);
             })
             .catch(err => {
                 console.error("Failed to fetch package:", err);
-                setLoading(false);
+                // setLoading(false);
             });
     }, [id]);
 
