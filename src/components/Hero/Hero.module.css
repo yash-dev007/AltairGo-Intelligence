@@ -3,8 +3,11 @@
     /* Card Layout Style */
     margin: 10px;
     /* Reduced for mobile */
-    height: 85vh;
-    min-height: 500px;
+    height: auto;
+    min-height: 65vh;
+    /* Allow it to be shorter on mobile */
+    padding-bottom: 2rem;
+    /* Add breathing room at bottom */
     border-radius: 20px;
 
     display: flex;
@@ -62,8 +65,10 @@
 
 .title {
     font-family: var(--font-main);
-    font-weight: 500;
-    font-size: clamp(var(--text-4xl), 5vw, 4rem);
+    font-weight: 600;
+    /* Increased weight for better readability at small sizes */
+    font-size: clamp(2rem, 8vw, 4rem);
+    /* Allow scale down to 32px */
     letter-spacing: -0.02em;
     line-height: 1.2;
     text-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
@@ -140,6 +145,9 @@
         padding-left: 60px;
         border-radius: 40px;
         margin-top: 100px;
+        height: 85vh;
+        /* Restore full height on desktop */
+        min-height: 600px;
     }
 
     .container {
