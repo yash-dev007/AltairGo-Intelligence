@@ -26,6 +26,19 @@ app = Flask(__name__)
 # Enable CORS for all routes, allowing requests from any origin
 CORS(app, resources={r"/*": {"origins": "*"}})
 
+# Startup Hook: Ensure DB and Data exist (Critical for Render Free Tier)
+with app.app_context():
+    init_db()
+    # Check if we have countries (proxy for "is initialized")
+    if db_session.query(Country).count() == 0:
+        print("⚡ DB Empty! Running initial seed (Migrate V1)...")
+        from migrate_v1_init import migrate
+        try:
+            migrate()
+            print("✅ Seeding Complete.")
+        except Exception as e:
+            print(f"❌ Seeding Failed: {e}")
+
 @app.teardown_appcontext
 def shutdown_session(exception=None):
     db_session.remove()
