@@ -1,0 +1,637 @@
+/* BookingPage.module.css */
+
+.pageContainer {
+    position: relative;
+    min-height: 100vh;
+    padding-bottom: var(--spacing-lg);
+    background-color: var(--background);
+    padding-top: 60px;
+    background: #f8fafc;
+}
+
+/* Background Section */
+.heroBackground {
+    position: relative;
+    width: 100%;
+    height: 700px;
+    /* Increased height for better spacing */
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    margin-bottom: 0;
+    margin-top: -60px;
+    /* Counteract padding-top to go full bleed */
+}
+
+.overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom,
+            rgba(0, 0, 0, 0.3) 0%,
+            rgba(0, 0, 0, 0.1) 50%,
+            rgba(0, 0, 0, 0.4) 100%);
+    z-index: 1;
+}
+
+.heroContent {
+    position: relative;
+    z-index: 2;
+    color: white;
+    margin-bottom: 4rem;
+    padding: 0 var(--spacing-sm);
+    /* animation: fadeIn 1s ease-out; Removed for instant load */
+}
+
+.heroTitle {
+    font-size: clamp(2.5rem, 6vw, 4.5rem);
+    font-weight: 800;
+    margin-bottom: var(--spacing-sm);
+    text-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+}
+
+.heroSubtitle {
+    font-size: var(--text-xl);
+    font-weight: 500;
+    opacity: 0.95;
+    max-width: 700px;
+    margin: 0 auto;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    line-height: 1.6;
+}
+
+/* Booking Widget Wrapper - Overlap Effect */
+.widgetWrapper {
+    position: relative;
+    z-index: 10;
+    margin-top: -10rem;
+    /* Adjusted to pull widget up closer to vertical center */
+    padding: 0 var(--spacing-md);
+    margin-bottom: var(--spacing-2xl);
+    display: flex;
+    justify-content: center;
+}
+
+.widgetWrapper>div {
+    max-width: 1100px;
+    width: 100%;
+}
+
+/* Common Section Styles */
+.section {
+    max-width: 1280px;
+    margin: 0 auto 5rem;
+    padding: 0 var(--spacing-lg);
+}
+
+.sectionHeader {
+    text-align: center;
+    margin-bottom: 3.5rem;
+}
+
+.sectionTitle {
+    font-size: clamp(2rem, 3vw, 3rem);
+    font-weight: 800;
+    color: var(--text-main);
+    margin-bottom: 1rem;
+    letter-spacing: -0.01em;
+}
+
+.sectionSubtitle {
+    color: var(--text-muted);
+    font-size: 1.1rem;
+    max-width: 600px;
+    margin: 0 auto;
+    line-height: 1.7;
+}
+
+.highlight {
+    color: var(--primary);
+    position: relative;
+    display: inline-block;
+    z-index: 1;
+}
+
+.heroTitle .highlight {
+    color: #1a2e05;
+    /* Dark text for contrast against light highlighter */
+    text-shadow: none;
+    /* remove shadow for clean look */
+    z-index: 1;
+}
+
+.highlight::after {
+    content: '';
+    position: absolute;
+    bottom: 0px;
+    left: -4px;
+    width: calc(100% + 8px);
+    height: 100%;
+    /* Full height for true highlighter effect */
+    background: #d9f99d;
+    /* Very light lime green (Highlighter style) */
+    z-index: -1;
+    border-radius: 4px;
+    transform: rotate(-2deg);
+    box-shadow: 0 0 10px rgba(217, 249, 157, 0.5);
+    /* Soft glow */
+    opacity: 0.9;
+}
+
+/* Popular Locations Grid */
+.locationGrid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-auto-rows: 280px;
+    gap: 1.5rem;
+}
+
+.locationCard {
+    position: relative;
+    border-radius: 32px;
+    overflow: hidden;
+    cursor: pointer;
+    box-shadow: var(--shadow-md);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.locationCard::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.7) 0%, transparent 60%);
+    opacity: 0.8;
+    transition: opacity 0.3s;
+}
+
+.locationCard:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.locationCard:hover::after {
+    opacity: 0.6;
+}
+
+.locationCard img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.locationCard:hover img {
+    transform: scale(1.15);
+}
+
+.locationLabel {
+    position: absolute;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(8px);
+    padding: 0.6rem 1.5rem;
+    border-radius: var(--radius-full);
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--text-main);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    white-space: nowrap;
+    z-index: 2;
+    transition: all 0.3s;
+}
+
+.locationCard:hover .locationLabel {
+    background: white;
+    transform: translateX(-50%) scale(1.05);
+}
+
+.colSpan2 {
+    grid-column: span 2;
+}
+
+/* Flight Cards Section */
+.flightGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+}
+
+.flightCard {
+    background: white;
+    border-radius: 32px;
+    /* Match global theme */
+    overflow: hidden;
+    box-shadow: var(--shadow-md);
+    /* Match locationCard shadow */
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    border: none;
+    /* Remove border for cleaner look */
+    position: relative;
+}
+
+.flightCard:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.flightImageWrapper {
+    position: relative;
+    height: 200px;
+    overflow: hidden;
+}
+
+.flightImage {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.flightCard:hover .flightImage {
+    transform: scale(1.05);
+}
+
+.badge {
+    position: absolute;
+    top: 1rem;
+    left: 1rem;
+    background: rgba(59, 130, 246, 0.9);
+    backdrop-filter: blur(4px);
+    color: white;
+    padding: 0.35rem 1rem;
+    border-radius: var(--radius-full);
+    font-size: 0.75rem;
+    font-weight: 600;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.rating {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(4px);
+    color: #b45309;
+    padding: 0.35rem 0.75rem;
+    border-radius: var(--radius-full);
+    font-size: 0.8rem;
+    font-weight: 700;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.flightDetails {
+    padding: 1.5rem;
+}
+
+.route {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--primary);
+    background: rgba(var(--primary-rgb), 0.1);
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius-lg);
+}
+
+.flightName {
+    font-size: 1.25rem;
+    font-weight: 800;
+    margin-bottom: 0.5rem;
+    color: var(--text-main);
+    line-height: 1.3;
+}
+
+.flightMeta {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    margin-bottom: 1.5rem;
+}
+
+.cardFooter {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 1rem;
+    border-top: 1px dashed #e2e8f0;
+}
+
+.price {
+    color: var(--text-main);
+    font-weight: 800;
+    font-size: 1.5rem;
+}
+
+.seatsLeft {
+    background: #ecfdf5;
+    color: #059669;
+    padding: 0.35rem 0.75rem;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    border: 1px solid rgba(5, 150, 105, 0.2);
+}
+
+/* View All Btn */
+.viewAllBtn {
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 6px rgba(var(--primary-rgb), 0.2);
+}
+
+.viewAllBtn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 15px rgba(var(--primary-rgb), 0.3);
+    filter: brightness(1.05);
+}
+
+/* Providers Section */
+.providersGrid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 2rem;
+}
+
+.providerCard {
+    background: white;
+    padding: 2rem;
+    border-radius: var(--radius-xl);
+    text-align: center;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    transition: all 0.4s ease;
+    box-shadow: var(--shadow-sm);
+}
+
+.providerCard:hover {
+    border-color: transparent;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    transform: translateY(-5px);
+}
+
+.providerName {
+    font-weight: 700;
+    margin-bottom: 0.75rem;
+    color: var(--text-main);
+    font-size: 1.1rem;
+}
+
+.providerRating {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    background: #fffbeb;
+    color: #b45309;
+    padding: 0.35rem 0.75rem;
+    border-radius: var(--radius-full);
+    font-size: 0.85rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+}
+
+.providerMeta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+/* Features Grid */
+.featuresGrid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+}
+
+.featureCard {
+    display: flex;
+    align-items: flex-start;
+    gap: 1.25rem;
+    padding: 2rem;
+    border-radius: var(--radius-xl);
+    background: white;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+.featureCard:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg);
+    border-color: transparent;
+}
+
+.featureCard.highlight {
+    background: linear-gradient(135deg, #f3e8ff 0%, #fae8ff 100%);
+    border: none;
+}
+
+.featureIcon {
+    width: 56px;
+    height: 56px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f1f5f9;
+    color: var(--primary);
+    flex-shrink: 0;
+    transition: all 0.3s;
+}
+
+.featureCard:hover .featureIcon {
+    background: var(--primary);
+    color: white;
+    transform: rotate(10deg);
+}
+
+.featureCard.highlight .featureIcon {
+    background: white;
+    color: #9333ea;
+}
+
+.featureCard.highlight:hover .featureIcon {
+    background: #9333ea;
+    color: white;
+}
+
+.featureContent h4 {
+    font-weight: 800;
+    margin-bottom: 0.5rem;
+    font-size: 1.1rem;
+    color: var(--text-main);
+}
+
+.featureContent p {
+    font-size: 0.95rem;
+    color: var(--text-muted);
+    line-height: 1.6;
+}
+
+/* Bottom CTA */
+.bottomCta {
+    position: relative;
+    padding-top: 6rem;
+    padding-bottom: 6rem;
+    overflow: hidden;
+    margin-top: 6rem;
+    background: #f8fafc;
+}
+
+.redArc {
+    position: absolute;
+    bottom: -60%;
+    right: -10%;
+    width: 80%;
+    height: 180%;
+    background: radial-gradient(circle at center, var(--primary) 0%, transparent 70%);
+    opacity: 0.1;
+    border-radius: 50%;
+    z-index: 0;
+    pointer-events: none;
+    filter: blur(60px);
+}
+
+.planeImage {
+    position: absolute;
+    bottom: 0;
+    right: 5%;
+    width: 600px;
+    z-index: 1;
+    transition: transform 0.8s ease-out;
+    filter: drop-shadow(0 20px 30px rgba(0, 0, 0, 0.15));
+}
+
+.bottomCta:hover .planeImage {
+    transform: translateY(-20px) scale(1.02);
+}
+
+.ctaContent {
+    position: relative;
+    z-index: 2;
+    max-width: 600px;
+}
+
+.ctaTitle {
+    font-size: clamp(2rem, 4vw, 3.5rem);
+    font-weight: 800;
+    line-height: 1.1;
+    margin-bottom: 1.5rem;
+    color: var(--text-main);
+}
+
+.ctaText {
+    color: var(--text-muted);
+    line-height: 1.8;
+    margin-bottom: 3rem;
+    font-size: 1.1rem;
+}
+
+.stats {
+    display: flex;
+    gap: 4rem;
+}
+
+.statItem h3 {
+    font-size: 3rem;
+    font-weight: 800;
+    color: var(--primary);
+    margin-bottom: 0.25rem;
+    line-height: 1;
+}
+
+.statItem p {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+
+    .locationGrid,
+    .providersGrid,
+    .featuresGrid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .stats {
+        gap: 2rem;
+    }
+
+    .planeImage {
+        width: 450px;
+        bottom: 50px;
+    }
+}
+
+@media (max-width: 768px) {
+    .heroBackground {
+        height: 500px;
+    }
+
+    .heroTitle {
+        font-size: 2.5rem;
+    }
+
+    .widgetWrapper {
+        margin-top: -3rem;
+    }
+
+    .locationGrid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+        grid-auto-rows: 220px;
+    }
+
+    .colSpan2 {
+        grid-column: span 1;
+    }
+
+    .providersGrid,
+    .featuresGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .partnersLogos {
+        flex-direction: column;
+        gap: 2rem;
+    }
+
+    .bottomCta {
+        text-align: center;
+        padding-bottom: 2rem;
+    }
+
+    .ctaContent {
+        margin: 0 auto;
+        padding-bottom: 3rem;
+    }
+
+    .stats {
+        justify-content: center;
+    }
+
+    .planeImage {
+        position: relative;
+        width: 90%;
+        max-width: 400px;
+        right: auto;
+        bottom: auto;
+        margin: 0 auto;
+        display: block;
+    }
+}
