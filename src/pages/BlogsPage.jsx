@@ -1,12 +1,13 @@
 import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import styles from '../components/Blogs/Blogs.module.css'; // Reusing styles
+import { API_BASE_URL } from '../config';
 
 const BlogsPage = () => {
     const [blogsData, setBlogsData] = React.useState([]);
 
     useEffect(() => {
-        fetch('http://127.0.0.1:5000/blogs')
+        fetch(`${API_BASE_URL}/blogs`)
             .then(res => res.json())
             .then(data => setBlogsData(data))
             .catch(err => console.error("Failed to fetch blogs:", err));

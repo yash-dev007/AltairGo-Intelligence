@@ -1,4 +1,9 @@
 features_data = {
+    "about": {
+        "heading_prefix": "Why Travelers Plan Smarter Trips with",
+        "heading_highlight": "AltairGo",
+        "description": "We help travelers decide what’s worth visiting, when to go, and what to skip — using crowd insights, smart itineraries, and real travel data."
+    },
     "stats": [
         {
             "id": 1,

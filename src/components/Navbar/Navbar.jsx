@@ -6,6 +6,8 @@ import { Menu, X, Search } from 'lucide-react';
 
 import logo from '../../assets/logo.png'; // Import Logo
 
+import { API_BASE_URL } from '../../config';
+
 const Navbar = () => {
     const [isOpen, setIsOpen] = useState(false);
     const location = useLocation();
@@ -23,7 +25,7 @@ const Navbar = () => {
 
     // Fetch destinations for search
     React.useEffect(() => {
-        fetch('http://127.0.0.1:5000/destinations')
+        fetch(`${API_BASE_URL}/destinations`)
             .then(res => res.json())
             .then(data => setDestinations(data))
             .catch(err => console.error("Failed to fetch destinations for search:", err));

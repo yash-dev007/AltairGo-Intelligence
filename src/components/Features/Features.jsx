@@ -37,12 +37,16 @@ const Features = () => {
         <section className={styles.features} id="about">
             <div className={styles.container}>
                 <div className={styles.leftContent}>
-                    <h2 className={styles.heading}>
-                        Why Travelers Plan Smarter Trips with <span className={styles.brandGradient}>AltairGo</span>
-                    </h2>
-                    <p className={styles.description}>
-                        We help travelers decide what’s worth visiting, when to go, and what to skip — using crowd insights, smart itineraries, and real travel data.
-                    </p>
+                    {features.about && (
+                        <>
+                            <h2 className={styles.heading}>
+                                {features.about.heading_prefix} <span className={styles.brandGradient}>{features.about.heading_highlight}</span>
+                            </h2>
+                            <p className={styles.description}>
+                                {features.about.description}
+                            </p>
+                        </>
+                    )}
 
                     <div className={styles.socials}>
                         <Instagram size={20} className={styles.socialIcon} />

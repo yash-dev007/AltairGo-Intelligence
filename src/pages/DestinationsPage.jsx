@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Search, MapPin, Star } from 'lucide-react';
 import styles from '../components/Destinations/Destinations.module.css'; // Reusing styles where possible
+import { API_BASE_URL } from '../config';
 
 // We might need some page-specific styles, so we can inline them or create a new module. 
 // For consistency, I will reuse the card styles from generic molecules but create a page layout here.
@@ -13,7 +14,7 @@ const DestinationsPage = () => {
     const [destinationsData, setDestinationsData] = useState([]);
 
     useEffect(() => {
-        fetch('http://127.0.0.1:5000/destinations')
+        fetch(`${API_BASE_URL}/destinations`)
             .then(res => res.json())
             .then(data => setDestinationsData(data))
             .catch(err => console.error("Failed to fetch destinations:", err));
