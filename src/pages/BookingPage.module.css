@@ -1045,4 +1045,26 @@
     .bookNowTitle {
         font-size: 2rem;
     }
+
+    .heroSection {
+        padding-top: 120px;
+        /* Space for Nav */
+        justify-content: flex-start;
+        /* Stop centering, use padding to position */
+        height: auto;
+        min-height: 600px;
+        padding-bottom: 200px;
+        /* Space for widget overlapping */
+    }
+
+    .heroTitle {
+        font-size: 2.25rem;
+        line-height: 1.2;
+        margin-top: 2rem;
+    }
+
+    .heroSubtitle {
+        font-size: 1rem;
+        padding: 0 1rem;
+    }
 }
