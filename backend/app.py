@@ -3,7 +3,9 @@ from flask_cors import CORS
 from database import db_session, init_db
 from models import Country, State, Destination
 from packages import packages_data
+from packages import packages_data
 from blogs import blogs_data
+from features import features_data
 import json
 import os
 
@@ -261,6 +263,10 @@ def get_blog_detail(blog_id):
     if blog:
         return jsonify(blog)
     return jsonify({"error": "Blog not found"}), 404
+
+@app.route('/features', methods=['GET'])
+def get_features():
+    return jsonify(features_data)
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)

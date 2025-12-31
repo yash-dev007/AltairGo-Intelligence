@@ -218,6 +218,18 @@
     font-size: var(--text-sm);
     opacity: 0.9;
     margin-bottom: 8px;
+    width: 100%;
+    /* Ensure row takes full width */
+}
+
+.description {
+    flex: 1;
+    /* Allow description to take available space */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+    /* Critical for flex child truncation */
 }
 
 .dot {

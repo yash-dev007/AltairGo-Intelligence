@@ -7,7 +7,7 @@ import { API_BASE_URL } from '../config';
 const BlogDetails = () => {
     const { id } = useParams();
     const [blog, setBlog] = useState(null);
-    // const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         fetch(`${API_BASE_URL}/blogs/${id}`)
@@ -17,17 +17,25 @@ const BlogDetails = () => {
             })
             .then(data => {
                 setBlog(data);
-                // setLoading(false);
+                setLoading(false);
             })
             .catch(err => {
                 console.error("Failed to fetch blog:", err);
-                // setLoading(false);
+                setLoading(false);
             });
     }, [id]);
 
     useEffect(() => {
         window.scrollTo(0, 0);
     }, [id]);
+
+    if (loading) {
+        return (
+            <div className="global-spinner-container">
+                <div className="global-spinner"></div>
+            </div>
+        );
+    }
 
     if (!blog) {
         return (

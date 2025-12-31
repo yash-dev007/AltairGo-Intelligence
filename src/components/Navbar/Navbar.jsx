@@ -84,17 +84,18 @@ const Navbar = () => {
                     */}
 
                     {/* Efficient Hybrid Approach: */}
+                    {/* Efficient Hybrid Approach: */}
                     {isHome ? (
                         <>
                             <a href="#about" className={styles.link} onClick={(e) => { e.preventDefault(); handleNavClick('about'); }}>About Us</a>
-                            <a href="#destinations" className={styles.link} onClick={(e) => { e.preventDefault(); handleNavClick('destinations'); }}>Destinations</a>
                         </>
                     ) : (
                         <>
                             <Link to="/#about" className={styles.link} onClick={() => setIsOpen(false)}>About Us</Link>
-                            <Link to="/#destinations" className={styles.link} onClick={() => setIsOpen(false)}>Destinations</Link>
                         </>
                     )}
+
+                    <Link to="/destinations" className={styles.link} onClick={() => setIsOpen(false)}>Destinations</Link>
 
                     <Link to="/packages" className={styles.link} onClick={() => setIsOpen(false)}>Packages</Link>
                     <Link to="/blogs" className={styles.link} onClick={() => setIsOpen(false)}>Blogs</Link>

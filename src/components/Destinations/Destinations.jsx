@@ -57,7 +57,7 @@ const Destinations = () => {
                                     <div className={styles.content}>
                                         <h3 className={styles.name}>{dest.name}</h3>
                                         <div className={styles.metaRow}>
-                                            <span>{dest.desc}</span>
+                                            <span className={styles.description}>{dest.desc}</span>
                                             <span className={styles.dot}>•</span>
                                             <div className={styles.rating}>
                                                 <Star size={12} fill="orange" stroke="none" />

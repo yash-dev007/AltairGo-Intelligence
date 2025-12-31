@@ -5,7 +5,7 @@ import { API_BASE_URL } from '../config';
 const PackageDetails = () => {
     const { id } = useParams();
     const [pkg, setPkg] = useState(null);
-    // const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         fetch(`${API_BASE_URL}/packages/${id}`)
@@ -15,17 +15,25 @@ const PackageDetails = () => {
             })
             .then(data => {
                 setPkg(data);
-                // setLoading(false);
+                setLoading(false);
             })
             .catch(err => {
                 console.error("Failed to fetch package:", err);
-                // setLoading(false);
+                setLoading(false);
             });
     }, [id]);
 
     useEffect(() => {
         window.scrollTo(0, 0);
     }, [id]);
+
+    if (loading) {
+        return (
+            <div className="global-spinner-container">
+                <div className="global-spinner"></div>
+            </div>
+        );
+    }
 
     if (!pkg) {
         return (

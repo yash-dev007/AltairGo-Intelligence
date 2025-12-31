@@ -1,8 +1,38 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import styles from './Features.module.css';
-import { Map, Calendar, Headset, Instagram, Twitter, Facebook, Zap, MapPin, IndianRupee } from 'lucide-react';
+import { Map, Calendar, Headset, Instagram, Twitter, Facebook, Zap, MapPin, IndianRupee } from 'lucide-react'; // Imports remain
+
+import { API_BASE_URL } from '../../config';
 
 const Features = () => {
+    const [features, setFeatures] = useState({ stats: [], cards: [] });
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetch(`${API_BASE_URL}/features`)
+            .then(res => res.json())
+            .then(data => {
+                setFeatures(data);
+                setLoading(false);
+            })
+            .catch(err => {
+                console.error("Failed to fetch features:", err);
+                setLoading(false);
+            });
+    }, []);
+
+    // Icon helper map
+    const IconMap = {
+        "Zap": Zap,
+        "MapPin": MapPin,
+        "IndianRupee": IndianRupee,
+        "Map": Map,
+        "Calendar": Calendar,
+        "Headset": Headset
+    };
+
+    if (loading) return null; // Or a spinner/skeleton
+
     return (
         <section className={styles.features} id="about">
             <div className={styles.container}>
@@ -21,55 +51,35 @@ const Features = () => {
                     </div>
 
                     <div className={styles.statsRow}>
-                        <div className={styles.statItem}>
-                            <div className={styles.statIconCircle}><Zap size={24} /></div>
-                            <div className={styles.statText}>
-                                <strong>Crowd-Aware</strong>
-                                <span>Itineraries</span>
-                            </div>
-                        </div>
-                        <div className={styles.statItem}>
-                            <div className={styles.statIconCircle}><MapPin size={24} /></div>
-                            <div className={styles.statText}>
-                                <strong>Place-Level</strong>
-                                <span>Intelligence</span>
-                            </div>
-                        </div>
-                        <div className={styles.statItem}>
-                            <div className={styles.statIconCircle}><IndianRupee size={24} /></div>
-                            <div className={styles.statText}>
-                                <strong>Budget-Smart</strong>
-                                <span>Planning</span>
-                            </div>
-                        </div>
+                        {features.stats.map(stat => {
+                            const IconComponent = IconMap[stat.icon] || Zap;
+                            return (
+                                <div className={styles.statItem} key={stat.id}>
+                                    <div className={styles.statIconCircle}><IconComponent size={24} /></div>
+                                    <div className={styles.statText}>
+                                        <strong>{stat.highlight}</strong>
+                                        <span>{stat.label}</span>
+                                    </div>
+                                </div>
+                            );
+                        })}
                     </div>
                 </div>
 
                 <div className={styles.rightContent}>
-                    {/* Feature Cards */}
-                    <div className={styles.card}>
-                        <div className={styles.cardIconBox}><Map size={32} /></div>
-                        <div className={styles.cardContent}>
-                            <h3>Smart Itineraries</h3>
-                            <p>Day-wise plans optimized for time, distance, and real travel pace — not rushed schedules.</p>
-                        </div>
-                    </div>
-
-                    <div className={styles.card}>
-                        <div className={styles.cardIconBox}><Calendar size={32} /></div>
-                        <div className={styles.cardContent}>
-                            <h3>Crowd Intelligence</h3>
-                            <p>Know which places are overcrowded, underrated, or best visited at specific times.</p>
-                        </div>
-                    </div>
-
-                    <div className={styles.card}>
-                        <div className={styles.cardIconBox}><Headset size={32} /></div>
-                        <div className={styles.cardContent}>
-                            <h3>Hidden Gems</h3>
-                            <p>Discover lesser-known places locals love — not just Instagram hotspots.</p>
-                        </div>
-                    </div>
+                    {/* Dynamic Feature Cards */}
+                    {features.cards.map(card => {
+                        const CardIcon = IconMap[card.icon] || Map;
+                        return (
+                            <div className={styles.card} key={card.id}>
+                                <div className={styles.cardIconBox}><CardIcon size={32} /></div>
+                                <div className={styles.cardContent}>
+                                    <h3>{card.title}</h3>
+                                    <p>{card.description}</p>
+                                </div>
+                            </div>
+                        );
+                    })}
                 </div>
             </div>
         </section>
