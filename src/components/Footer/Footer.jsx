@@ -1,6 +1,6 @@
 import React from 'react';
 import styles from './Footer.module.css';
-import logo from '../../assets/logo.png'; // Import Logo
+import logo from '../../assets/logo_corrected.png'; // Import Corrected Logo
 import { Instagram, Twitter, Facebook, Youtube, Mail, MapPin } from 'lucide-react';
 
 const Footer = () => {

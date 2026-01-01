@@ -46,10 +46,12 @@
 }
 
 .brandLogo {
-    height: 90px;
+    height: 80px;
+    align-self: center;
     width: auto;
     object-fit: contain;
-    filter: brightness(0) invert(1);
+    filter: contrast(1.2) brightness(1.1) invert(1);
+    mix-blend-mode: screen;
     opacity: 0.9;
 }
 

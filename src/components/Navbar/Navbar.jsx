@@ -4,7 +4,7 @@ import { Link, useLocation } from 'react-router-dom';
 import styles from './Navbar.module.css';
 import { Menu, X, Search } from 'lucide-react';
 
-import logo from '../../assets/logo.png'; // Import Logo
+import logo from '../../assets/logo_corrected.png'; // Import Corrected Logo
 
 import { API_BASE_URL } from '../../config';
 

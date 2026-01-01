@@ -45,7 +45,9 @@
 }
 
 .logoImg {
-    height: 50px;
+    height: 40px;
+    filter: contrast(1.2) brightness(1.1);
+    mix-blend-mode: multiply;
     width: auto;
     object-fit: contain;
     margin-left: 5px;

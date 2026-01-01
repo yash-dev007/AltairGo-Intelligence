@@ -40,7 +40,7 @@
 }
 
 .brandGradient {
-    background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+    background:#2f9253;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
