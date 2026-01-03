@@ -171,6 +171,27 @@ def populate_region_endpoint(region_id):
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+# New Smart Generation Route
+from services.generation_service import generate_smart_destinations
+
+@app.route('/generate-destinations', methods=['POST'])
+def generate_destinations_endpoint():
+    data = request.json
+    city_query = data.get('query')
+    
+    if not city_query:
+        return jsonify({"error": "Missing 'query' parameter"}), 400
+        
+    try:
+        result = generate_smart_destinations(city_query)
+        if "error" in result:
+             return jsonify(result), 404
+             
+        return jsonify(result)
+    except Exception as e:
+        print(f"Generation Error: {e}")
+        return jsonify({"error": str(e)}), 500
+
 @app.route('/destinations', methods=['GET', 'POST'])
 def handle_destinations():
     if request.method == 'GET':
@@ -267,6 +288,44 @@ def get_blog_detail(blog_id):
 @app.route('/features', methods=['GET'])
 def get_features():
     return jsonify(features_data)
+
+@app.route('/chat', methods=['POST'])
+def chat_agent():
+    data = request.json
+    user_msg = data.get('message', '').lower()
+    
+    # Simple Rule-Based Travel Agent
+    response_text = "I'm not sure about that. Try asking for 'suggestions' or 'budget' advice!"
+
+    if "hello" in user_msg or "hi" in user_msg:
+        response_text = "Hello! I'm your AltairGO travel assistant. I can help you find destinations, plan budgets, or give travel tips."
+
+    elif "suggest" in user_msg or "place" in user_msg or "destination" in user_msg:
+        # Fetch 3 random top rated places
+        dests = db_session.query(Destination).order_by(Destination.rating.desc()).limit(3).all()
+        names = ", ".join([d.name for d in dests])
+        response_text = f"I recommend checking out these top-rated places: {names}. They are fantastic this time of year!"
+
+    elif "budget" in user_msg or "cost" in user_msg:
+        response_text = "For a comfortable trip, I suggest budgeting around ₹3,000 - ₹5,000 per person per day, including stay and travel. Local street food can save you a lot!"
+
+    elif "thank" in user_msg:
+        response_text = "You're welcome! Let me know if you need help planning your itinerary."
+
+    elif "weather" in user_msg:
+        response_text = "I don't have real-time weather data yet, but generally, October to March is the best time to explore most of India."
+    
+    elif "track" in user_msg or "task" in user_msg:
+        response_text = "To track your tasks, we recommend using the 'Checklist' feature in the Trip Planner. It helps you stay organized!"
+
+    elif "itinerary" in user_msg:
+        response_text = "You can generate a smart itinerary by selecting your destinations in the Trip Planner and clicking 'Generate AI Plan'."
+        
+    else:
+        # Fallback to generic advice
+        response_text = "That's interesting! I can mostly help with suggesting destinations or planning your trip structure. Try asking 'Where should I go?'"
+
+    return jsonify({"response": response_text})
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)

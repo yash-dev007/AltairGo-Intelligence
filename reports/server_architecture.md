@@ -1,45 +1,108 @@
-# Server Side Plan (Backend)
+# Server Side Architecture (Technical Specification)
 
-This document outlines the backend architecture of the **AltairLabs Travel Intelligence Platform**.
+> [!NOTE]
+> This document is the **Backend Specification** for the **AltairLabs Travel Intelligence Platform**. It includes the exact JSON schemas, algorithm weights, and service internals.
 
-## Tech Stack
-- **Language**: Python 3
-- **Framework**: Flask (Microframework)
-- **Storage**: JSON File Storage (NoSQL-like flat file)
+## 1. Core Runtime
 
-## API Layer (`app.py`)
-The backend provides RESTful endpoints to serve data to the frontend.
-- **Get All Destinations**: `GET /destinations`
-- **Get Destination Details**: `GET /destinations/<id>`
-    - *Logic*: Fetches static destination info + merges dynamic reviews from storage.
-- **Get Static Data**: `GET /countries`, `GET /packages`, `GET /blogs`
-- **Submit Review**: `POST /destinations/<id>/reviews`
-    - *Logic*: Receives JSON payload, saves to `reviews.json`.
-- **AI Planning**: `POST /smart-insight`
-    - *Logic*: Analyzes user's itinerary to generate warnings (Crowd) or tips (Budget).
+*   **Language**: Python 3.12
+*   **Web Server**: Flask (WSGI)
+*   **Concurrency**: Threaded (`app.run(threaded=True)`)
+*   **CORS**: Allow All (`*`) for easy development.
 
-## Data Architecture
+## 2. API Specification (OpenAPI Style)
 
-### 1. Static Content (CMS Legacy)
-High-quality, curated content is stored in Python structures. This acts as our "Content Management System" for immutable data.
-- `destinations.py`: Detailed destination info, itineraries, images, local prices.
-- `packages.py`: Travel packages.
+### A. Destinations
+**Endpoint**: `GET /destinations`
+**Response Schema**: `List[Destination]`
 
-### 2. Persistence Layer (`reviews.json`)
-We use a JSON file as a lightweight database to simplify deployment and local development.
-- **Why JSON?**: Zero-setup persistence. Data survives server restarts.
-- **Structure**:
-    ```json
-    {
-        "El Nido": [
-            { "name": "User", "rating": 5, "text": "...", "date": "..." }
-        ],
-        "Kyoto": [ ... ]
-    }
+```json
+[
+  {
+    "id": 101,
+    "name": "Fushimi Inari Taisha",
+    "desc": "Famous for its thousands of vermilion torii gates...",
+    "price": "Free",
+    "rating": 4.8,
+    "tag": "Historic",
+    "location": "Kyoto",
+    "image": "https://images.unsplash.com/photo-147839...",
+    "reviews_count_str": "12k"
+  }
+]
+```
+
+### B. Region Population (The Crawler)
+**Endpoint**: `POST /regions/:id/populate`
+**Trigger**: Called when a user selects a region with 0 destinations.
+
+**Algorithm (`services/osm_service.py`):**
+1.  **Input**: Region Name (e.g., "Kyoto").
+2.  **OSM Query**:
+    ```text
+    (
+      node["tourism"~"attraction"](area.kyoto);
+      way["tourism"~"attraction"](area.kyoto);
+    );
+    out center;
     ```
-- **Concurrency**: Basic file I/O operations (`load_reviews()`, `save_reviews()`) handle read/write data integrity for this scale.
+3.  **Filtering Rules**:
+    *   **Exclude**: `hospital`, `school`, `bank`, `pharmacy`.
+    *   **Name Check**: Must be mostly ASCII (Latin characters) to ensure readability.
+4.  **Mock Generation**:
+    *   `price` = `random.choice([0, 500, 1500])`.
+    *   `rating` = `random.uniform(4.0, 4.9)` (Optimistic Bias).
+5.  **Limit**: Max **3 Items** per request (Sandbox safety).
 
-## "Intelligence" Logic
-The backend distinguishes itself with "Smart" features:
-- **Crowd Intelligence**: Checks valid crowd levels for specific dates/regions.
-- **Budget Calculator**: `calculate_budget` endpoint sums up `estimatedCostPerDay` for all selected locations in the itinerary.
+### C. Smart City Search (The AI)
+**Endpoint**: `POST /generate-destinations`
+**Payload**: `{ "query": "Paris" }`
+
+**Scoring Algorithm (`services/generation_service.py`):**
+The system scores every POI found to determine the "Top 10".
+
+| Criterion | Tag | Weight |
+| :--- | :--- | :--- |
+| **Category** | `tourism=museum` | **+10** |
+| | `historic=*` | **+8** |
+| | `tourism=viewpoint` | **+7** |
+| | `leisure=park` | **+6** |
+| **Metadata** | `wikipedia=*` | **+5** |
+| | `website=*` | **+2** |
+| **Data Quality**| Name length > 3 | **+2** |
+
+## 3. Database Schema (SQLAlchemy)
+
+The system uses a **Polymorphic Data Model** where `Destination` is the central node.
+
+```python
+class Destination(Base):
+    __tablename__ = 'destinations'
+    
+    id = Column(Integer, primary_key=True)
+    name = Column(String(100))
+    
+    # Metadata
+    crowd_level = Column(String(50)) # "High", "Low"
+    vibe_tags = Column(JSON) # e.g. ["Nature", "Peaceful"]
+    
+    # Relationships
+    state_id = Column(Integer, ForeignKey('states.id'))
+```
+
+## 4. Hybrid persistence Strategy
+
+> [!WARNING]
+> We deliberately split **Read-Heavy** and **Write-Heavy** data.
+
+*   **Static Entities (Destinations)**: Stored in **SQLite** (`travel.db`). Efficient, relational, indexable.
+*   **Dynamic Entities (Reviews)**: Stored in **JSON** (`reviews.json`).
+    *   **Reason**: No need for complex relations. Reviews are simple lists appended to a key.
+    *   **Structure**:
+        ```json
+        {
+          "Destination Name": [
+            { "user": "Dave", "rating": 5, "text": "Great!", "date": "2024-01-01" }
+          ]
+        }
+        ```

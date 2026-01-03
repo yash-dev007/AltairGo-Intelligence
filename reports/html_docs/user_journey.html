@@ -1,0 +1,147 @@
+
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>User Journey</title>
+        
+<style>
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        line-height: 1.6;
+        color: #333;
+        max-width: 210mm;
+        margin: 40px auto;
+        padding: 40px;
+        background: #fff;
+        box-shadow: 0 0 15px rgba(0,0,0,0.1);
+    }
+    h1 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
+    h2 { color: #2980b9; margin-top: 30px; }
+    h3 { color: #16a085; }
+    
+    /* Tables */
+    table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+    th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+    th { background-color: #f2f2f2; color: #333; }
+    tr:nth-child(even) { background-color: #f9f9f9; }
+    
+    /* Code Blocks */
+    pre { background: #f4f4f4; padding: 15px; border-radius: 5px; overflow-x: auto; border: 1px solid #ddd; }
+    code { font-family: 'Consolas', 'Monaco', monospace; color: #d63384; }
+    pre code { color: #333; }
+    
+    /* Alerts */
+    .alert { padding: 15px; border-radius: 4px; margin: 20px 0; border-left: 5px solid; }
+    .alert-note { background-color: #e3f2fd; border-color: #2196f3; }
+    .alert-tip { background-color: #e8f5e9; border-color: #4caf50; }
+    .alert-warning { background-color: #fff3e0; border-color: #ff9800; }
+    .alert-important { background-color: #f3e5f5; border-color: #9c27b0; }
+    
+    /* Mermaid */
+    .mermaid { text-align: center; margin: 30px 0; }
+    
+    /* Print */
+    @media print {
+        body { box-shadow: none; margin: 0; padding: 0; width: 100%; max-width: 100%; }
+        .no-print { display: none; }
+    }
+</style>
+<script type="module">
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+    mermaid.initialize({ startOnLoad: true });
+</script>
+
+    </head>
+    <body>
+        <h1>User Journey Map (Interaction Specifications)</h1>
+<br>
+<div class="alert alert-note">
+This document details the exact **Finite State Machine (FSM)** of the user interaction, including Happy Paths, Empty Paths, and Error States.<br>
+</div>
+<br>
+<h2>1. The Interaction Graph</h2>
+<br>
+<p>The entire application flow can be modeled as a directed graph.</p>
+<br>
+<div class="mermaid">
+stateDiagram-v2
+    [*] --> Homepage
+    
+    Homepage --> TripPlanner : Click "Plan Trip"
+    Homepage --> DestinationGrid : Click "Explore"
+    Homepage --> SearchResults : Type Query
+    
+    state TripPlanner {
+        [*] --> Step1_Country
+        Step1_Country --> Step2_Region : Select Valid Country
+        Step2_Region --> Step3_Destinations : Select Region
+        
+        state Step3_Destinations {
+            [*] --> CheckCache
+            CheckCache --> ShowCards : Cache Hit
+            CheckCache --> LazyLoad : Cache Miss
+            LazyLoad --> ShowCards : API Success
+            LazyLoad --> ErrorState : API Fail
+        }
+        
+        Step3_Destinations --> Step4_Itinerary : Generate Plan
+    }
+</div>
+<br>
+<h2>2. Detailed "Happy Path" (The 90% Case)</h2>
+<br>
+<p><strong>User</strong>: New Visitor.</p>
+<p><strong>Goal</strong>: Plan a trip to <strong>Kyoto</strong>.</p>
+<br>
+<table>
+<tr><td>Step</td><td>Interaction</td><td>System Internal State</td><td>UI Response</td></tr>
+<tr><th>**1**</th><th>Click "Plan Trip"</th><th>`step: 1`</th><th>Scroll to Top. Show Country Grid.</th></tr>
+<tr><td>**2**</td><td>Select "Japan"</td><td>`selectedCountry: "jp"`</td><td>Button "Next Step" Enabled.</td></tr>
+<tr><td>**3**</td><td>Click "Next"</td><td>`step: 2`</td><td>Fetch `regions` filtered by `country="jp"`.</td></tr>
+<tr><td>**4**</td><td>Select "Kyoto"</td><td>`selectedStates: ["Kyoto"]`</td><td>Card Border turns Blue. Checkmark appears.</td></tr>
+<tr><td>**5**</td><td>Click "Next"</td><td>`step: 3`</td><td>**CRITICAL**: Checks `destinations` DB for `location="Kyoto"`.</td></tr>
+<tr><td>**6**</td><td>**(Cache Hit)**</td><td>`loading: false`</td><td>Show 12 cards immediately.</td></tr>
+<tr><td>**7**</td><td>Select 3 Spots</td><td>`selectedDestinations: [101, 102, 103]`</td><td>"Generate AI Plan" Enabled.</td></tr>
+<tr><td>**8**</td><td>Click "Generate"</td><td>`step: 4`, `loading: true`</td><td>Spinner "Consulting AI Agent...".</td></tr>
+<tr><td>**9**</td><td>**(Success)**</td><td>`itinerary: [...]`</td><td>Show Day-by-Day View + Budget Alert.</td></tr>
+</table>
+<br>
+<h2>3. The "Empty Path" (Lazy Loading Edge Case)</h2>
+<br>
+<p><strong>User</strong>: Explorer.</p>
+<p><strong>Goal</strong>: Plan a trip to <strong>"Aomori"</strong> (Empty Region).</p>
+<br>
+<table>
+<tr><td>Step</td><td>Interaction</td><td>System Internal State</td><td>UI Response</td></tr>
+<tr><th>**1-4**</th><th>Same as above</th><th>...</th><th>...</th></tr>
+<tr><td>**5**</td><td>Click "Next"</td><td>`step: 3`</td><td>**CRITICAL**: Checks DB. Count = 0.</td></tr>
+<tr><td>**6**</td><td>**(Cache Miss)**</td><td>`fetchingRegion: true`</td><td>**UI TRANSITION**: Radar Animation overlay appears.</td></tr>
+<tr><td>**7**</td><td>**Background**</td><td>`POST /regions/aomori/populate`</td><td>Text: "Scanning Satellite Data for Aomori..."</td></tr>
+<tr><td>**8**</td><td>**(API Success)**</td><td>`destinations.push(...newItems)`</td><td>Animation fades out. New cards slide in.</td></tr>
+<tr><td>**9**</td><td>**User sees**</td><td>New cards tagged "New"</td><td>User continues normally.</td></tr>
+</table>
+<br>
+<h2>4. Error States & Recovery</h2>
+<br>
+<h3>A. The "Offline" Scenario</h3>
+<li>  <strong>Trigger</strong>: User clicks "Generate Plan" but Backend is down.</li>
+<li>  <strong>System Action</strong>: <code>fetch()</code> throws <code>NetworkError</code>.</li>
+<li>  <strong>UI Response</strong>:</li>
+<div class="alert alert-warning">
+**Toast**: "Connection to AI Backend failed. Please ensure the Python server is running."<br>
+</div>
+<li>  <strong>Recovery</strong>: User must restart server/check connection and click "Retry".</li>
+<br>
+<h3>B. The "No Search Results" Scenario</h3>
+<li>  <strong>Trigger</strong>: User types "Mars" in Search Bar.</li>
+<li>  <strong>System Action</strong>: Nominatim returns <code>[]</code>.</li>
+<li>  <strong>UI Response</strong>:</li>
+<li>  Show "Empty State" Illustration.</li>
+<li>  Text: "We couldn't find any regions matching 'Mars'."</li>
+<li>  Button: "Clear Search".</li>
+<br>
+    </body>
+    </html>
+    

@@ -1,0 +1,172 @@
+
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Server Architecture</title>
+        
+<style>
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        line-height: 1.6;
+        color: #333;
+        max-width: 210mm;
+        margin: 40px auto;
+        padding: 40px;
+        background: #fff;
+        box-shadow: 0 0 15px rgba(0,0,0,0.1);
+    }
+    h1 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
+    h2 { color: #2980b9; margin-top: 30px; }
+    h3 { color: #16a085; }
+    
+    /* Tables */
+    table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+    th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+    th { background-color: #f2f2f2; color: #333; }
+    tr:nth-child(even) { background-color: #f9f9f9; }
+    
+    /* Code Blocks */
+    pre { background: #f4f4f4; padding: 15px; border-radius: 5px; overflow-x: auto; border: 1px solid #ddd; }
+    code { font-family: 'Consolas', 'Monaco', monospace; color: #d63384; }
+    pre code { color: #333; }
+    
+    /* Alerts */
+    .alert { padding: 15px; border-radius: 4px; margin: 20px 0; border-left: 5px solid; }
+    .alert-note { background-color: #e3f2fd; border-color: #2196f3; }
+    .alert-tip { background-color: #e8f5e9; border-color: #4caf50; }
+    .alert-warning { background-color: #fff3e0; border-color: #ff9800; }
+    .alert-important { background-color: #f3e5f5; border-color: #9c27b0; }
+    
+    /* Mermaid */
+    .mermaid { text-align: center; margin: 30px 0; }
+    
+    /* Print */
+    @media print {
+        body { box-shadow: none; margin: 0; padding: 0; width: 100%; max-width: 100%; }
+        .no-print { display: none; }
+    }
+</style>
+<script type="module">
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+    mermaid.initialize({ startOnLoad: true });
+</script>
+
+    </head>
+    <body>
+        <h1>Server Side Architecture (Technical Specification)</h1>
+<br>
+<div class="alert alert-note">
+This document is the **Backend Specification** for the **AltairLabs Travel Intelligence Platform**. It includes the exact JSON schemas, algorithm weights, and service internals.<br>
+</div>
+<br>
+<h2>1. Core Runtime</h2>
+<br>
+<li>  <strong>Language</strong>: Python 3.12</li>
+<li>  <strong>Web Server</strong>: Flask (WSGI)</li>
+<li>  <strong>Concurrency</strong>: Threaded (<code>app.run(threaded=True)</code>)</li>
+<li>  <strong>CORS</strong>: Allow All (<code>*</code>) for easy development.</li>
+<br>
+<h2>2. API Specification (OpenAPI Style)</h2>
+<br>
+<h3>A. Destinations</h3>
+<p><strong>Endpoint</strong>: <code>GET /destinations</code></p>
+<p><strong>Response Schema</strong>: <code>List[Destination]</code></p>
+<br>
+<pre><code>
+[
+  {
+    "id": 101,
+    "name": "Fushimi Inari Taisha",
+    "desc": "Famous for its thousands of vermilion torii gates...",
+    "price": "Free",
+    "rating": 4.8,
+    "tag": "Historic",
+    "location": "Kyoto",
+    "image": "https://images.unsplash.com/photo-147839...",
+    "reviews_count_str": "12k"
+  }
+]
+</code></pre>
+<br>
+<h3>B. Region Population (The Crawler)</h3>
+<p><strong>Endpoint</strong>: <code>POST /regions/:id/populate</code></p>
+<p><strong>Trigger</strong>: Called when a user selects a region with 0 destinations.</p>
+<br>
+<p><strong>Algorithm (<code>services/osm_service.py</code>):</strong></p>
+<li> <strong>Input</strong>: Region Name (e.g., "Kyoto").</li>
+<p>2.  <strong>OSM Query</strong>:</p>
+<pre><code>
+    (
+      node["tourism"~"attraction"](area.kyoto);
+      way["tourism"~"attraction"](area.kyoto);
+    );
+    out center;
+</code></pre>
+<p>3.  <strong>Filtering Rules</strong>:</p>
+<li>  <strong>Exclude</strong>: <code>hospital</code>, <code>school</code>, <code>bank</code>, <code>pharmacy</code>.</li>
+<li>  <strong>Name Check</strong>: Must be mostly ASCII (Latin characters) to ensure readability.</li>
+<p>4.  <strong>Mock Generation</strong>:</p>
+<li>  <code>price</code> = <code>random.choice([0, 500, 1500])</code>.</li>
+<li>  <code>rating</code> = <code>random.uniform(4.0, 4.9)</code> (Optimistic Bias).</li>
+<p>5.  <strong>Limit</strong>: Max <strong>3 Items</strong> per request (Sandbox safety).</p>
+<br>
+<h3>C. Smart City Search (The AI)</h3>
+<p><strong>Endpoint</strong>: <code>POST /generate-destinations</code></p>
+<p><strong>Payload</strong>: <code>{ "query": "Paris" }</code></p>
+<br>
+<p><strong>Scoring Algorithm (<code>services/generation_service.py</code>):</strong></p>
+<p>The system scores every POI found to determine the "Top 10".</p>
+<br>
+<table>
+<tr><td>Criterion</td><td>Tag</td><td>Weight</td></tr>
+<tr><th>**Category**</th><th>`tourism=museum`</th><th>**+10**</th></tr>
+<tr><td></td><td>`historic=*`</td><td>**+8**</td></tr>
+<tr><td></td><td>`tourism=viewpoint`</td><td>**+7**</td></tr>
+<tr><td></td><td>`leisure=park`</td><td>**+6**</td></tr>
+<tr><td>**Metadata**</td><td>`wikipedia=*`</td><td>**+5**</td></tr>
+<tr><td></td><td>`website=*`</td><td>**+2**</td></tr>
+<tr><td>**Data Quality**</td><td>Name length > 3</td><td>**+2**</td></tr>
+</table>
+<br>
+<h2>3. Database Schema (SQLAlchemy)</h2>
+<br>
+<p>The system uses a <strong>Polymorphic Data Model</strong> where <code>Destination</code> is the central node.</p>
+<br>
+<pre><code>
+class Destination(Base):
+    __tablename__ = 'destinations'
+    
+    id = Column(Integer, primary_key=True)
+    name = Column(String(100))
+    
+    # Metadata
+    crowd_level = Column(String(50)) # "High", "Low"
+    vibe_tags = Column(JSON) # e.g. ["Nature", "Peaceful"]
+    
+    # Relationships
+    state_id = Column(Integer, ForeignKey('states.id'))
+</code></pre>
+<br>
+<h2>4. Hybrid persistence Strategy</h2>
+<br>
+<div class="alert alert-warning">
+We deliberately split **Read-Heavy** and **Write-Heavy** data.<br>
+</div>
+<br>
+<li>  <strong>Static Entities (Destinations)</strong>: Stored in <strong>SQLite</strong> (<code>travel.db</code>). Efficient, relational, indexable.</li>
+<li>  <strong>Dynamic Entities (Reviews)</strong>: Stored in <strong>JSON</strong> (<code>reviews.json</code>).</li>
+<li>  <strong>Reason</strong>: No need for complex relations. Reviews are simple lists appended to a key.</li>
+<li>  <strong>Structure</strong>:</li>
+<pre><code>
+        {
+          "Destination Name": [
+            { "user": "Dave", "rating": 5, "text": "Great!", "date": "2024-01-01" }
+          ]
+        }
+</code></pre>
+<br>
+    </body>
+    </html>
+    

@@ -6,6 +6,7 @@ import { API_BASE_URL } from '../config';
 import AddDestinationModal from '../components/AddDestinationModal';
 import DateSelectionModal from '../components/TripPlanner/DateSelectionModal';
 import DestinationCard from '../components/TripPlanner/DestinationCard';
+import ChatWidget from '../components/ChatWidget';
 import styles from './TripPlanner.module.css';
 
 const TripPlannerPage = () => {
@@ -795,6 +796,7 @@ const TripPlannerPage = () => {
                 <p className={styles.subtitle}>An optimized travel plan curated just for you.</p>
 
                 <div className={styles.itineraryContainer} style={{ maxWidth: '1000px', padding: '0 1rem' }}>
+                    <ChatWidget />
                     {/* Budget & Smart Summary */}
                     <div className={styles.summaryCard}>
                         <div className={styles.summaryItem}>
