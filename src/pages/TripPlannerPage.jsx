@@ -6,6 +6,7 @@ import { API_BASE_URL } from '../config';
 import AddDestinationModal from '../components/AddDestinationModal';
 import DateSelectionModal from '../components/TripPlanner/DateSelectionModal';
 import DestinationCard from '../components/TripPlanner/DestinationCard';
+import ItineraryTimeline from '../components/TripPlanner/ItineraryTimeline';
 import ChatWidget from '../components/ChatWidget';
 import styles from './TripPlanner.module.css';
 
@@ -229,9 +230,20 @@ const TripPlannerPage = () => {
 
     const generateItinerary = async () => {
         setLoading(true);
-        // Use the AI Service to generate the plan (Async)
+
+        // Prepare Preferences Context
+        const countryObj = countries.find(c => c.id === selectedCountry);
+        const userPreferences = {
+            country: countryObj ? countryObj.name : 'Unknown',
+            duration: travelDates.duration || 5, // Default 5 days
+            month: travelDates.month ? travelDates.month.toLocaleString('default', { month: 'long' }) : 'Any'
+        };
+
+        // If no destinations selected, we rely on the backend "Surprise Me" mode (empty list)
+        // But if user manually selected, we send those.
+
         try {
-            const plan = await TripAI.generateItinerary(selectedDestinations);
+            const plan = await TripAI.generateItinerary(selectedDestinations, userPreferences);
             setItinerary(plan);
             setLoading(false);
             setStep(4);
@@ -432,6 +444,24 @@ const TripPlannerPage = () => {
                     </div>
                 </div>
 
+                {/* AI / Random Selection for User */}
+                <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1rem' }}>
+                    <button
+                        className={styles.secondaryBtn}
+                        onClick={() => {
+                            // Select 2 random states
+                            if (availableStates.length === 0) return;
+                            const shuffled = [...availableStates].sort(() => 0.5 - Math.random());
+                            const selected = shuffled.slice(0, 2).map(s => s.id);
+                            setSelectedStates(selected);
+                        }}
+                        style={{ fontSize: '0.9rem', padding: '0.5rem 1rem' }}
+                    >
+                        <Sparkles size={16} style={{ display: 'inline', marginRight: '5px' }} />
+                        Surprise Me (Pick 2)
+                    </button>
+                </div>
+
                 {/* Numbered Selection Section for Regions */}
                 {selectedStates.length > 0 && (
                     <div className={styles.selectionSection}>
@@ -523,7 +553,7 @@ const TripPlannerPage = () => {
             d.desc.toLowerCase().includes(destSearch.trim().toLowerCase())
         );
 
-        // Debug UI (Temporary)
+
         const trending = filtered.filter(d => d.rating >= 4.8);
         const others = filtered.filter(d => d.rating < 4.8);
 
@@ -558,6 +588,45 @@ const TripPlannerPage = () => {
                         title="Add a new destination"
                     >
                         <Plus size={24} strokeWidth={2.5} />
+                    </button>
+                </div>
+
+                {/* AI / Random Selection for Destinations */}
+                <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1rem', gap: '0.5rem' }}>
+                    <button
+                        className={styles.secondaryBtn}
+                        onClick={async () => {
+                            // Smart AI Recommendation
+                            const btn = document.activeElement;
+                            const originalText = btn.innerText;
+                            btn.innerText = "AI is thinking...";
+                            btn.disabled = true;
+
+                            try {
+                                const recs = await TripAI.recommendDestinations(selectedCountry, selectedStates);
+                                if (recs && recs.recommendedIds && recs.recommendedIds.length > 0) {
+                                    setSelectedDestinations(recs.recommendedIds);
+                                } else {
+                                    // Fallback if AI fails to match IDs
+                                    // Fallback if AI fails to match IDs
+                                    // alert("AI suggested these, but we couldn't match all in our DB: " + (recs.aiNames || []).join(", "));
+                                    // Do fallback random sort
+                                    if (filtered.length > 0) {
+                                        const sorted = [...filtered].sort((a, b) => (b.rating || 0) - (a.rating || 0));
+                                        setSelectedDestinations(sorted.slice(0, 4).map(d => d.id));
+                                    }
+                                }
+                            } catch (e) {
+                                // console.error("AI select failed", e);
+                            } finally {
+                                btn.innerText = originalText;
+                                btn.disabled = false;
+                            }
+                        }}
+                        style={{ fontSize: '0.9rem', padding: '0.5rem 1rem' }}
+                    >
+                        <Sparkles size={16} style={{ display: 'inline', marginRight: '5px' }} />
+                        AI Recommend Best 4
                     </button>
                 </div>
 
@@ -796,8 +865,34 @@ const TripPlannerPage = () => {
                 <p className={styles.subtitle}>An optimized travel plan curated just for you.</p>
 
                 <div className={styles.itineraryContainer} style={{ maxWidth: '1000px', padding: '0 1rem' }}>
+                    {/* Replaced plain chat with Timeline UI */}
                     <ChatWidget />
-                    {/* Budget & Smart Summary */}
+                    {/* Logic to show timeline if we have structured data, else fallback or mix */}
+
+                    {itinerary.length > 0 ? (
+                        <>
+                            {/* Integrating the new Timeline Component */}
+                            {/* Make sure to import ItineraryTimeline at top of file */}
+                            <div style={{ marginBottom: '2rem' }}>
+                                <ItineraryTimeline itinerary={itinerary} />
+                            </div>
+
+                            <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', marginTop: '3rem' }}>
+                                <button className={styles.secondaryBtn} onClick={() => window.print()}>
+                                    Print Itinerary
+                                </button>
+                                <Link to="/booking" className={styles.nextBtn} style={{ textDecoration: 'none' }}>
+                                    Proceed to Booking <ChevronRight size={18} style={{ display: 'inline', marginLeft: '5px' }} />
+                                </Link>
+                            </div>
+                        </>
+                    ) : (
+                        <div className={styles.emptyState}>
+                            <div className={styles.emptyTitle}>Generating your plan...</div>
+                            <p>This usually takes a few seconds.</p>
+                        </div>
+                    )}
+
                     <div className={styles.summaryCard}>
                         <div className={styles.summaryItem}>
                             <span className={styles.summaryLabel}>Total Duration</span>

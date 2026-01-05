@@ -7,12 +7,12 @@ const API_BASE = API_BASE_URL;
 
 export const TripAI = {
     // Generates a day-by-day itinerary based on selected destinations
-    generateItinerary: async (selectedDestIds) => {
+    generateItinerary: async (selectedDestIds, preferences = {}) => {
         try {
             const response = await fetch(`${API_BASE}/generate-itinerary`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ selectedDestIds })
+                body: JSON.stringify({ selectedDestIds, preferences })
             });
             if (!response.ok) throw new Error('Failed to generate itinerary');
             return await response.json();
@@ -20,6 +20,22 @@ export const TripAI = {
             console.error("AI Service Error:", error);
             // Fallback empty plan or error handling
             return [];
+        }
+    },
+
+    // Recommend destinations based on Country/Region choices
+    recommendDestinations: async (countryId, regionIds) => {
+        try {
+            const response = await fetch(`${API_BASE}/recommend-destinations`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ countryId, regionIds })
+            });
+            if (!response.ok) throw new Error('Failed to recommend');
+            return await response.json();
+        } catch (error) {
+            console.error("AI Recommendation Error:", error);
+            return { recommendedIds: [], aiNames: [] };
         }
     },
 

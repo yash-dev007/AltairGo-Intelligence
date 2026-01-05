@@ -3,11 +3,14 @@ from flask_cors import CORS
 from database import db_session, init_db
 from models import Country, State, Destination
 from packages import packages_data
-from packages import packages_data
+
 from blogs import blogs_data
 from features import features_data
 import json
 import os
+from dotenv import load_dotenv
+
+load_dotenv() # Load environment variables from .env file
 
 REVIEWS_FILE = 'backend/reviews.json'
 
@@ -49,32 +52,158 @@ def shutdown_session(exception=None):
 def generate_itinerary():
     data = request.json
     selected_ids = data.get('selectedDestIds', [])
+    user_preferences = data.get('preferences', {}) # { 'country': 'Japan', 'month': 'April' }
     
-    # Fetch from DB
-    selected_dests = db_session.query(Destination).filter(Destination.id.in_(selected_ids)).all()
-    selected_dests = [d.to_dict() for d in selected_dests]
+    # Check for API Key
+    api_key = os.getenv('GEMINI_API_KEY')
+    
+    selected_dests = []
+    if selected_ids:
+        selected_dests = db_session.query(Destination).filter(Destination.id.in_(selected_ids)).all()
+    
+    dest_names = [d.name for d in selected_dests]
+    
+    # Heuristic Fallback (Only if NO key)
+    if not api_key:
+        print("⚠️ No GEMINI_API_KEY found.")
+        if not selected_dests:
+             return jsonify([]) # Cannot generate without data or AI
+             
+        current_day = 1
+        plan = []
+        for dest in [d.to_dict() for d in selected_dests]:
+            itinerary_list = dest.get('itinerary') or []
+            days_to_spend = min(3, len(itinerary_list))
+            for i in range(days_to_spend):
+                activity = itinerary_list[i] if i < len(itinerary_list) else "Explore local culture"
+                plan.append({
+                    "day": current_day,
+                    "location": dest['name'],
+                    "activities": activity,
+                    "image": dest['image'],
+                    "destId": dest['id']
+                })
+                current_day += 1
+        return jsonify(plan)
 
-    current_day = 1
-    plan = []
-
-    for dest in selected_dests:
-        # Heuristic: limit days to 3 or description length
-        # Note: dest['itinerary'] from to_dict() handling handles None
-        itinerary_list = dest.get('itinerary') or []
-        days_to_spend = min(3, len(itinerary_list))
+    # --- GEMINI AI GENERATION ---
+    import google.generativeai as genai
+    genai.configure(api_key=api_key)
+    model = genai.GenerativeModel('gemini-2.5-flash')
+    
+    # Dynamic Prompt Construction
+    if not dest_names:
+        # Case: User selected nothing (Surprise Me / Pure AI Plan)
+        country_ctx = user_preferences.get('country', 'the destination')
+        prompt = f"""
+        Plan a complete {user_preferences.get('duration', 5)}-day travel itinerary for {country_ctx}.
+        Select the best cities/places to visit automatically.
         
-        for i in range(days_to_spend):
-            activity = itinerary_list[i] if i < len(itinerary_list) else "Explore local culture"
-            plan.append({
-                "day": current_day,
-                "location": dest['name'],
-                "activities": activity,
-                "image": dest['image'],
-                "destId": dest['id']
-            })
-            current_day += 1
+        RETURN ONLY RAW JSON (List of Objects). Schema:
+        [
+            {{
+                "day": 1,
+                "location": "City/Place Name",
+                "activities": "Detailed morning/afternoon/evening plan...",
+                "image": null, 
+                "destId": null
+            }}
+        ]
+        """
+    else:
+        # Case: User selected specific places
+        prompt = f"""
+        Create a detailed day-by-day travel itinerary including these destinations: {', '.join(dest_names)}.
+        Optimize the order logically.
+        
+        RETURN ONLY RAW JSON. Schema:
+        [
+            {{
+                "day": 1,
+                "location": "Destination Name",
+                "activities": "Detailed activities...",
+                "image": "URL if available",
+                "destId": 123
+            }}
+        ]
+        
+        Context Data:
+        {json.dumps([{ 'id': d.id, 'name': d.name, 'image': d.image } for d in selected_dests])}
+        """
 
-    return jsonify(plan)
+    try:
+        response = model.generate_content(prompt)
+        text_response = response.text.replace('```json', '').replace('```', '').strip()
+        generated_plan = json.loads(text_response)
+        
+        # Post-Processing: Try to fill back images/IDs if AI inferred them
+        if not selected_dests and dest_names: 
+             pass # Already has data
+        elif not selected_dests:
+            # Try to match names to DB for images? (Optional optimization)
+            pass
+            
+        return jsonify(generated_plan)
+        
+    except Exception as e:
+        print(f"❌ Gemini Itinerary Error: {e}")
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/recommend-destinations', methods=['POST'])
+def recommend_destinations():
+    # AI-powered "Choose for Me"
+    data = request.json
+    country_id = data.get('countryId')
+    region_ids = data.get('regionIds', [])
+    
+    api_key = os.getenv('GEMINI_API_KEY')
+    if not api_key:
+        return jsonify({"error": "No API Key"}), 500
+        
+    import google.generativeai as genai
+    genai.configure(api_key=api_key)
+    model = genai.GenerativeModel('gemini-2.5-flash')
+    
+    # Context gathering
+    country = db_session.query(Country).filter_by(code=country_id).first()
+    country_name = country.name if country else "the selected country"
+    
+    regions = []
+    if region_ids:
+        # region_ids might be names or IDs, handle carefully
+        # For simplicity assume names if strings, or fetch names
+        regions = region_ids 
+        
+    prompt = f"""
+    Recommend 4 best specific travel destinations (cities or spots) in {country_name}.
+    {f"Focus on these regions: {', '.join(map(str, regions))}." if regions else ""}
+    
+    Return ONLY a JSON list of strings. Example: ["Kyoto", "Osaka", "Nara", "Hakone"]
+    """
+    
+    try:
+        res = model.generate_content(prompt)
+        text = res.text.replace('```json', '').replace('```', '').strip()
+        names = json.loads(text)
+        
+        # Match with DB to get IDs if possible, or return names for frontend to match
+        # We need IDs for the frontend selection toggle
+        matched_ids = []
+        all_dests = db_session.query(Destination).all()
+        
+        for name in names:
+            # Fuzzy or exact match
+            match = next((d for d in all_dests if name.lower() in d.name.lower()), None)
+            if match:
+                matched_ids.append(match.id)
+                
+        # If matches are low, maybe just return random top rated as fallback mixed in?
+        # For now, return what we found
+        return jsonify({"recommendedIds": matched_ids, "aiNames": names})
+        
+    except Exception as e:
+        print(f"Recommend Error: {e}")
+        return jsonify({"error": str(e)}), 500
 
 @app.route('/calculate-budget', methods=['POST'])
 def calculate_budget():
