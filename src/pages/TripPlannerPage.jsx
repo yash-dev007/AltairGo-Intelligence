@@ -7,11 +7,23 @@ import AddDestinationModal from '../components/AddDestinationModal';
 import DateSelectionModal from '../components/TripPlanner/DateSelectionModal';
 import DestinationCard from '../components/TripPlanner/DestinationCard';
 import ItineraryTimeline from '../components/TripPlanner/ItineraryTimeline';
-import ChatWidget from '../components/ChatWidget';
+import BudgetSelectionModal from '../components/TripPlanner/BudgetSelectionModal';
+import AIDestinationDetailsModal from '../components/TripPlanner/AIDestinationDetailsModal';
+import ChatWidget from '../components/ChatWidget/ChatWidget';
 import styles from './TripPlanner.module.css';
 
 const TripPlannerPage = () => {
     const [step, setStep] = useState(1);
+    const [budgetModalOpen, setBudgetModalOpen] = useState(false);
+    const [detailsModalOpen, setDetailsModalOpen] = useState(false);
+    const [selectedDetailDest, setSelectedDetailDest] = useState(null);
+
+    // Trip Context
+    const [tripContext, setTripContext] = useState({
+        budget: 50000,
+        days: 5,
+        style: 'Standard'
+    });
     const [countries, setCountries] = useState([]);
     const [destinations, setDestinations] = useState([]);
     const [regions, setRegions] = useState([]);
@@ -24,6 +36,7 @@ const TripPlannerPage = () => {
     const [budget, setBudget] = useState(0);
     const [insight, setInsight] = useState(null);
     const [visibleCount, setVisibleCount] = useState(24);
+    const [aiRegionReasons, setAiRegionReasons] = useState({}); // { regionId: 'Reason...' }
 
     // Search States
     const [countrySearch, setCountrySearch] = useState('');
@@ -235,8 +248,10 @@ const TripPlannerPage = () => {
         const countryObj = countries.find(c => c.id === selectedCountry);
         const userPreferences = {
             country: countryObj ? countryObj.name : 'Unknown',
-            duration: travelDates.duration || 5, // Default 5 days
-            month: travelDates.month ? travelDates.month.toLocaleString('default', { month: 'long' }) : 'Any'
+            duration: travelDates.duration || tripContext.days || 5,
+            month: travelDates.month ? travelDates.month.toLocaleString('default', { month: 'long' }) : 'Any',
+            budget: tripContext.budget,
+            style: tripContext.style
         };
 
         // If no destinations selected, we rely on the backend "Surprise Me" mode (empty list)
@@ -401,17 +416,46 @@ const TripPlannerPage = () => {
                 </div>
 
                 <div className={styles.actions} style={{ justifyContent: 'flex-end' }}>
-                    <button
-                        id="next-step-btn"
-                        className={styles.nextBtn}
-                        disabled={!selectedCountry || !countries.find(c => c.id === selectedCountry)?.available}
-                        onClick={() => {
-                            setStep(2);
-                            setCountrySearch(''); // Optional: clear search on next step
-                        }}
-                    >
-                        Next Step <ChevronRight size={18} style={{ display: 'inline', marginLeft: '5px' }} />
-                    </button>
+                    <div style={{ display: 'flex', gap: '1rem' }}>
+                        <button
+                            className={styles.secondaryBtn}
+                            onClick={() => setBudgetModalOpen(true)}
+                            style={{ border: '1px solid #cbd5e1' }}
+                        >
+                            <span style={{ marginRight: '5px' }}>💰</span> Set Budget
+                        </button>
+                        <button
+                            className={styles.secondaryBtn}
+                            onClick={() => setShowDateModal(true)}
+                            style={{ border: '1px solid #cbd5e1' }}
+                        >
+                            <Calendar size={18} style={{ display: 'inline', marginRight: '5px' }} />
+                            {(() => {
+                                if (travelDates.type === 'flexible' && travelDates.month) {
+                                    return `${travelDates.month.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })} (${travelDates.duration} days)`;
+                                }
+                                if (travelDates.type === 'anytime') {
+                                    return `Anytime (${travelDates.duration} days)`;
+                                }
+                                // Default/Fixed
+                                if (travelDates.start) {
+                                    return `${travelDates.start.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${travelDates.end ? travelDates.end.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '...'}`;
+                                }
+                                return 'Date of Travel';
+                            })()}
+                        </button>
+                        <button
+                            id="next-step-btn"
+                            className={styles.nextBtn}
+                            disabled={!selectedCountry || !countries.find(c => c.id === selectedCountry)?.available}
+                            onClick={() => {
+                                setStep(2);
+                                setCountrySearch('');
+                            }}
+                        >
+                            Next Step <ChevronRight size={18} style={{ display: 'inline', marginLeft: '5px' }} />
+                        </button>
+                    </div>
                 </div>
             </>
         );
@@ -421,6 +465,52 @@ const TripPlannerPage = () => {
         const filteredStates = availableStates.filter(s =>
             s.name.toLowerCase().includes(regionSearch.trim().toLowerCase())
         );
+
+        const handleAISelectRegions = async () => {
+            const btn = document.getElementById('ai-region-btn');
+            if (btn) {
+                btn.innerText = "Consulting Experts...";
+                btn.disabled = true;
+            }
+
+            try {
+                const aiSuggestions = await TripAI.recommendRegions(selectedCountry);
+                // aiSuggestions = [{ name, reason }]
+
+                const matchedIds = [];
+                const reasonMap = {};
+
+                aiSuggestions.forEach(sug => {
+                    // Match name to availableStates
+                    const match = availableStates.find(state => state.name.toLowerCase().includes(sug.name.toLowerCase()) || sug.name.toLowerCase().includes(state.name.toLowerCase()));
+                    if (match) {
+                        matchedIds.push(match.id);
+                        reasonMap[match.id] = sug.reason;
+                    }
+                });
+
+                if (matchedIds.length > 0) {
+                    setSelectedStates(matchedIds);
+                    setAiRegionReasons(reasonMap);
+                } else {
+                    // Fallback if AI names don't match our DB (rare but possible)
+                    if (availableStates.length > 0) {
+                        const shuffled = [...availableStates].sort(() => 0.5 - Math.random());
+                        const selected = shuffled.slice(0, 2).map(s => s.id);
+                        setSelectedStates(selected);
+                        alert("AI couldn't find exact matches in our database, so we picked some popular favorites!");
+                    }
+                }
+
+            } catch (e) {
+                console.error("AI Region Select Failed", e);
+            } finally {
+                if (btn) {
+                    btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg> Let AI Decide';
+                    btn.disabled = false;
+                }
+            }
+        };
 
         return (
             <>
@@ -447,18 +537,13 @@ const TripPlannerPage = () => {
                 {/* AI / Random Selection for User */}
                 <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1rem' }}>
                     <button
+                        id="ai-region-btn"
                         className={styles.secondaryBtn}
-                        onClick={() => {
-                            // Select 2 random states
-                            if (availableStates.length === 0) return;
-                            const shuffled = [...availableStates].sort(() => 0.5 - Math.random());
-                            const selected = shuffled.slice(0, 2).map(s => s.id);
-                            setSelectedStates(selected);
-                        }}
+                        onClick={handleAISelectRegions}
                         style={{ fontSize: '0.9rem', padding: '0.5rem 1rem' }}
                     >
                         <Sparkles size={16} style={{ display: 'inline', marginRight: '5px' }} />
-                        Surprise Me (Pick 2)
+                        Let AI Decide
                     </button>
                 </div>
 
@@ -467,15 +552,23 @@ const TripPlannerPage = () => {
                     <div className={styles.selectionSection}>
                         <div className={styles.selectionHeader}>
                             <span>Your Selections ({selectedStates.length})</span>
-                            <span style={{ fontSize: '0.8rem', cursor: 'pointer', color: 'var(--primary)' }} onClick={() => setSelectedStates([])}>Clear All</span>
+                            <span style={{ fontSize: '0.8rem', cursor: 'pointer', color: 'var(--primary)' }} onClick={() => { setSelectedStates([]); setAiRegionReasons({}); }}>Clear All</span>
                         </div>
                         <div className={styles.selectionList}>
                             {selectedStates.map((id, idx) => {
                                 const item = availableStates.find(s => s.id === id);
+                                const reason = aiRegionReasons[id];
                                 return item ? (
-                                    <div key={id} className={styles.selectionChip}>
-                                        <span className={styles.index}>{idx + 1}</span>
-                                        {item.name}
+                                    <div key={id} className={styles.selectionChip} style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '4px' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                            <span className={styles.index}>{idx + 1}</span>
+                                            {item.name}
+                                        </div>
+                                        {reason && (
+                                            <div style={{ fontSize: '0.75rem', color: '#64748b', fontStyle: 'italic', marginLeft: '28px' }}>
+                                                " {reason} "
+                                            </div>
+                                        )}
                                     </div>
                                 ) : null;
                             })}
@@ -498,6 +591,12 @@ const TripPlannerPage = () => {
                                 <div className={styles.cardContent}>
                                     <div className={styles.cardTitle}>{state.name}</div>
                                     <div className={styles.cardDesc}>{state.desc}</div>
+                                    {/* Inline reason display if we want it on card too */}
+                                    {aiRegionReasons[state.id] && (
+                                        <div style={{ marginTop: '0.5rem', fontSize: '0.8rem', color: 'var(--primary)', fontWeight: '500' }}>
+                                            Recommended: {aiRegionReasons[state.id]}
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         ))
@@ -603,7 +702,7 @@ const TripPlannerPage = () => {
                             btn.disabled = true;
 
                             try {
-                                const recs = await TripAI.recommendDestinations(selectedCountry, selectedStates);
+                                const recs = await TripAI.recommendDestinations(selectedCountry, selectedStates, tripContext);
                                 if (recs && recs.recommendedIds && recs.recommendedIds.length > 0) {
                                     setSelectedDestinations(recs.recommendedIds);
                                 } else {
@@ -688,6 +787,7 @@ const TripPlannerPage = () => {
                                         dest={dest}
                                         isSelected={selectedDestinations.includes(dest.id)}
                                         onToggle={handleDestinationToggle}
+                                        onViewDetails={(d) => { setSelectedDetailDest(d); setDetailsModalOpen(true); }}
                                     />
                                 ))}
                                 {hasMore && (
@@ -724,6 +824,7 @@ const TripPlannerPage = () => {
                                                     dest={dest}
                                                     isSelected={selectedDestinations.includes(dest.id)}
                                                     onToggle={handleDestinationToggle}
+                                                    onViewDetails={(d) => { setSelectedDetailDest(d); setDetailsModalOpen(true); }}
                                                 />
                                             ))}
                                         </div>
@@ -739,6 +840,7 @@ const TripPlannerPage = () => {
                                                     dest={dest}
                                                     isSelected={selectedDestinations.includes(dest.id)}
                                                     onToggle={handleDestinationToggle}
+                                                    onViewDetails={(d) => { setSelectedDetailDest(d); setDetailsModalOpen(true); }}
                                                 />
                                             ))}
                                             {others.length > visibleCount && (
@@ -788,6 +890,7 @@ const TripPlannerPage = () => {
                                                     dest={dest}
                                                     isSelected={selectedDestinations.includes(dest.id)}
                                                     onToggle={handleDestinationToggle}
+                                                    onViewDetails={(d) => { setSelectedDetailDest(d); setDetailsModalOpen(true); }}
                                                 />
                                             ))}
                                         </div>
@@ -803,25 +906,7 @@ const TripPlannerPage = () => {
                         <ChevronLeft size={18} /> Back
                     </button>
                     <div className={styles.actionButtonsGroup}>
-                        <button
-                            className={styles.secondaryBtn}
-                            onClick={() => setShowDateModal(true)}
-                        >
-                            <Calendar size={18} style={{ display: 'inline', marginRight: '5px' }} />
-                            {(() => {
-                                if (travelDates.type === 'flexible' && travelDates.month) {
-                                    return `${travelDates.month.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })} (${travelDates.duration} days)`;
-                                }
-                                if (travelDates.type === 'anytime') {
-                                    return `Anytime (${travelDates.duration} days)`;
-                                }
-                                // Default/Fixed
-                                if (travelDates.start) {
-                                    return `${travelDates.start.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${travelDates.end ? travelDates.end.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '...'}`;
-                                }
-                                return 'Date of Travel';
-                            })()}
-                        </button>
+
                         <button
                             id="next-step-btn"
                             className={styles.nextBtn}
@@ -838,6 +923,14 @@ const TripPlannerPage = () => {
                     isOpen={showDateModal}
                     onClose={() => setShowDateModal(false)}
                     onApply={handleDateApply}
+                />
+
+
+
+                <AIDestinationDetailsModal
+                    isOpen={detailsModalOpen}
+                    onClose={() => setDetailsModalOpen(false)}
+                    destination={selectedDetailDest}
                 />
 
                 <AddDestinationModal
@@ -902,6 +995,9 @@ const TripPlannerPage = () => {
                             <span className={styles.summaryLabel}>Est. Budget</span>
                             <span className={styles.summaryValue}>
                                 ₱{budget.toLocaleString()}
+                                <div style={{ fontSize: '0.7em', fontWeight: 'normal', color: '#64748b' }}>
+                                    ({tripContext.style} Style)
+                                </div>
                             </span>
                         </div>
                         {insight && (
@@ -912,6 +1008,56 @@ const TripPlannerPage = () => {
                                 </div>
                             </div>
                         )}
+                    </div>
+
+                    {/* Step 8: Booking Assistance */}
+                    <div style={{ marginTop: '3rem', borderTop: '1px solid #e2e8f0', paddingTop: '2rem' }}>
+                        <h3 className={styles.title} style={{ fontSize: '1.5rem', marginBottom: '1rem' }}>Booking Assistance</h3>
+                        <p className={styles.subtitle} style={{ marginBottom: '2rem' }}>We found some options that match your <strong>{tripContext.style}</strong> style.</p>
+
+                        <div className={styles.grid} style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))' }}>
+                            {/* Accommodation Card */}
+                            <div className={styles.card} style={{ padding: '1.5rem' }}>
+                                <div style={{ marginBottom: '1rem', background: '#eff6ff', width: 'fit-content', padding: '0.5rem', borderRadius: '8px' }}>
+                                    <MapPin size={24} color="#3b82f6" />
+                                </div>
+                                <h4 style={{ margin: '0 0 0.5rem' }}>Stays</h4>
+                                <p style={{ fontSize: '0.9rem', color: '#64748b', marginBottom: '1rem' }}>
+                                    Found 12 {tripContext.style} hotels near your destinations.
+                                </p>
+                                <Link to="/booking" className={styles.viewDetailsBtn} style={{ textDecoration: 'none', textAlign: 'center', display: 'block' }}>
+                                    View Hotels
+                                </Link>
+                            </div>
+
+                            {/* Flights Card */}
+                            <div className={styles.card} style={{ padding: '1.5rem' }}>
+                                <div style={{ marginBottom: '1rem', background: '#fefce8', width: 'fit-content', padding: '0.5rem', borderRadius: '8px' }}>
+                                    <ExternalLink size={24} color="#ca8a04" />
+                                </div>
+                                <h4 style={{ margin: '0 0 0.5rem' }}>Transport</h4>
+                                <p style={{ fontSize: '0.9rem', color: '#64748b', marginBottom: '1rem' }}>
+                                    Flights and trains matching your {tripContext.days} day schedule.
+                                </p>
+                                <Link to="/booking" className={styles.viewDetailsBtn} style={{ textDecoration: 'none', textAlign: 'center', display: 'block' }}>
+                                    Check Flights
+                                </Link>
+                            </div>
+
+                            {/* Experiences Card */}
+                            <div className={styles.card} style={{ padding: '1.5rem' }}>
+                                <div style={{ marginBottom: '1rem', background: '#f0fdf4', width: 'fit-content', padding: '0.5rem', borderRadius: '8px' }}>
+                                    <Sparkles size={24} color="#16a34a" />
+                                </div>
+                                <h4 style={{ margin: '0 0 0.5rem' }}>Experiences</h4>
+                                <p style={{ fontSize: '0.9rem', color: '#64748b', marginBottom: '1rem' }}>
+                                    Curated activities based on your interests.
+                                </p>
+                                <Link to="/booking" className={styles.viewDetailsBtn} style={{ textDecoration: 'none', textAlign: 'center', display: 'block' }}>
+                                    Browse Activities
+                                </Link>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -970,6 +1116,22 @@ const TripPlannerPage = () => {
                 {step === 2 && renderStep2()}
                 {step === 3 && renderStep3()}
                 {step === 4 && renderStep4()}
+
+                <BudgetSelectionModal
+                    isOpen={budgetModalOpen}
+                    onClose={() => setBudgetModalOpen(false)}
+                    onApply={(prefs) => {
+                        setTripContext(prev => ({ ...prev, ...prefs }));
+                        setBudgetModalOpen(false);
+                        // No auto-navigation, just save context
+                    }}
+                />
+
+                <DateSelectionModal
+                    isOpen={showDateModal}
+                    onClose={() => setShowDateModal(false)}
+                    onApply={handleDateApply}
+                />
 
                 {/* Floating Scroll Button */}
                 {(step === 1 || step === 2 || step === 3) && (

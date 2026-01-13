@@ -7,8 +7,7 @@ from urllib.parse import quote
 # --- Configuration ---
 CACHE_FILE = 'backend/image_cache.json'
 WIKIDATA_API = "https://www.wikidata.org/w/api.php"
-UNSPLASH_BASE = "https://loremflickr.com/800/600/" 
-UNSPLASH_ACCESS_KEY = "YOUR_UNSPLASH_ACCESS_KEY_HERE" # User to replace this
+UNSPLASH_ACCESS_KEY = os.getenv('UNSPLASH_ACCESS_KEY')
 UNSPLASH_API_URL = "https://api.unsplash.com/search/photos"
 USER_AGENT = "AltairGo/1.0 (internal-dev-testing)"
 
@@ -18,7 +17,13 @@ USER_AGENT = "AltairGo/1.0 (internal-dev-testing)"
 
 # --- Fallback 1: Official Unsplash API ---
 def fetch_unsplash_api_image(query):
-    if not UNSPLASH_ACCESS_KEY or "YOUR_UNSPLASH" in UNSPLASH_ACCESS_KEY:
+    # FALLBACK SNIPPET (User Request)
+    # If no key is present or API fails, use this specific image
+    # Using clean URL without query params to avoid expiration/signature issues
+    fallback_image_url = "https://images.unsplash.com/5/unsplash-kitsune-4.jpg"
+    
+    if not UNSPLASH_ACCESS_KEY or UNSPLASH_ACCESS_KEY.strip() == "":
+        print("   No Unsplash Key. Skipping API, will use next fallback.")
         return None
         
     headers = {
@@ -37,10 +42,15 @@ def fetch_unsplash_api_image(query):
             data = resp.json()
             if data['results']:
                 return data['results'][0]['urls']['regular']
+        else:
+            print(f"   Unsplash API returned {resp.status_code}, using fallback.")
+            return fallback_image_url
+            
     except Exception as e:
-        print(f"Unsplash API Error: {e}")
-        
-    return None
+        print(f"Unsplash API Error: {e}, using fallback.")
+        return fallback_image_url
+    
+    return fallback_image_url
 
 # --- Cache Management ---
 _cache = {}
@@ -154,7 +164,7 @@ def get_fallback_image(tags):
     elif tags.get('amenity') == 'restaurant':
         category = 'food'
         
-    return f"https://loremflickr.com/800/600/{category}/all"
+    return f"https://loremflickr.com/800/600/{category}"
 
 # --- Main Service Function ---
 def get_image_for_destination(name, tags):

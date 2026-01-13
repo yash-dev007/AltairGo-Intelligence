@@ -23,19 +23,52 @@ export const TripAI = {
         }
     },
 
-    // Recommend destinations based on Country/Region choices
-    recommendDestinations: async (countryId, regionIds) => {
+    // Recommend destinations based on Country/Region choices + Budget Prefs
+    recommendDestinations: async (countryId, regionIds, prefs = {}) => {
         try {
             const response = await fetch(`${API_BASE}/recommend-destinations`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ countryId, regionIds })
+                body: JSON.stringify({ countryId, regionIds, ...prefs })
             });
             if (!response.ok) throw new Error('Failed to recommend');
             return await response.json();
         } catch (error) {
             console.error("AI Recommendation Error:", error);
             return { recommendedIds: [], aiNames: [] };
+        }
+    },
+
+    // Recommend Regions (Step 2)
+    recommendRegions: async (countryId) => {
+        try {
+            const response = await fetch(`${API_BASE}/recommend-regions`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ countryId })
+            });
+            if (!response.ok) throw new Error('Failed to recommend regions');
+            return await response.json();
+        } catch (error) {
+            console.error("AI Region Error:", error);
+            // Return empty list or handle in UI
+            return [];
+        }
+    },
+
+    // Get Detailed AI Info for a Destination (Step 6)
+    getDestinationDetails: async (destinationName) => {
+        try {
+            const response = await fetch(`${API_BASE}/destination-details-ai`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ destinationName })
+            });
+            if (!response.ok) throw new Error('Failed to get details');
+            return await response.json();
+        } catch (error) {
+            console.error("AI Details Error:", error);
+            return null;
         }
     },
 

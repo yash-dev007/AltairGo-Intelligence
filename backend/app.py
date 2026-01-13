@@ -11,6 +11,27 @@ import os
 from dotenv import load_dotenv
 
 load_dotenv() # Load environment variables from .env file
+import requests
+
+# CONSTANTS
+OLLAMA_API_URL = "http://127.0.0.1:11434/api/generate"
+OLLAMA_MODEL = "llama3" # Ensure this model is pulled: 'ollama pull llama3'
+
+def query_ollama(prompt, json_mode=True):
+    """Helper to query local Ollama instance"""
+    try:
+        payload = {
+            "model": OLLAMA_MODEL,
+            "prompt": prompt,
+            "stream": False,
+            "format": "json" if json_mode else ""
+        }
+        response = requests.post(OLLAMA_API_URL, json=payload)
+        response.raise_for_status()
+        return response.json().get('response', '')
+    except Exception as e:
+        print(f"❌ Ollama Connection Error: {e}")
+        raise e
 
 REVIEWS_FILE = 'backend/reviews.json'
 
@@ -86,20 +107,18 @@ def generate_itinerary():
                 current_day += 1
         return jsonify(plan)
 
-    # --- GEMINI AI GENERATION ---
-    import google.generativeai as genai
-    genai.configure(api_key=api_key)
-    model = genai.GenerativeModel('gemini-2.5-flash')
+    # --- OLLAMA AI GENERATION ---
     
     # Dynamic Prompt Construction
+    prompt = ""
     if not dest_names:
         # Case: User selected nothing (Surprise Me / Pure AI Plan)
         country_ctx = user_preferences.get('country', 'the destination')
         prompt = f"""
-        Plan a complete {user_preferences.get('duration', 5)}-day travel itinerary for {country_ctx}.
+        Act as a travel expert. Plan a complete {user_preferences.get('duration', 5)}-day travel itinerary for {country_ctx}.
         Select the best cities/places to visit automatically.
         
-        RETURN ONLY RAW JSON (List of Objects). Schema:
+        Return ONLY RAW JSON (List of Objects). Schema:
         [
             {{
                 "day": 1,
@@ -113,10 +132,10 @@ def generate_itinerary():
     else:
         # Case: User selected specific places
         prompt = f"""
-        Create a detailed day-by-day travel itinerary including these destinations: {', '.join(dest_names)}.
+        Act as a travel expert. Create a detailed day-by-day travel itinerary including these destinations: {', '.join(dest_names)}.
         Optimize the order logically.
         
-        RETURN ONLY RAW JSON. Schema:
+        Return ONLY RAW JSON. Schema:
         [
             {{
                 "day": 1,
@@ -132,21 +151,16 @@ def generate_itinerary():
         """
 
     try:
-        response = model.generate_content(prompt)
-        text_response = response.text.replace('```json', '').replace('```', '').strip()
+        print("🤖 Asking Ollama to generate itinerary...")
+        text_response = query_ollama(prompt, json_mode=True)
+        # Cleanup potential markdown
+        text_response = text_response.replace('```json', '').replace('```', '').strip()
         generated_plan = json.loads(text_response)
         
-        # Post-Processing: Try to fill back images/IDs if AI inferred them
-        if not selected_dests and dest_names: 
-             pass # Already has data
-        elif not selected_dests:
-            # Try to match names to DB for images? (Optional optimization)
-            pass
-            
         return jsonify(generated_plan)
         
     except Exception as e:
-        print(f"❌ Gemini Itinerary Error: {e}")
+        print(f"❌ Ollama Itinerary Error: {e}")
         return jsonify({"error": str(e)}), 500
 
 @app.route('/recommend-destinations', methods=['POST'])
@@ -155,6 +169,9 @@ def recommend_destinations():
     data = request.json
     country_id = data.get('countryId')
     region_ids = data.get('regionIds', [])
+    budget = data.get('budget', 'Normal')
+    style = data.get('style', 'Balanced')
+    days = data.get('days', 5)
     
     api_key = os.getenv('GEMINI_API_KEY')
     if not api_key:
@@ -177,17 +194,23 @@ def recommend_destinations():
     prompt = f"""
     Recommend 4 best specific travel destinations (cities or spots) in {country_name}.
     {f"Focus on these regions: {', '.join(map(str, regions))}." if regions else ""}
+    User Preferences:
+    - Budget: {budget}
+    - Travel Style: {style}
+    - Trip Duration: {days} days
+    
+    Select destinations that fit this budget and style. They should offer mixed experiences (culture, food, nature).
     
     Return ONLY a JSON list of strings. Example: ["Kyoto", "Osaka", "Nara", "Hakone"]
     """
     
     try:
-        res = model.generate_content(prompt)
-        text = res.text.replace('```json', '').replace('```', '').strip()
+        print("🤖 Asking Ollama for recommendations...")
+        text = query_ollama(prompt, json_mode=True)
+        text = text.replace('```json', '').replace('```', '').strip()
         names = json.loads(text)
         
         # Match with DB to get IDs if possible, or return names for frontend to match
-        # We need IDs for the frontend selection toggle
         matched_ids = []
         all_dests = db_session.query(Destination).all()
         
@@ -197,12 +220,70 @@ def recommend_destinations():
             if match:
                 matched_ids.append(match.id)
                 
-        # If matches are low, maybe just return random top rated as fallback mixed in?
-        # For now, return what we found
         return jsonify({"recommendedIds": matched_ids, "aiNames": names})
         
     except Exception as e:
         print(f"Recommend Error: {e}")
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/recommend-regions', methods=['POST'])
+def recommend_regions():
+    data = request.json
+    country_id = data.get('countryId')
+    
+    # Context gathering
+    country = db_session.query(Country).filter_by(code=country_id).first()
+    country_name = country.name if country else "this country"
+    
+    prompt = f"""
+    Select the 2-3 best regions (states/provinces) in {country_name} for a first-time traveler.
+    Prefer regions that are friendly, easy to travel, and rich in experiences.
+    
+    Return ONLY RAW JSON. Schema:
+    [
+        {{
+            "name": "Region Name",
+            "reason": "Brief explanation why..."
+        }}
+    ]
+    """
+    
+    try:
+        text = query_ollama(prompt, json_mode=True)
+        text = text.replace('```json', '').replace('```', '').strip()
+        regions_data = json.loads(text)
+        return jsonify(regions_data)
+    except Exception as e:
+        print(f"Region Recommend Error: {e}")
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/destination-details-ai', methods=['POST'])
+def destination_details_ai():
+    data = request.json
+    dest_name = data.get('destinationName')
+    
+    prompt = f"""
+    Provide a detailed but simple travel guide for {dest_name}.
+    Write like a local friend. Avoid textbook style.
+    
+    Return ONLY RAW JSON. Schema:
+    {{
+        "special": "What makes this place special...",
+        "food": ["Dish 1", "Dish 2", "Dish 3"],
+        "hidden_gems": ["Gem 1", "Gem 2"],
+        "culture": "Short tip about local culture/traditions",
+        "best_time_pace": "Best time of day to visit and how long to spend",
+        "best_for": "Who is this best for? (e.g., Solo, Couples)"
+    }}
+    """
+    
+    try:
+        text = query_ollama(prompt, json_mode=True)
+        text = text.replace('```json', '').replace('```', '').strip()
+        details = json.loads(text)
+        return jsonify(details)
+    except Exception as e:
+        print(f"Dest Details Error: {e}")
         return jsonify({"error": str(e)}), 500
 
 @app.route('/calculate-budget', methods=['POST'])

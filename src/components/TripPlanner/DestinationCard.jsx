@@ -2,7 +2,7 @@ import React, { memo } from 'react';
 import { Check, Star, Users, ExternalLink } from 'lucide-react';
 import styles from '../../pages/TripPlanner.module.css';
 
-const DestinationCard = memo(({ dest, isSelected, onToggle }) => {
+const DestinationCard = memo(({ dest, isSelected, onToggle, onViewDetails }) => {
     return (
         <div
             className={`${styles.card} ${isSelected ? styles.selected : ''}`}
@@ -20,23 +20,33 @@ const DestinationCard = memo(({ dest, isSelected, onToggle }) => {
                     <span className={styles.tagBadge}>{dest.tag}</span>
                     <span className={styles.crowdBadge} data-level={dest.crowdLevel}>
                         <Users size={12} strokeWidth={2.5} />
-                        {dest.crowdLevel === 'High' ? 'Busy (Book Ahead)' : dest.crowdLevel === 'Low' ? 'Quiet & Relaxing' : 'Moderate Crowd'}
+                        {dest.crowdLevel === 'High' ? 'Busy' : dest.crowdLevel === 'Low' ? 'Quiet' : 'Moderate'}
                     </span>
                 </div>
                 <div className={styles.cardTitle}>{dest.name}</div>
                 <div className={styles.cardDesc}>
                     {dest.desc}
                 </div>
-                {/* View Details Button that stops propagation to prevent selection toggle when clicked */}
-                <a
-                    href={`/destinations/${dest.id}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
+
+                <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem', fontSize: '0.8rem', color: '#64748b' }}>
+                    <span style={{ background: '#f1f5f9', padding: '2px 6px', borderRadius: '4px' }}>
+                        {dest.estimated_cost_per_day ? `₹${dest.estimated_cost_per_day}/day` : '$$'}
+                    </span>
+                    <span style={{ background: '#f1f5f9', padding: '2px 6px', borderRadius: '4px' }}>
+                        {dest.best_time || 'Anytime'}
+                    </span>
+                </div>
+
+                <button
                     className={styles.viewDetailsBtn}
-                    onClick={(e) => e.stopPropagation()}
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        onViewDetails && onViewDetails(dest);
+                    }}
+                    style={{ background: 'transparent', color: 'var(--primary)', border: '1px solid var(--primary)', marginTop: '1rem', width: '100%' }}
                 >
-                    View Details <ExternalLink size={14} />
-                </a>
+                    View Details <ExternalLink size={14} style={{ display: 'inline', marginLeft: '4px' }} />
+                </button>
             </div>
         </div>
     );
