@@ -12,14 +12,21 @@ export const TripAI = {
             const response = await fetch(`${API_BASE}/generate-itinerary`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ selectedDestIds, preferences })
+                body: JSON.stringify({
+                    selectedDestIds,
+                    preferences: {
+                        ...preferences,
+                        interests: preferences.interests || [],
+                        style: preferences.style || 'Balanced',
+                        budget: preferences.budget || 50000
+                    }
+                })
             });
             if (!response.ok) throw new Error('Failed to generate itinerary');
             return await response.json();
         } catch (error) {
             console.error("AI Service Error:", error);
-            // Fallback empty plan or error handling
-            return [];
+            throw error; // Let caller handle the error
         }
     },
 
@@ -72,6 +79,18 @@ export const TripAI = {
         }
     },
 
+    // Get DB Destination Details by ID
+    getDestinationById: async (id) => {
+        try {
+            const response = await fetch(`${API_BASE}/destinations/${id}`);
+            if (!response.ok) throw new Error('Failed to get DB details');
+            return await response.json();
+        } catch (error) {
+            console.error("DB Details Error:", error);
+            return null;
+        }
+    },
+
     // Calculates the estimated budget based on destination costs and duration
     calculateBudget: async (itinerary) => {
         try {
@@ -115,10 +134,29 @@ export const TripAI = {
             });
             if (!response.ok) throw new Error('Chat failed');
             const data = await response.json();
-            return data.response;
+            return data.reply;  // Backend sends { reply: "..." }
         } catch (error) {
             console.error("AI Chat Error:", error);
             return "I'm having trouble connecting to the travel database right now. Please try again later.";
+        }
+    },
+
+    saveTrip: async (tripData, token) => {
+        try {
+            const headers = { 'Content-Type': 'application/json' };
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+            const response = await fetch(`${API_BASE}/api/save-trip`, {
+                method: 'POST',
+                headers,
+                body: JSON.stringify(tripData)
+            });
+            if (!response.ok) throw new Error('Save failed');
+            return await response.json();
+        } catch (error) {
+            console.error("Save Trip Error:", error);
+            return { error: error.message };
         }
     }
 };

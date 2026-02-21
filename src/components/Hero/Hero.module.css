@@ -1,12 +1,12 @@
 .hero {
     position: relative;
     /* Card Layout Style */
-    margin: 10px;
+    margin: 10px 10px 0;
     /* Reduced for mobile */
     height: auto;
     min-height: 65vh;
     /* Allow it to be shorter on mobile */
-    padding-bottom: 2rem;
+    padding-bottom: 0;
     /* Add breathing room at bottom */
     border-radius: 20px;
 
@@ -141,7 +141,7 @@
 /* Tablet / Desktop */
 @media (min-width: 768px) {
     .hero {
-        margin: 20px 40px;
+        margin: 20px 40px 10px;
         padding-left: 60px;
         border-radius: 40px;
         margin-top: 100px;

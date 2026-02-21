@@ -4,5 +4,6 @@ sqlalchemy
 requests
 gunicorn
 psycopg2-binary
-google-generativeai
+google-genai
 python-dotenv
+flask-jwt-extended

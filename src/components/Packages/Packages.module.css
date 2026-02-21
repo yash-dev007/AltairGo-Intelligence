@@ -1,7 +1,5 @@
 .section {
-    padding: var(--spacing-xl) 0;
-    padding-bottom: var(--spacing-2xl);
-    /* Bottom spacing */
+    padding: 3.5rem 0;
 }
 
 .container {

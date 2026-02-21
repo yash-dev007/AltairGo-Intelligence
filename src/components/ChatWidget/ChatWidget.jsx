@@ -134,7 +134,23 @@ const ChatWidget = () => {
                                     <div className="messages-list">
                                         {messages.map((msg, idx) => (
                                             <div key={idx} className={`message ${msg.role}`}>
-                                                <div className="message-content">{msg.content}</div>
+                                                <div className="message-content">
+                                                    {msg.content.split(/(!\[.*?\]\(.*?\))/g).map((part, i) => {
+                                                        const match = part.match(/!\[(.*?)\]\((.*?)\)/);
+                                                        if (match) {
+                                                            return (
+                                                                <img
+                                                                    key={i}
+                                                                    src={match[2]}
+                                                                    alt={match[1]}
+                                                                    className="chat-embedded-image"
+                                                                    style={{ maxWidth: '100%', borderRadius: '8px', marginTop: '8px' }}
+                                                                />
+                                                            );
+                                                        }
+                                                        return <span key={i}>{part}</span>;
+                                                    })}
+                                                </div>
                                             </div>
                                         ))}
                                         <div ref={messagesEndRef} />

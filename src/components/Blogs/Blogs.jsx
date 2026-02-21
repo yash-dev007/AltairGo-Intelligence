@@ -1,18 +1,20 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import styles from './Blogs.module.css';
+import { BlogCardSkeleton } from '../Skeleton/Skeleton';
 
 import { API_BASE_URL } from '../../config';
 
 const Blogs = () => {
     // Show only first 3 blogs for the preview section
     const [previewBlogs, setPreviewBlogs] = React.useState([]);
+    const [loading, setLoading] = React.useState(true);
 
     React.useEffect(() => {
         fetch(`${API_BASE_URL}/blogs`)
             .then(res => res.json())
-            .then(data => setPreviewBlogs(data.slice(0, 3)))
-            .catch(err => console.error("Failed to fetch blogs:", err));
+            .then(data => { setPreviewBlogs(data.slice(0, 3)); setLoading(false); })
+            .catch(err => { console.error("Failed to fetch blogs:", err); setLoading(false); });
     }, []);
 
     return (
@@ -24,7 +26,9 @@ const Blogs = () => {
                 </div>
 
                 <div className={styles.grid}>
-                    {previewBlogs.map((blog) => (
+                    {loading ? (
+                        <>{[1, 2, 3].map(i => <BlogCardSkeleton key={i} />)}</>
+                    ) : previewBlogs.map((blog) => (
                         <article key={blog.id} className={styles.card}>
                             <div className={styles.imageContainer}>
                                 <img src={blog.image} alt={blog.title} className={styles.image} />

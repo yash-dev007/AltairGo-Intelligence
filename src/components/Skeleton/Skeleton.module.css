@@ -1,0 +1,231 @@
+/* ============================================
+   Skeleton Loading — Shimmer Effect
+   ============================================ */
+
+/* Base skeleton block */
+.skeleton {
+    background: #e2e8f0;
+    border-radius: 8px;
+    position: relative;
+    overflow: hidden;
+}
+
+.skeleton::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg,
+            transparent 0%,
+            rgba(255, 255, 255, 0.5) 50%,
+            transparent 100%);
+    animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+    0% {
+        transform: translateX(-100%);
+    }
+
+    100% {
+        transform: translateX(100%);
+    }
+}
+
+/* Shape variants */
+.circle {
+    border-radius: 50%;
+}
+
+.rounded {
+    border-radius: 16px;
+}
+
+.pill {
+    border-radius: 999px;
+}
+
+/* ---- Preset Skeletons ---- */
+
+/* Destination / Package image card */
+.cardSkeleton {
+    border-radius: var(--radius-lg, 1.5rem);
+    overflow: hidden;
+    background: white;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.cardImageSkeleton {
+    width: 100%;
+    height: 200px;
+    background: #e2e8f0;
+    position: relative;
+    overflow: hidden;
+}
+
+.cardImageSkeleton::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.5) 50%, transparent 100%);
+    animation: shimmer 1.5s infinite;
+}
+
+.cardBody {
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+/* Tall destination card (used in carousel) */
+.destCardSkeleton {
+    border-radius: var(--radius-lg, 1.5rem);
+    height: 380px;
+    background: #e2e8f0;
+    position: relative;
+    overflow: hidden;
+    flex: 0 0 auto;
+    width: 280px;
+}
+
+.destCardSkeleton::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.5) 50%, transparent 100%);
+    animation: shimmer 1.5s infinite;
+}
+
+/* Package tall card */
+.pkgCardSkeleton {
+    border-radius: var(--radius-lg, 1.5rem);
+    height: 450px;
+    background: #e2e8f0;
+    position: relative;
+    overflow: hidden;
+}
+
+.pkgCardSkeleton::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.5) 50%, transparent 100%);
+    animation: shimmer 1.5s infinite;
+}
+
+/* Blog card skeleton */
+.blogCardSkeleton {
+    border-radius: var(--radius-lg, 1.5rem);
+    overflow: hidden;
+    background: white;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    display: flex;
+    flex-direction: column;
+}
+
+.blogImageSkeleton {
+    width: 100%;
+    height: 240px;
+    background: #e2e8f0;
+    position: relative;
+    overflow: hidden;
+}
+
+.blogImageSkeleton::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.5) 50%, transparent 100%);
+    animation: shimmer 1.5s infinite;
+}
+
+.blogBody {
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+/* Detail page hero skeleton */
+.detailHeroSkeleton {
+    width: 100%;
+    height: 400px;
+    background: #e2e8f0;
+    border-radius: 0 0 var(--radius-lg, 1.5rem) var(--radius-lg, 1.5rem);
+    position: relative;
+    overflow: hidden;
+}
+
+.detailHeroSkeleton::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.5) 50%, transparent 100%);
+    animation: shimmer 1.5s infinite;
+}
+
+.detailBody {
+    max-width: 900px;
+    margin: 2rem auto;
+    padding: 0 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+/* Dashboard trip card skeleton */
+.tripCardSkeleton {
+    border-radius: 16px;
+    overflow: hidden;
+    background: white;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    border: 1px solid #f1f5f9;
+}
+
+.tripCardTop {
+    height: 160px;
+    background: #e2e8f0;
+    position: relative;
+    overflow: hidden;
+}
+
+.tripCardTop::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.5) 50%, transparent 100%);
+    animation: shimmer 1.5s infinite;
+}
+
+.tripCardBody {
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+/* Feature section skeleton */
+.featureRow {
+    display: flex;
+    gap: 2rem;
+    flex-wrap: wrap;
+}
+
+.featureCardSkeleton {
+    flex: 1;
+    min-width: 280px;
+    background: white;
+    border-radius: 20px;
+    padding: 2rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 1.5rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+/* Skeleton wrapper for centering */
+.wrapper {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+}

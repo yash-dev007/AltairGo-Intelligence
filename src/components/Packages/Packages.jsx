@@ -2,18 +2,20 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import styles from './Packages.module.css';
 import { ArrowRight } from 'lucide-react';
+import { PackageCardSkeleton } from '../Skeleton/Skeleton';
 
 import { API_BASE_URL } from '../../config';
 
 const Packages = () => {
     // Show only first 4 packages for the homepage preview
     const [previewPackages, setPreviewPackages] = React.useState([]);
+    const [loading, setLoading] = React.useState(true);
 
     React.useEffect(() => {
         fetch(`${API_BASE_URL}/packages`)
             .then(res => res.json())
-            .then(data => setPreviewPackages(data.slice(0, 4)))
-            .catch(err => console.error("Failed to fetch packages:", err));
+            .then(data => { setPreviewPackages(data.slice(0, 4)); setLoading(false); })
+            .catch(err => { console.error("Failed to fetch packages:", err); setLoading(false); });
     }, []);
 
     return (
@@ -30,7 +32,9 @@ const Packages = () => {
                 </div>
 
                 {/* Dynamic Package Cards */}
-                {previewPackages.map((pkg) => (
+                {loading ? (
+                    <>{[1, 2, 3].map(i => <PackageCardSkeleton key={i} />)}</>
+                ) : previewPackages.map((pkg) => (
                     <div className={styles.card} key={pkg.id}>
                         <img
                             src={pkg.image}

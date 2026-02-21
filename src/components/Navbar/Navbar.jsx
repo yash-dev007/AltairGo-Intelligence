@@ -1,8 +1,9 @@
 
 import React, { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import styles from './Navbar.module.css';
-import { Menu, X, Search } from 'lucide-react';
+import { Menu, X, Search, User, LogOut } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext.jsx';
 
 import logo from '../../assets/logo_corrected.png'; // Import Corrected Logo
 
@@ -11,6 +12,8 @@ import { API_BASE_URL } from '../../config';
 const Navbar = () => {
     const [isOpen, setIsOpen] = useState(false);
     const location = useLocation();
+    const { user, logout } = useAuth();
+    const navigate = useNavigate();
 
     // Helper to handle navigation:
     // If on Home page ('/'), scroll to ID.
@@ -102,6 +105,34 @@ const Navbar = () => {
                     <Link to="/packages" className={styles.link} onClick={() => setIsOpen(false)}>Packages</Link>
                     <Link to="/blogs" className={styles.link} onClick={() => setIsOpen(false)}>Blogs</Link>
 
+                    {user ? (
+                        <>
+
+                            <button
+                                onClick={() => { logout(); setIsOpen(false); navigate('/'); }}
+                                className={`${styles.link} ${styles.mobileBtnOnly}`}
+                                style={{ background: 'transparent', border: 'none', color: '#dc2626', textAlign: 'left', paddingLeft: 0, fontSize: '1.5rem' }}
+                            >
+                                Logout
+                            </button>
+                        </>
+                    ) : (
+                        /* Mobile Only: Login Button in Menu */
+                        <Link
+                            to="/login"
+                            className={`${styles.bookBtn} ${styles.mobileBtnOnly}`}
+                            onClick={() => setIsOpen(false)}
+                            style={{
+                                color: 'var(--primary)',
+                                background: 'white',
+                                border: '2px solid var(--primary)',
+                                marginBottom: '-1rem'
+                            }}
+                        >
+                            Login/Register
+                        </Link>
+                    )}
+
                     {/* Mobile Only: Book Button in Menu */}
                     <Link to="/booking" className={`${styles.bookBtn} ${styles.mobileBtnOnly} `} onClick={() => setIsOpen(false)}>Book now</Link>
                 </div>
@@ -149,7 +180,19 @@ const Navbar = () => {
                 </div>
 
                 {/* CTA (Desktop) */}
-                <Link to="/booking" className={`${styles.bookBtn} ${styles.desktopBtn} `}>Book now</Link>
+                <div className={styles.desktopBtn} style={{ gap: '1rem', alignItems: 'center' }}>
+                    {user ? (
+                        <Link to="/dashboard" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', textDecoration: 'none', color: '#334155', fontWeight: '600', background: '#f1f5f9', padding: '0.5rem 1rem', borderRadius: '50px' }}>
+                            <User size={18} />
+                            {user.name.split(' ')[0]}
+                        </Link>
+                    ) : (
+                        <Link to="/login" style={{ textDecoration: 'none', color: '#334155', fontWeight: '600', fontSize: '0.95rem' }}>
+                            Login
+                        </Link>
+                    )}
+                    <Link to="/booking" className={styles.bookBtn}>Book now</Link>
+                </div>
             </div>
         </nav>
     );

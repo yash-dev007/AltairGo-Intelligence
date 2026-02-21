@@ -1,0 +1,89 @@
+.timelineContainer {
+    position: relative;
+    padding: 1rem 0;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.timelineItem {
+    display: flex;
+    gap: 1.5rem;
+    position: relative;
+}
+
+.dayIndicator {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 60px;
+    flex-shrink: 0;
+}
+
+.dayNumber {
+    background: #3b82f6;
+    color: white;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1rem;
+    box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.5);
+    z-index: 2;
+}
+
+.timelineLine {
+    flex: 1;
+    width: 2px;
+    background: #e2e8f0;
+    margin-top: 0.5rem;
+    margin-bottom: -1.5rem;
+    /* Connect to next item */
+}
+
+.timelineItem:last-child .timelineLine {
+    display: none;
+}
+
+.contentCard {
+    flex: 1;
+    border-radius: 16px;
+    overflow: hidden;
+    transition: all 0.2s;
+}
+
+.cardHeader {
+    padding: 1rem;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.locationTitle {
+    margin: 0;
+    font-size: 1.1rem;
+    color: #1e293b;
+    font-weight: 700;
+}
+
+.activitiesList {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.activityRow {
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.activityRow:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+/* Activity Item Styles (used in SortableActivityItem) */
+.activityItem {
+    background: white;
+    border-radius: 12px;
+    width: 100%;
+}

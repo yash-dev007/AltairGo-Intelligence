@@ -1,0 +1,612 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Altairgo Complete Guide</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 210mm;
+            margin: 40px auto;
+            padding: 40px;
+            background: #fff;
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+        }
+        h1 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
+        h2 { color: #2980b9; margin-top: 30px; }
+        h3 { color: #16a085; }
+        
+        /* Tables */
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background-color: #f2f2f2; color: #333; }
+        tr:nth-child(even) { background-color: #f9f9f9; }
+        
+        /* Code Blocks */
+        pre { background: #f4f4f4; padding: 15px; border-radius: 5px; overflow-x: auto; border: 1px solid #ddd; }
+        code { font-family: 'Consolas', 'Monaco', monospace; color: #d63384; }
+        pre code { color: #333; }
+        
+        /* Alerts */
+        .alert { padding: 15px; border-radius: 4px; margin: 20px 0; border-left: 5px solid; }
+        .alert-note { background-color: #e3f2fd; border-color: #2196f3; }
+        .alert-tip { background-color: #e8f5e9; border-color: #4caf50; }
+        .alert-warning { background-color: #fff3e0; border-color: #ff9800; }
+        .alert-important { background-color: #f3e5f5; border-color: #9c27b0; }
+        
+        /* Mermaid */
+        .mermaid { text-align: center; margin: 30px 0; }
+        
+        /* Print */
+        @media print {
+            body { box-shadow: none; margin: 0; padding: 0; width: 100%; max-width: 100%; }
+            .no-print { display: none; }
+        }
+    </style>
+    <script type="module">
+        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+        mermaid.initialize({ startOnLoad: true });
+    </script>
+</head>
+<body>
+<h1>🌍 AltairGo - AI-Powered Trip Planner</h1>
+<h2>Complete Product Workflow &amp; Implementation Guide</h2>
+<hr />
+<h2>📋 Table of Contents</h2>
+<ol>
+<li><a href="#product-overview">Product Overview</a></li>
+<li><a href="#core-features">Core Features</a></li>
+<li><a href="#user-workflow">User Workflow</a></li>
+<li><a href="#technical-architecture">Technical Architecture</a></li>
+<li><a href="#database-schema">Database Schema</a></li>
+<li><a href="#ai-implementation">AI Implementation</a></li>
+<li><a href="#image--media-strategy">Image &amp; Media Strategy</a></li>
+<li><a href="#api-integrations">API Integrations</a></li>
+<li><a href="#development-roadmap">Development Roadmap</a></li>
+<li><a href="#tech-stack">Tech Stack</a></li>
+<li><a href="#cost-analysis">Cost Analysis</a></li>
+<li><a href="#monetization-strategy">Monetization Strategy</a></li>
+</ol>
+<hr />
+<h2>🎯 Product Overview</h2>
+<h3>What is AltairGo?</h3>
+<p>AltairGo is an AI-powered trip planning platform that generates personalized travel itineraries in seconds. Users input their preferences (destination, budget, duration, interests), and our AI creates detailed, day-by-day trip plans with activities, costs, and booking options.</p>
+<h3>Unique Value Proposition</h3>
+<ul>
+<li><strong>Instant Planning</strong>: Complete itinerary in 30 seconds vs hours of manual research</li>
+<li><strong>AI Personalization</strong>: Tailored to budget, interests, and travel style</li>
+<li><strong>Visual Experience</strong>: Beautiful destination images and detailed information</li>
+<li><strong>One-Click Booking</strong>: Direct links to flights, hotels, and activities</li>
+<li><strong>Smart Optimization</strong>: AI balances cost, time, and experiences perfectly</li>
+</ul>
+<h3>Target Users</h3>
+<ul>
+<li><strong>Primary</strong>: Young travelers (18-35) planning domestic trips</li>
+<li><strong>Secondary</strong>: Families planning vacations</li>
+<li><strong>Tertiary</strong>: Solo travelers and adventure seekers</li>
+</ul>
+<hr />
+<h2>✨ Core Features</h2>
+<h3>MVP (Month 1-2)</h3>
+<ol>
+<li><strong>Smart Trip Input Form</strong></li>
+<li>Destination selection</li>
+<li>Budget slider (₹5k - ₹2L)</li>
+<li>Duration picker (1-14 days)</li>
+<li>Travel style (Budget/Mid-range/Luxury)</li>
+<li>
+<p>Interest tags (Adventure, Culture, Food, Beaches, etc.)</p>
+</li>
+<li>
+<p><strong>AI Itinerary Generation</strong></p>
+</li>
+<li>2-3 trip options generated instantly</li>
+<li>Day-by-day breakdown</li>
+<li>Activity suggestions with timing</li>
+<li>Cost estimates per activity</li>
+<li>
+<p>Total trip cost calculation</p>
+</li>
+<li>
+<p><strong>Destination Cards with Images</strong></p>
+</li>
+<li>High-quality photos</li>
+<li>Quick stats (cost, duration, highlights)</li>
+<li>
+<p>"Details" button for more info</p>
+</li>
+<li>
+<p><strong>Detailed Destination View</strong></p>
+</li>
+<li>Hero images and gallery</li>
+<li>Top attractions with ratings</li>
+<li>Local tips (AI-generated)</li>
+<li>Getting there information</li>
+<li>
+<p>Similar destinations</p>
+</li>
+<li>
+<p><strong>Save &amp; Share</strong></p>
+</li>
+<li>Save trips to account</li>
+<li>Share via link</li>
+<li>
+<p>PDF export</p>
+</li>
+<li>
+<p><strong>Booking Integration</strong></p>
+</li>
+<li>Affiliate links to MakeMyTrip</li>
+<li>Booking.com hotel links</li>
+<li>Activity booking partners</li>
+</ol>
+<h3>Phase 2 (Month 3-6)</h3>
+<ol>
+<li><strong>Interactive Itinerary Editor</strong></li>
+<li>Drag-and-drop day reordering</li>
+<li>Swap activities</li>
+<li>
+<p>Chat with AI to modify ("Make day 3 more relaxing")</p>
+</li>
+<li>
+<p><strong>User Accounts</strong></p>
+</li>
+<li>Email/Google login</li>
+<li>Trip history</li>
+<li>
+<p>Favorites list</p>
+</li>
+<li>
+<p><strong>Community Features</strong></p>
+</li>
+<li>User reviews of generated trips</li>
+<li>Photo uploads from actual trips</li>
+<li>Traveler match (find trip buddies)</li>
+</ol>
+<h3>Phase 3 (Month 6-12 - Post Funding)</h3>
+<ol>
+<li>
+<p><strong>Real-time Pricing</strong></p>
+<ul>
+<li>Live flight prices</li>
+<li>Hotel availability and rates</li>
+<li>Dynamic budget updates</li>
+</ul>
+</li>
+<li>
+<p><strong>Mobile App</strong></p>
+<ul>
+<li>iOS and Android</li>
+<li>Offline itinerary access</li>
+<li>GPS-based recommendations</li>
+</ul>
+</li>
+<li>
+<p><strong>Premium Features</strong></p>
+<ul>
+<li>Unlimited regenerations</li>
+<li>Priority AI (better models)</li>
+<li>Collaboration tools</li>
+<li>Advanced customization</li>
+</ul>
+</li>
+</ol>
+<hr />
+<h2>🔄 User Workflow</h2>
+<h3>Step 1: Trip Input Form</h3>
+<p>User arrives at homepage and fills out:<br />
+- Where are you traveling from? [City Dropdown]<br />
+- Where do you want to go? [Country/Region Dropdown]<br />
+- Budget slider: ₹5,000 - ₹2,00,000<br />
+- Duration: Weekend / 1 week / 2 weeks / Custom<br />
+- Travel dates (optional)<br />
+- Interests: [Multi-select checkboxes]<br />
+  - Adventure, Beach, Culture, Food, Nature, Photography, Party, Relaxation, Spiritual, Wildlife<br />
+- Travel style: Budget / Mid-range / Luxury</p>
+<p>[Generate My Perfect Trip ✨] Button</p>
+<hr />
+<h3>Step 2: AI Generates Options (3-5 seconds)</h3>
+<p>Display 2-3 trip options:</p>
+<p><strong>Option 1: "Royal Rajasthan Explorer" 👑</strong><br />
+- Image: Jaipur Palace<br />
+- Destinations: Jaipur → Udaipur → Jodhpur (7 days)<br />
+- Total: ₹35,000<br />
+- Why this: Perfect blend of forts, palaces, and local culture. Great for photography!<br />
+- Quick Preview: Day 1: Jaipur - Amber Fort, City Palace...<br />
+- [See Full Itinerary] [Customize]</p>
+<p><strong>Option 2: "Goa Beach Escape" 🏖️</strong><br />
+- Image: Beach sunset<br />
+- Destinations: North &amp; South Goa (5 days)<br />
+- Total: ₹18,000<br />
+- Why this: Relaxing beach vibes, water sports, amazing seafood<br />
+- [See Full Itinerary] [Customize]</p>
+<p>[🔄 Generate Different Options]</p>
+<hr />
+<h3>Step 3: Detailed Itinerary View</h3>
+<p><strong>Royal Rajasthan Explorer 👑</strong><br />
+7 Days | ₹35,000 | Jaipur → Udaipur → Jodhpur</p>
+<p><strong>DESTINATIONS IN THIS TRIP</strong><br />
+Three cards showing: Jaipur (3 days), Udaipur (2 days), Jodhpur (2 days)<br />
+Each with image and [Details] button</p>
+<p><strong>DAY-BY-DAY ITINERARY</strong></p>
+<p><strong>Day 1: Arrive Jaipur - The Pink City</strong></p>
+<p>Morning (9:00 AM - 12:00 PM)<br />
+- 🏰 Amber Fort<br />
+- Duration: 3 hours | Cost: ₹500<br />
+- Why: Stunning architecture, elephant rides, panoramic views<br />
+- [View Photos] [Add to favorites]</p>
+<p>Lunch (12:30 PM - 1:30 PM)<br />
+- 🍽️ Laxmi Mishtan Bhandar<br />
+- Cost: ₹400 | Famous for: Dal Baati Churma</p>
+<p>Afternoon (2:00 PM - 5:00 PM)<br />
+- 🏛️ City Palace &amp; Hawa Mahal<br />
+- Duration: 2 hours | Cost: ₹700<br />
+- [Swap Activity] [Skip]</p>
+<p>Evening (6:00 PM - 9:00 PM)<br />
+- 🛍️ Bapu Bazaar Shopping<br />
+- Budget: ₹2,000</p>
+<p>Stay: Hotel Pink Pearl (₹2,500/night)<br />
+[Book Now via Booking.com]</p>
+<p>Day Total: ₹6,100</p>
+<hr />
+<p><strong>COST BREAKDOWN</strong><br />
+- Accommodation: ₹17,500 (7 nights)<br />
+- Food: ₹7,000 (₹1,000/day)<br />
+- Activities: ₹5,500<br />
+- Shopping: ₹3,000<br />
+- Transport: ₹2,000<br />
+Total: ₹35,000</p>
+<p><strong>GETTING THERE</strong><br />
+- ✈️ Flights: [Search Delhi to Jaipur on MakeMyTrip]<br />
+- 🚂 Trains: Jaipur Junction (5 hrs from Delhi)</p>
+<p>[💾 Save This Trip] [📤 Share] [📄 Download PDF]<br />
+[✅ Book This Trip]</p>
+<hr />
+<h3>Step 4: Destination Details Modal</h3>
+<p>When user clicks [Details] on Jaipur card:</p>
+<p><strong>JAIPUR - The Pink City</strong><br />
+[Hero Image: Hawa Mahal at Sunset]</p>
+<p><strong>QUICK STATS</strong><br />
+- ₹2,500 per day<br />
+- 2-3 days ideal<br />
+- Oct-Mar best time</p>
+<p><strong>ABOUT</strong><br />
+Jaipur, capital of Rajasthan, known as Pink City due to distinctive pink buildings. UNESCO World Heritage Site, famous for forts, palaces, markets.</p>
+<p><strong>TOP ATTRACTIONS</strong><br />
+- Amber Fort ⭐ 4.8 | ⏱️ 3 hours | ₹500<br />
+- Hawa Mahal ⭐ 4.6 | ⏱️ 1 hour | ₹200<br />
+- City Palace ⭐ 4.7 | ⏱️ 2 hours | ₹500<br />
+[See all 12 attractions →]</p>
+<p><strong>INSIDER TIPS (AI-Generated)</strong><br />
+✓ Visit Amber Fort early (8 AM) to avoid crowds<br />
+✓ Try Dal Baati Churma at LMB in Johari Bazaar<br />
+✓ Bargain at Bapu Bazaar - start at 50% of ask price<br />
+✓ Best photography: Hawa Mahal at sunrise</p>
+<p><strong>MUST-TRY FOOD</strong><br />
+Dal Baati Churma • Ghewar • Laal Maas • Pyaaz Kachori</p>
+<p><strong>GETTING THERE</strong><br />
+- ✈️ Jaipur Airport (JAI) - 12 km from city<br />
+- 🚂 Jaipur Junction - Well connected<br />
+- 🚌 From Delhi: 280 km, 5 hours</p>
+<p><strong>SIMILAR DESTINATIONS</strong><br />
+[Udaipur] [Jodhpur] [Pushkar] [Jaisalmer]</p>
+<p>[✅ Add Jaipur to My Trip] [Close]</p>
+<hr />
+<h3>Step 5: Booking &amp; Checkout</h3>
+<p><strong>Your Trip is Ready! 🎉</strong></p>
+<p><strong>TRAVEL DATES</strong><br />
+March 15-21, 2025 [Change Dates]</p>
+<p><strong>BOOK FLIGHTS</strong><br />
+Delhi → Jaipur: March 15<br />
+From ₹3,500<br />
+[Search Flights on MakeMyTrip →]</p>
+<p><strong>BOOK HOTELS</strong><br />
+- Jaipur: Hotel Pink Pearl (3 nights) - ₹2,500/night ⭐ 4.2<br />
+- Udaipur: Lake View Resort (2 nights) - ₹3,000/night ⭐ 4.5</p>
+<p><strong>BOOK ACTIVITIES</strong><br />
+- Amber Fort Entry (₹500) [Book →]<br />
+- Udaipur Boat Ride (₹800) [Book →]</p>
+<p>[📱 Send to Phone] [📧 Email] [📄 Download PDF]</p>
+<hr />
+<h2>🏗️ Technical Architecture</h2>
+<h3>System Architecture</h3>
+<pre><code>FRONTEND (React 19 + Vite)
+├── Landing Page
+├── Trip Builder
+├── Itinerary Viewer
+├── Destination Details
+├── User Dashboard
+└── Saved Trips
+         ↓
+BACKEND API LAYER (Python Flask)
+├── POST /generate-itinerary
+├── GET /destinations/:id
+├── POST /api/save-trip
+├── GET /api/user/trips
+├── POST /regions/:id/populate
+└── GET /destinations/:id
+         ↓
+AI &amp; DATA LAYER
+├── Gemini 2.0 Flash (Itinerary &amp; Destinations)
+├── Unsplash API (Images)
+└── SQLite (Dev) / PostgreSQL (Prod)
+         ↓
+HOSTING &amp; CDN
+├── Vercel (Frontend)
+├── Cloudflare (CDN)
+└── Render/Railway (Backend)
+</div>
+<h3>API Flow for Trip Generation</h3>
+<pre><code>1. User submits form
+2. Frontend: POST /generate-itinerary
+   {
+     selectedDestIds: [101, 102],
+     preferences: {
+       budget: 35000,
+       duration: 7,
+       style: &quot;mid-range&quot;
+     }
+   }
+3. Backend validates input
+4. Backend constructs AI prompt
+5. Call Gemini 2.0 Flash API (services/gemini_service.py)
+6. AI generates itinerary JSON
+7. Backend enriches with images (Unsplash)
+8. Return JSON to frontend
+9. Frontend displays trip options
+</div>
+<hr />
+<h2>🗄️ Database Schema</h2>
+<h3>Users Table (SQLAlchemy Model)</h3>
+<pre><code class="language-python">class User(Base):
+    __tablename__ = 'users'
+    id = Column(Integer, primary_key=True)
+    email = Column(String(255), unique=True, nullable=False)
+    name = Column(String(255))
+    password_hash = Column(String(255))
+    created_at = Column(DateTime, default=datetime.utcnow)
+</div>
+<h3>Destinations Table (Core Entity)</h3>
+<pre><code class="language-python">class Destination(Base):
+    __tablename__ = 'destinations'
+    id = Column(Integer, primary_key=True)
+    # Basic Info
+    name = Column(String(255), unique=True, nullable=False)
+    state_id = Column(Integer, ForeignKey('states.id'))
+
+    # AI &amp; Metadata
+    description = Column(Text)
+    image = Column(Text) # Main hero image URL
+
+    # Travel Info
+    estimated_cost_per_day = Column(Integer)
+    best_time = Column(String(100))
+    crowd_level = Column(String(50))
+    rating = Column(Float) # e.g. 4.5
+
+    # Categorization
+    tag = Column(String(50)) # e.g. &quot;Hidden Gem&quot;
+    vibe_tags = Column(JSON) # e.g. [&quot;Nature&quot;, &quot;Adventure&quot;]
+    highlights = Column(JSON)
+</div>
+<h3>Trips Table (User-generated)</h3>
+<pre><code class="language-python">class Trip(Base):
+    __tablename__ = 'trips'
+    id = Column(String(36), primary_key=True) # UUID
+    user_id = Column(Integer, ForeignKey('users.id'))
+
+    # Trip Config
+    title = Column(String(255))
+    start_city = Column(String(100))
+    budget = Column(Integer)
+    duration = Column(Integer)
+
+    # The Generated Plan
+    itinerary_json = Column(JSON) # Stores list of days/activities
+    total_cost = Column(Integer)
+</div>
+<hr />
+<h2>🤖 AI Implementation</h2>
+<h3>Prompt Engineering</h3>
+<p><strong>Master Prompt Template (<code>services/ai_destination_service.py</code>):</strong></p>
+<pre><code class="language-python">prompt = f&quot;&quot;&quot;
+You are a travel expert. Generate a list of {limit} tourist destinations in {region_name}, {country_name}.
+
+For each destination, provide:
+- name: Official name of the place
+- type: Category (e.g., &quot;Historic Monument&quot;, &quot;Nature&quot;, &quot;Temple&quot;)
+- description: A compelling 2-3 sentence description
+- rating: Estimated rating from 4.0 to 4.9
+- estimated_cost: Entry fee or estimated daily cost
+- best_time: Best time to visit
+- crowd_level: Expected crowd level
+- highlights: Array of 3-4 key highlights
+- image_keyword: Best search term for finding an image
+
+Output MUST be pure JSON.
+&quot;&quot;&quot;
+</div>
+<h3>Gemini API Integration (Python)</h3>
+<pre><code class="language-python">from google import genai
+import os
+
+api_key = os.getenv(&quot;GEMINI_API_KEY&quot;)
+client = genai.Client(api_key=api_key)
+
+def generate_destinations_for_region(region_name, limit=50):
+    # ... setup prompt ...
+    response = client.models.generate_content(
+        model='gemini-2.0-flash',
+        contents=prompt,
+        config={'response_mime_type': 'application/json'}
+    )
+    return json.loads(response.text)
+</div>
+<h3>API Route (Flask)</h3>
+<pre><code class="language-python"># app.py
+@app.route('/generate-itinerary', methods=['POST'])
+def generate_itinerary():
+    data = request.json
+    selected_ids = data.get('selectedDestIds', [])
+    preferences = data.get('preferences', {})
+
+    # 1. Fetch Selected Destinations
+    selected_dests = db_session.query(Destination).filter(Destination.id.in_(selected_ids)).all()
+
+    # 2. Call Gemini Service
+    ai_result = generate_trip_options(preferences, [d.to_dict() for d in selected_dests])
+
+    # 3. Enrich with Images
+    # ...
+
+    return jsonify(ai_result)
+</div>
+<hr />
+<h2>🖼️ Image &amp; Media Strategy</h2>
+<h3>Unsplash API Integration (Python)</h3>
+<pre><code class="language-python">def get_image_for_destination(query, context):
+    # ... check cache ...
+    resp = requests.get(
+       f&quot;https://api.unsplash.com/search/photos?query={query}&amp;client_id={KEY}&quot;
+    )
+    data = resp.json()
+    if data['results']:
+        return data['results'][0]['urls']['regular']
+    return FALLBACK_IMAGE
+</div>
+<h3>Frontend Image Component</h3>
+<pre><code class="language-jsx">export function DestinationImage({ src, alt, className }) {
+  // Handles lazy loading and skeletons
+  const [loaded, setLoaded] = useState(false);
+
+  return (
+    &lt;div className={`relative ${className}`}&gt;
+      {!loaded &amp;&amp; &lt;Skeleton className=&quot;absolute inset-0&quot; /&gt;}
+      &lt;img 
+        src={src} 
+        alt={alt} 
+        className={loaded ? 'opacity-100' : 'opacity-0'}
+        onLoad={() =&gt; setLoaded(true)}
+      /&gt;
+    &lt;/div&gt;
+  );
+}
+</div>
+<hr />
+<h2>🔌 API Integrations</h2>
+<h3>Current (MVP)</h3>
+<ol>
+<li><strong>Google Gemini 2.0 Flash</strong> - AI itinerary generation</li>
+<li><strong>Unsplash API</strong> - Destination images</li>
+<li><strong>Internal Flask API</strong> - Logic and Coordination</li>
+</ol>
+<hr />
+<h2>📅 Development Roadmap</h2>
+<h3>Phase 1: MVP (Weeks 1-6) - Complete ✅</h3>
+<p><strong>Week 1-2: Setup</strong><br />
+- [x] Initialize React + Vite project<br />
+- [x] Set up Flask Backend<br />
+- [x] Sign up for Gemini &amp; Unsplash APIs<br />
+- [x] Create SQLite database schema<br />
+- [x] Seed initial destinations</p>
+<p><strong>Week 3-4: Backend</strong><br />
+- [x] Build AI integration (Gemini)<br />
+- [x] Implement trip generation API<br />
+- [x] Build image fetching system<br />
+- [x] Test AI with various inputs</p>
+<p><strong>Week 5-6: Frontend</strong><br />
+- [x] Build landing page<br />
+- [x] Build trip form<br />
+- [x] Build itinerary viewer<br />
+- [ ] Implement Drag &amp; Drop Editor (In Progress)<br />
+- [ ] User Dashboard</p>
+<p><strong>Deliverable:</strong> Live MVP running locally.</p>
+<hr />
+<h2>🛠️ Tech Stack</h2>
+<h3>Frontend</h3>
+<ul>
+<li>React 19 + Vite</li>
+<li>Tailwind CSS</li>
+<li>Lucide React (Icons)</li>
+<li>dnd-kit (Drag &amp; Drop)</li>
+</ul>
+<h3>Backend</h3>
+<ul>
+<li>Python 3.12 + Flask</li>
+<li>SQLAlchemy (ORM)</li>
+<li>SQLite (Database)</li>
+<li>JWT (Authentication)</li>
+</ul>
+<h3>AI &amp; APIs</h3>
+<ul>
+<li>Google Gemini 2.0 Flash</li>
+<li>Unsplash API</li>
+</ul>
+<h3>Hosting</h3>
+<ul>
+<li>Frontend: Vercel (Recommended)</li>
+<li>Backend: Render / Railway (Recommended)</li>
+</ul>
+<hr />
+<h2>💰 Cost Analysis</h2>
+<h3>MVP Phase (Current)</h3>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Cost</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Gemini API</td>
+<td>₹0 (free tier)</td>
+</tr>
+<tr>
+<td>Unsplash API</td>
+<td>₹0 (free)</td>
+</tr>
+<tr>
+<td>Backend Hosting</td>
+<td>₹0 (Render Free Tier)</td>
+</tr>
+<tr>
+<td>Frontend Hosting</td>
+<td>₹0 (Vercel Hobby)</td>
+</tr>
+<tr>
+<td><strong>Total</strong></td>
+<td><strong>₹0/month</strong></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Supports:</strong> Development and early testing.</p>
+<hr />
+<h2>🚀 Getting Started</h2>
+<h3>Immediate Next Steps</h3>
+<p><strong>1. Start Backend</strong></p>
+<pre><code class="language-bash">cd backend
+# Create virtual environment
+python -m venv .venv
+# Activate
+.venv\Scripts\activate
+# Install deps
+pip install -r requirements.txt
+# Run
+python app.py
+</div>
+<p><strong>2. Start Frontend</strong></p>
+<pre><code class="language-bash"># In new terminal
+npm install
+npm run dev
+</div>
+<p><strong>3. Verify</strong><br />
+- Frontend: http://localhost:5173<br />
+- Backend: http://localhost:5000 (Health check)</p>
+<hr />
+</body>
+</html>

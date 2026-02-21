@@ -1,6 +1,7 @@
 import React, { memo } from 'react';
+import { Link } from 'react-router-dom';
 import { Check, Star, Users, ExternalLink } from 'lucide-react';
-import styles from '../../pages/TripPlanner.module.css';
+import styles from '../../pages/trips/TripPlanner.module.css';
 
 const DestinationCard = memo(({ dest, isSelected, onToggle, onViewDetails }) => {
     return (
@@ -37,16 +38,17 @@ const DestinationCard = memo(({ dest, isSelected, onToggle, onViewDetails }) => 
                     </span>
                 </div>
 
-                <button
+                <Link
+                    to={`/destinations/${dest.id}`}
+                    state={{ from: window.location.pathname + window.location.search }}
                     className={styles.viewDetailsBtn}
                     onClick={(e) => {
                         e.stopPropagation();
-                        onViewDetails && onViewDetails(dest);
                     }}
                     style={{ background: 'transparent', color: 'var(--primary)', border: '1px solid var(--primary)', marginTop: '1rem', width: '100%' }}
                 >
                     View Details <ExternalLink size={14} style={{ display: 'inline', marginLeft: '4px' }} />
-                </button>
+                </Link>
             </div>
         </div>
     );

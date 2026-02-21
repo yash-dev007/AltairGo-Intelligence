@@ -1,5 +1,5 @@
 .section {
-    padding: var(--spacing-2xl) 0;
+    padding: 3.5rem 0;
     background-color: #f8fafc;
     /* Light slate background for contrast */
 }
@@ -12,7 +12,7 @@
 
 .header {
     text-align: left;
-    margin-bottom: var(--spacing-2xl);
+    margin-bottom: var(--spacing-lg);
 }
 
 .heading {

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import styles from './Features.module.css';
 import { Map, Calendar, Headset, Instagram, Twitter, Facebook, Zap, MapPin, IndianRupee } from 'lucide-react'; // Imports remain
+import { FeaturesSkeleton } from '../Skeleton/Skeleton';
 
 import { API_BASE_URL } from '../../config';
 
@@ -31,7 +32,7 @@ const Features = () => {
         "Headset": Headset
     };
 
-    if (loading) return null; // Or a spinner/skeleton
+    if (loading) return <section className={styles.features} id="about"><FeaturesSkeleton /></section>;
 
     return (
         <section className={styles.features} id="about">

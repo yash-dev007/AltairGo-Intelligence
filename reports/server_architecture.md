@@ -7,8 +7,8 @@
 
 *   **Language**: Python 3.12
 *   **Web Server**: Flask (WSGI)
-*   **Concurrency**: Threaded (`app.run(threaded=True)`)
-*   **CORS**: Allow All (`*`) for easy development.
+*   **Concurrency**: Threaded (`app.run(threaded=True, port=5000)`)
+*   **CORS**: Allow All (`*`) for easy development using `flask_cors`.
 
 ## 2. API Specification (OpenAPI Style)
 
@@ -32,44 +32,35 @@
 ]
 ```
 
-### B. Region Population (The Crawler)
+### B. Region Population (The AI Agent)
 **Endpoint**: `POST /regions/:id/populate`
-**Trigger**: Called when a user selects a region with 0 destinations.
+**Trigger**: Called when a user selects a region with < 5 destinations.
 
-**Algorithm (`services/osm_service.py`):**
-1.  **Input**: Region Name (e.g., "Kyoto").
-2.  **OSM Query**:
-    ```text
-    (
-      node["tourism"~"attraction"](area.kyoto);
-      way["tourism"~"attraction"](area.kyoto);
-    );
-    out center;
-    ```
-3.  **Filtering Rules**:
-    *   **Exclude**: `hospital`, `school`, `bank`, `pharmacy`.
-    *   **Name Check**: Must be mostly ASCII (Latin characters) to ensure readability.
-4.  **Mock Generation**:
-    *   `price` = `random.choice([0, 500, 1500])`.
-    *   `rating` = `random.uniform(4.0, 4.9)` (Optimistic Bias).
-5.  **Limit**: Max **3 Items** per request (Sandbox safety).
+**Algorithm (`services/ai_destination_service.py`):**
+1.  **Input**: Region Name (e.g., "Kyoto"), Country Name.
+2.  **AI Query**: Uses `google-genai` SDK with models (e.g., `gemini-2.0-flash`).
+    *   **Prompt**: "Generate a list of 50 tourist destinations in {region_name}..."
+3.  **Filtering & Enrichment**:
+    *   **Images**: Fetches images via Unsplash API using `services.image_service`.
+    *   **Deduplication**: Checks against existing database entries.
+4.  **Output**: Returns list of newly created `Destination` objects.
+5.  **Limit**: Max **50 Items** per request.
 
-### C. Smart City Search (The AI)
+### C. Smart Destination Generation
 **Endpoint**: `POST /generate-destinations`
 **Payload**: `{ "query": "Paris" }`
 
-**Scoring Algorithm (`services/generation_service.py`):**
-The system scores every POI found to determine the "Top 10".
+**Algorithm (`services/generation_service.py`):**
+Uses AI to generate smart suggestions based on the user's free-text query.
 
-| Criterion | Tag | Weight |
-| :--- | :--- | :--- |
-| **Category** | `tourism=museum` | **+10** |
-| | `historic=*` | **+8** |
-| | `tourism=viewpoint` | **+7** |
-| | `leisure=park` | **+6** |
-| **Metadata** | `wikipedia=*` | **+5** |
-| | `website=*` | **+2** |
-| **Data Quality**| Name length > 3 | **+2** |
+### D. Itinerary Generation
+**Endpoint**: `POST /generate-itinerary`
+**Payload**: `{ "selectedDestIds": [...], "preferences": {...} }`
+
+**Algorithm (`services/gemini_service.py`):**
+1.  **Context**: Fetches full details of selected destinations from DB.
+2.  **AI Generation**: Generates a day-by-day itinerary JSON.
+3.  **Image Enrichment**: Adds Unsplash images to the generated itinerary items.
 
 ## 3. Database Schema (SQLAlchemy)
 

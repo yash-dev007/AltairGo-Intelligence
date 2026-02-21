@@ -1,5 +1,5 @@
 .features {
-    padding: 8rem 0;
+    padding: 1.5rem 0 4rem;
     background: #f8fafc;
     /* Very light grey/white base */
     position: relative;
@@ -15,7 +15,7 @@
     padding: 0 var(--spacing-sm);
     /* Default mobile friendly */
     display: grid;
-    gap: 4rem;
+    gap: 2.5rem;
     width: 100%;
     position: relative;
     z-index: 2;
@@ -40,7 +40,7 @@
 }
 
 .brandGradient {
-    background:#2f9253;
+    background: #2f9253;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;

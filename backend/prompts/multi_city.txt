@@ -1,0 +1,28 @@
+ADDITIONAL RULES FOR MULTI-CITY TRIPS (3+ cities):
+
+ROUTING LOGIC:
+- Order cities to create a logical geographic circuit (minimize backtracking)
+- Consider: start near the international airport, end near departure point
+- Classic patterns: Golden Triangle (Delhi → Agra → Jaipur → Delhi), coastal loop, mountain to beach
+- Account for 1 full travel day when moving between cities > 200km apart
+
+CITY TRANSITIONS:
+- Dedicate a specific "travel_between_cities" entry for EVERY city change
+- Compare all modes: Train vs. Flight vs. Bus (cost, duration, comfort)
+- Overnight trains are budget-friendly (save hotel cost); recommend when journey is 5-8 hours
+- For flights: factor in airport transfer time (usually adds 2-3 hours total)
+
+PACING:
+- Minimum 2 full days per city to explore meaningfully
+- Avoid 1-day city hops unless cities are very close (< 1 hour travel)
+- Plan "acclimatization" activity first thing in each new city (walk the neighborhood, hire local guide)
+
+ACCOMMODATION STRATEGY:
+- Stay centrally in each city (near railway station or main attractions)
+- Same hotel both nights in a city avoids pack/unpack hassle — mention this benefit
+- For a long trip, suggest 1-2 nights at a unique property (houseboat, heritage haveli, treehouse)
+
+BUDGET ALLOCATION FOR MULTI-CITY:
+- Transport budget increases to 25-30% (more intercity travel)
+- Reduce activity budget slightly to 12-15% to compensate
+- Factor in luggarge storage costs, porter fees at stations
