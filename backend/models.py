@@ -212,3 +212,34 @@ class AnalyticsEvent(Base):
             "created_at": self.created_at.isoformat() if self.created_at else None
         }
 
+class BookingClick(Base):
+    __tablename__ = 'booking_clicks'
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey('users.id'), nullable=True) # Optional, guest bookings allowed
+    link_type = Column(String(50)) # e.g. 'flight', 'hotel', 'activity'
+    destination = Column(String(100)) # e.g. 'Goa', 'Taj Mahal'
+    partner = Column(String(50)) # e.g. 'makemytrip', 'booking.com'
+    tracking_id = Column(String(100), unique=True, index=True) # Unique ID for this specific click
+    
+    # Analytics data
+    timestamp = Column(DateTime, default=func.now())
+    user_agent = Column(String(255))
+    ip_address = Column(String(50))
+    referrer = Column(String(255))
+    
+    # Financial estimates
+    estimated_revenue = Column(Float, default=0.0)
+    is_converted = Column(Boolean, default=False) # For future webhook implementation
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "user_id": self.user_id,
+            "link_type": self.link_type,
+            "destination": self.destination,
+            "partner": self.partner,
+            "tracking_id": self.tracking_id,
+            "timestamp": self.timestamp.isoformat() if self.timestamp else None,
+            "estimated_revenue": self.estimated_revenue,
+            "is_converted": self.is_converted
+        }

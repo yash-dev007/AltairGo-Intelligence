@@ -3,15 +3,13 @@ import { Plane, Building, Ticket, ArrowRight, ExternalLink } from 'lucide-react'
 import styles from './AIDestinationDetailsModal.module.css'; // Reusing glassmorphism styles
 
 const BookingSection = ({ startLocation, destinations, travelDate }) => {
-    // Helper to generate search links
-    const getFlightLink = () => {
-        // Example: https://www.makemytrip.com/flights/
-        // Real deep linking is complex, so we point to the main search for now or a pre-filled query if supported.
-        return `https://www.makemytrip.com/flights/`;
+    // Helper to generate search links using our backend Affiliate Tracker
+    const getFlightLink = (dest) => {
+        return `/api/book/flight?destination=${encodeURIComponent(dest)}&partner=makemytrip`;
     };
 
     const getHotelLink = (city) => {
-        return `https://www.booking.com/searchresults.html?ss=${city}`;
+        return `/api/book/hotel?destination=${encodeURIComponent(city)}&partner=booking`;
     };
 
     const firstDest = destinations && destinations.length > 0 ? destinations[0].name : 'Destination';
@@ -44,7 +42,7 @@ const BookingSection = ({ startLocation, destinations, travelDate }) => {
                         </div>
                     </div>
                     <a
-                        href={getFlightLink()}
+                        href={getFlightLink(firstDest)}
                         target="_blank"
                         rel="noopener noreferrer"
                         style={{

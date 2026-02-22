@@ -4,8 +4,14 @@ import react from '@vitejs/plugin-react'
 // Bypass helper: let browser navigation (text/html) go to React,
 // but proxy fetch/XHR requests to Flask.
 const bypassForHtml = (req) => {
-  if (req.headers.accept && req.headers.accept.includes('text/html')) {
-    return req.url; // Don't proxy — let Vite serve the SPA
+  // If the frontend explicitly marks this as an API request, ALWAYS proxy it
+  if (req.headers['x-requested-with'] === 'XMLHttpRequest') {
+    return; // allow proxy
+  }
+
+  // Otherwise, if the browser is requesting HTML navigation, let Vite serve the SPA index.html
+  if (req.headers.accept?.includes('text/html')) {
+    return req.url;
   }
 };
 

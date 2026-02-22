@@ -27,10 +27,21 @@ const DestinationDetails = () => {
     const [visibleReviews, setVisibleReviews] = useState(3);
     const [sortBy, setSortBy] = useState('newest');
 
+    const [error, setError] = useState(null);
+
     useEffect(() => {
-        fetch(`${API_BASE_URL}/destinations/${id}`)
+        fetch(`${API_BASE_URL}/destinations/${id}`, {
+            headers: {
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
             .then(res => {
-                if (!res.ok) throw new Error("Destination not found");
+                if (!res.ok) {
+                    return res.text().then(text => {
+                        throw new Error(`Status ${res.status}: ${text}`);
+                    });
+                }
                 return res.json();
             })
             .then(data => {
@@ -45,6 +56,7 @@ const DestinationDetails = () => {
             })
             .catch(err => {
                 console.error("Failed to fetch destination:", err);
+                setError(err.message);
                 setLoading(false);
             });
     }, [id]);
@@ -117,6 +129,16 @@ const DestinationDetails = () => {
 
     if (loading) {
         return <DetailPageSkeleton />;
+    }
+
+    if (error) {
+        return (
+            <div style={{ padding: '10rem', textAlign: 'center', color: 'red' }}>
+                <h2>Fetch Error</h2>
+                <p>{error}</p>
+                <Link to="/destinations" className="btnPrimary" style={{ marginTop: '1rem', display: 'inline-block' }}>Back to Destinations</Link>
+            </div>
+        );
     }
 
     if (!destination) {

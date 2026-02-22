@@ -214,6 +214,28 @@ const BookingWidget = () => {
         }
     };
 
+    const handleSearch = () => {
+        // Find the relevant destination input based on the active tab
+        let destination = '';
+        let linkType = activeTab === 'flights' ? 'flight' : 'hotel';
+        let partner = activeTab === 'flights' ? 'makemytrip' : 'booking';
+
+        // DOM traversal for this standalone widget
+        const inputs = document.querySelectorAll(`.${styles.input}`);
+
+        if (activeTab === 'flights' && inputs.length > 1) {
+            destination = inputs[1].value || 'Mumbai'; // "To" field
+        } else if (inputs.length > 0) {
+            destination = inputs[0].value || 'Goa'; // Generic city/hotel field
+        }
+
+        // Build the tracker URL
+        const trackerUrl = `/api/book/${linkType}?destination=${encodeURIComponent(destination)}&partner=${partner}`;
+
+        // Open in new tab
+        window.open(trackerUrl, '_blank');
+    };
+
     return (
         <div className={styles.widgetContainer}>
             <div className={styles.tabs}>
@@ -272,7 +294,7 @@ const BookingWidget = () => {
             {renderFormInfo()}
 
             <div className={styles.searchBtnContainer}>
-                <button className={styles.searchBtn}>
+                <button className={styles.searchBtn} onClick={handleSearch}>
                     Search
                 </button>
             </div>

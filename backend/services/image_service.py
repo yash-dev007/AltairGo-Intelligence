@@ -1,555 +1,660 @@
-import requests
-import json
+"""
+image_service.py
+================
+Travel app image fetcher — optimised for 10,000+ Indian destinations.
+
+Priority chain:
+    1. SQLite cache         → instant, no API calls
+    2. Wikipedia REST API   → auto-lookup by name, no key needed, most accurate
+    3. Wikimedia / Wikidata → direct P18 image if wikidata tag present
+    4. Pexels API           → high-quality stock, rate-limited carefully
+    5. Category placeholder → local SVG data-URI, never fails
+
+Setup:
+    pip install requests
+    export PEXELS_API_KEY="your_key_here"   # optional but recommended
+"""
+
 import os
+import re
+import time
+import sqlite3
 import hashlib
-import random
-from urllib.parse import quote
+import logging
+import requests
+from datetime import datetime, timedelta
+from threading import Lock
 
-# --- Configuration ---
-CACHE_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'image_cache.json')
-WIKIDATA_API    = "https://www.wikidata.org/w/api.php"
-UNSPLASH_ACCESS_KEY = os.getenv('UNSPLASH_ACCESS_KEY')
-UNSPLASH_API_URL    = "https://api.unsplash.com/search/photos"
-PIXABAY_API_KEY  = os.getenv('PIXABAY_API_KEY')
-PIXABAY_API_URL  = "https://pixabay.com/api/"
-PEXELS_API_KEY   = os.getenv('PEXELS_API_KEY')
-PEXELS_API_URL   = "https://api.pexels.com/v1/search"
-USER_AGENT = "AltairGo/1.0 (internal-dev-testing)"
+# ─────────────────────────── Logging ──────────────────────────────────────────
+
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s  %(levelname)-7s %(message)s',
+    datefmt='%H:%M:%S',
+)
+log = logging.getLogger('image_service')
+
+# ─────────────────────────── Configuration ────────────────────────────────────
+
+DB_PATH          = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'image_cache.db')
+CACHE_TTL_DAYS   = 60          # Re-fetch after 60 days (handles dead URLs)
+PEXELS_API_KEY   = os.getenv('PEXELS_API_KEY', '')
+PEXELS_API_URL   = 'https://api.pexels.com/v1/search'
+WIKIDATA_API     = 'https://www.wikidata.org/w/api.php'
+COMMONS_API      = 'https://commons.wikimedia.org/w/api.php'
+WIKIPEDIA_API    = 'https://en.wikipedia.org/w/api.php'
+USER_AGENT       = 'AltairTravelApp/2.0 (travel-app; image-fetch-bot)'
+
+# Pexels rate-limit guard — stays well inside 200/hr and 20k/month
+PEXELS_MAX_PER_HOUR  = 150      # leave 50 buffer
+PEXELS_MAX_PER_MONTH = 18_000   # leave 2000 buffer
+
+# ─────────────────────────── SQLite Cache ─────────────────────────────────────
+
+_db_lock = Lock()
+
+def _get_db() -> sqlite3.Connection:
+    conn = sqlite3.connect(DB_PATH, check_same_thread=False)
+    conn.execute('''
+        CREATE TABLE IF NOT EXISTS image_cache (
+            cache_key   TEXT PRIMARY KEY,
+            url         TEXT NOT NULL,
+            source      TEXT,
+            fetched_at  TEXT NOT NULL
+        )
+    ''')
+    conn.execute('''
+        CREATE TABLE IF NOT EXISTS pexels_usage (
+            period  TEXT PRIMARY KEY,   -- "YYYY-MM" or "YYYY-MM-DD HH"
+            count   INTEGER DEFAULT 0
+        )
+    ''')
+    conn.commit()
+    return conn
 
 
-# ──────────────────────────────── Cache ───────────────────────────────────────
-
-_cache = {}
-
-def load_cache():
-    global _cache
-    if os.path.exists(CACHE_FILE):
-        try:
-            with open(CACHE_FILE, 'r', encoding='utf-8') as f:
-                _cache = json.load(f)
-        except Exception:
-            _cache = {}
-
-def save_cache():
-    try:
-        with open(CACHE_FILE, 'w', encoding='utf-8') as f:
-            json.dump(_cache, f, indent=2, ensure_ascii=False)
-    except Exception:
-        pass
-
-def get_cached_image(key: str):
-    if not _cache:
-        load_cache()
-    return _cache.get(key)
-
-def cache_image(key: str, url: str):
-    _cache[key] = url
-    save_cache()
+def _cache_get(key: str):
+    """Return (url, source) if cached and not expired, else None."""
+    with _db_lock:
+        conn = _get_db()
+        row = conn.execute(
+            'SELECT url, source, fetched_at FROM image_cache WHERE cache_key = ?', (key,)
+        ).fetchone()
+        conn.close()
+    if not row:
+        return None
+    url, source, fetched_at = row
+    age = datetime.utcnow() - datetime.fromisoformat(fetched_at)
+    if age > timedelta(days=CACHE_TTL_DAYS):
+        return None   # expired — re-fetch
+    return url, source
 
 
-# ──────────────────────────────── Smart Query Builder ─────────────────────────
+def _cache_set(key: str, url: str, source: str):
+    with _db_lock:
+        conn = _get_db()
+        conn.execute('''
+            INSERT OR REPLACE INTO image_cache (cache_key, url, source, fetched_at)
+            VALUES (?, ?, ?, ?)
+        ''', (key, url, source, datetime.utcnow().isoformat()))
+        conn.commit()
+        conn.close()
 
-def build_smart_query(name: str, tags=None, location_context=None) -> str:
+
+# ─────────────────────────── Pexels Rate Limiter ──────────────────────────────
+
+def _pexels_allowed() -> bool:
+    """Returns True if we're safely within Pexels rate limits."""
+    now   = datetime.utcnow()
+    month = now.strftime('%Y-%m')
+    hour  = now.strftime('%Y-%m-%d %H')
+
+    with _db_lock:
+        conn = _get_db()
+        monthly = conn.execute(
+            'SELECT count FROM pexels_usage WHERE period = ?', (month,)
+        ).fetchone()
+        hourly = conn.execute(
+            'SELECT count FROM pexels_usage WHERE period = ?', (hour,)
+        ).fetchone()
+        conn.close()
+
+    monthly_count = monthly[0] if monthly else 0
+    hourly_count  = hourly[0]  if hourly  else 0
+
+    return monthly_count < PEXELS_MAX_PER_MONTH and hourly_count < PEXELS_MAX_PER_HOUR
+
+
+def _pexels_increment():
+    now   = datetime.utcnow()
+    month = now.strftime('%Y-%m')
+    hour  = now.strftime('%Y-%m-%d %H')
+    with _db_lock:
+        conn = _get_db()
+        for period in (month, hour):
+            conn.execute('''
+                INSERT INTO pexels_usage (period, count) VALUES (?, 1)
+                ON CONFLICT(period) DO UPDATE SET count = count + 1
+            ''', (period,))
+        conn.commit()
+        conn.close()
+
+
+# ─────────────────────────── Smart Query Builder ──────────────────────────────
+
+# Maps name keywords → descriptive search suffix for better relevance
+_LANDMARK_MAP = {
+    'taj mahal':        'white marble mausoleum Agra',
+    'hawa mahal':       'pink facade palace Jaipur',
+    'amber fort':       'hilltop fort Jaipur Rajasthan',
+    'amer fort':        'hilltop fort Jaipur Rajasthan',
+    'gateway of india': 'arch monument Mumbai waterfront',
+    'golden temple':    'golden gurdwara Amritsar',
+    'red fort':         'red sandstone fort Delhi',
+    'qutub minar':      'tall minaret tower Delhi',
+    'lotus temple':     'white lotus shaped temple Delhi',
+    'victoria memorial':'white marble building Kolkata',
+    'india gate':       'war memorial arch Delhi',
+    'meenakshi':        'colourful gopuram temple Madurai',
+    'khajuraho':        'carved sandstone temples',
+    'konark':           'sun temple Odisha',
+    'ajanta':           'Buddhist cave paintings Maharashtra',
+    'ellora':           'rock cut caves Maharashtra',
+    'hampi':            'ruins Vijayanagara Karnataka',
+    'mysore palace':    'illuminated palace Karnataka',
+    'charminar':        'four minarets monument Hyderabad',
+    'dal lake':         'shikara boat lake Srinagar Kashmir',
+    'backwaters':       'houseboat Kerala green water',
+}
+
+_TYPE_MAP = [
+    (['fort', 'qila', 'fortress', 'citadel'],         'historic fort architecture'),
+    (['palace', 'mahal', 'haveli', 'darbar'],          'royal palace architecture'),
+    (['temple', 'mandir', 'kovil'],                    'Hindu temple architecture'),
+    (['mosque', 'masjid', 'dargah'],                   'mosque architecture'),
+    (['church', 'cathedral', 'basilica'],              'church architecture'),
+    (['gurdwara', 'gurudwara'],                        'Sikh gurdwara'),
+    (['beach', 'coast', 'shore'],                      'beach coastline'),
+    (['lake', 'sagar', 'talab', 'reservoir'],          'lake water landscape'),
+    (['waterfall', 'falls', 'jharna'],                 'waterfall nature'),
+    (['mountain', 'hill', 'peak', 'ghats'],            'mountain landscape'),
+    (['forest', 'wildlife', 'sanctuary', 'national park'], 'wildlife forest India'),
+    (['garden', 'bagh', 'park', 'botanical'],          'garden park landscape'),
+    (['museum', 'gallery'],                            'museum building'),
+    (['market', 'bazaar', 'chowk', 'haat'],            'Indian market street'),
+    (['cave', 'cavern'],                               'cave natural'),
+    (['monument', 'memorial', 'stupa', 'pillar'],      'monument India'),
+    (['island'],                                       'island India sea'),
+]
+
+
+def build_query(name: str, tags: dict = None, location: dict = None) -> str:
     """
-    Build a contextual search query that dramatically improves image relevance.
-
-    Examples:
-        "Amber Fort"        → "Amber Fort Jaipur Rajasthan India hilltop fort"
-        "Hawa Mahal"        → "Hawa Mahal pink palace facade Jaipur India"
-        "Calangute Beach"   → "Calangute Beach Goa India beach coastline"
+    Build a highly specific search query for a destination.
+    Priority: known landmark map → type keywords → location context → name alone.
     """
-    query_parts = [name.strip()]
+    name_lower = name.lower().strip()
 
-    # 1. Inject location context from DB
-    if location_context:
-        city    = location_context.get('city', '')
-        state   = location_context.get('state', '')
-        country = location_context.get('country', 'India')
-        name_lower = name.lower()
+    # 1. Known landmark — highest precision
+    for landmark, suffix in _LANDMARK_MAP.items():
+        if landmark in name_lower:
+            return f"{name} {suffix}"
 
-        if city and city.lower() not in name_lower:
-            query_parts.append(city)
-        if state and state.lower() not in name_lower and state.lower() not in city.lower():
-            query_parts.append(state)
-        if country and country.lower() not in ' '.join(query_parts).lower():
-            query_parts.append(country)
+    parts = [name.strip()]
 
-    # 2. Add descriptive keywords based on OSM tags
-    if isinstance(tags, dict):
-        tourism = tags.get('tourism', '')
-        historic = tags.get('historic', '')
-        natural = tags.get('natural', '')
-        leisure = tags.get('leisure', '')
+    # 2. Location context
+    if location:
+        city    = location.get('city', '')
+        state   = location.get('state', '')
+        country = location.get('country', 'India')
+        joined  = name_lower
+        if city and city.lower() not in joined:
+            parts.append(city)
+            joined += ' ' + city.lower()
+        if state and state.lower() not in joined:
+            parts.append(state)
+            joined += ' ' + state.lower()
+        if country and country.lower() not in joined:
+            parts.append(country)
 
-        if tourism == 'museum':
-            query_parts.append('museum')
-        elif tourism == 'attraction':
-            query_parts.append('landmark')
-        elif tourism == 'artwork':
-            query_parts.append('monument')
-
-        if historic == 'castle':
-            query_parts.append('fort')
-        elif historic == 'monument':
-            query_parts.append('monument')
-        elif historic == 'archaeological_site':
-            query_parts.append('ruins')
-
-        if natural == 'beach':
-            query_parts.append('beach')
-        elif natural in ('peak', 'mountain_range'):
-            query_parts.append('mountain')
-        elif natural == 'water':
-            query_parts.append('lake')
-
-        if leisure == 'park':
-            query_parts.append('park')
-
-    # 3. Add descriptive keywords for well-known landmarks
-    name_lower = name.lower()
-    LANDMARK_KEYWORDS = {
-        'taj mahal':       'white marble',
-        'hawa mahal':      'pink palace facade',
-        'amber fort':      'hilltop fort',
-        'amer fort':       'hilltop fort',
-        'gateway of india':'arch monument',
-        'golden temple':   'golden sikh gurdwara',
-        'red fort':        'red sandstone fort',
-        'qutub minar':     'tall minaret tower',
-        'lotus temple':    'white lotus shaped',
-        'victoria memorial':'white marble building',
-        'india gate':      'war memorial arch',
-        'meenakshi':       'gopuram temple',
-        'khajuraho':       'carved temples',
-        'konark':          'sun temple',
-        'ajanta':          'cave paintings',
-        'ellora':          'rock cut caves',
-    }
-    for keyword, extra in LANDMARK_KEYWORDS.items():
-        if keyword in name_lower:
-            query_parts.append(extra)
+    # 3. Type keywords from name
+    for keywords, label in _TYPE_MAP:
+        if any(kw in name_lower for kw in keywords):
+            parts.append(label)
             break
-    else:
-        # Generic type keywords
-        TYPE_MAP = [
-            (['fort', 'fortress', 'qila'],    'historic fort'),
-            (['palace', 'mahal', 'haveli'],   'royal palace'),
-            (['temple', 'mandir'],            'hindu temple'),
-            (['mosque', 'masjid'],            'mosque'),
-            (['church'],                      'church'),
-            (['gurdwara', 'gurudwara'],       'sikh gurdwara'),
-            (['beach'],                       'beach coastline'),
-            (['lake', 'sagar', 'tal'],        'lake water'),
-            (['garden', 'bagh', 'park'],      'garden'),
-            (['museum'],                      'museum building'),
-            (['market', 'bazaar', 'chowk'],   'traditional market'),
-            (['waterfall'],                   'waterfall'),
-            (['cave'],                        'cave natural'),
-            (['monument', 'memorial'],        'monument'),
-        ]
-        for keywords, label in TYPE_MAP:
-            if any(kw in name_lower for kw in keywords):
-                query_parts.append(label)
-                break
 
-    # 4. De-duplicate while preserving order
-    seen = set()
-    unique = []
-    for part in ' '.join(query_parts).split():
-        if part.lower() not in seen:
-            seen.add(part.lower())
-            unique.append(part)
+    # 4. OSM tag hints
+    if isinstance(tags, dict):
+        historic = tags.get('historic', '')
+        natural  = tags.get('natural', '')
+        tourism  = tags.get('tourism', '')
+        if historic == 'castle':
+            parts.append('fort')
+        elif historic == 'palace':
+            parts.append('palace')
+        elif natural == 'beach':
+            parts.append('beach')
+        elif natural in ('peak', 'mountain_range'):
+            parts.append('mountain')
+        elif tourism == 'museum':
+            parts.append('museum')
 
-    final = ' '.join(unique)
-    # API query length limit guard
-    if len(final) > 100:
-        final = final[:100].rsplit(' ', 1)[0]
-
-    return final
+    query = ' '.join(parts)
+    return query[:120]   # API hard limit guard
 
 
-# ──────────────────────────────── Wikidata / Wikimedia ────────────────────────
+# ─────────────────────────── Source 2: Wikipedia REST ─────────────────────────
 
-def fetch_wikimedia_image(wikidata_id: str):
-    """Fetch the main image (P18) for a given Wikidata entity ID."""
-    params = {
-        'action': 'wbgetclaims',
-        'entity': wikidata_id,
-        'property': 'P18',
-        'format': 'json'
-    }
-    headers = {'User-Agent': USER_AGENT}
+def _wikipedia_image(name: str) -> str | None:
+    """
+    Use Wikipedia's REST summary API to get the page image for a destination.
+    Automatically handles name → article lookup. No API key needed.
+    Very high accuracy for any destination that has a Wikipedia article.
+    """
+    # Try exact name first, then simplified version
+    candidates = [name, re.sub(r'\s+', '_', name.strip())]
+    for candidate in candidates:
+        try:
+            url = f"https://en.wikipedia.org/api/rest_v1/page/summary/{requests.utils.quote(candidate)}"
+            resp = requests.get(url, headers={'User-Agent': USER_AGENT}, timeout=6)
+            if resp.status_code == 200:
+                data = resp.json()
+                img = data.get('originalimage') or data.get('thumbnail')
+                if img and img.get('source'):
+                    log.info('  ✓ Wikipedia REST: %s', name)
+                    return img['source']
+        except Exception as e:
+            log.debug('  Wikipedia REST error (%s): %s', candidate, e)
+    return None
+
+
+def _wikipedia_search_image(name: str, location: dict = None) -> str | None:
+    """
+    If direct Wikipedia lookup fails, search for the article first.
+    Handles slightly misspelled or alternate names.
+    """
+    search_term = name
+    if location and location.get('city'):
+        search_term = f"{name} {location['city']}"
+
     try:
-        resp = requests.get(WIKIDATA_API, params=params, headers=headers, timeout=5)
+        params = {
+            'action': 'query',
+            'list': 'search',
+            'srsearch': search_term,
+            'srlimit': 3,
+            'format': 'json',
+        }
+        resp = requests.get(
+            WIKIPEDIA_API,
+            params=params,
+            headers={'User-Agent': USER_AGENT},
+            timeout=6
+        )
+        results = resp.json().get('query', {}).get('search', [])
+        for result in results:
+            title = result.get('title', '')
+            img_url = f"https://en.wikipedia.org/api/rest_v1/page/summary/{requests.utils.quote(title)}"
+            r2 = requests.get(img_url, headers={'User-Agent': USER_AGENT}, timeout=5)
+            if r2.status_code == 200:
+                data = r2.json()
+                img = data.get('originalimage') or data.get('thumbnail')
+                if img and img.get('source'):
+                    log.info('  ✓ Wikipedia search: %s → %s', name, title)
+                    return img['source']
+    except Exception as e:
+        log.debug('  Wikipedia search error (%s): %s', name, e)
+    return None
+
+
+# ─────────────────────────── Source 3: Wikidata P18 ───────────────────────────
+
+def _wikidata_image(wikidata_id: str) -> str | None:
+    """Direct P18 image fetch when we already have the Wikidata ID from OSM tags."""
+    try:
+        resp = requests.get(
+            WIKIDATA_API,
+            params={'action': 'wbgetclaims', 'entity': wikidata_id, 'property': 'P18', 'format': 'json'},
+            headers={'User-Agent': USER_AGENT},
+            timeout=6
+        )
         p18 = resp.json().get('claims', {}).get('P18', [])
         if p18:
             filename = p18[0]['mainsnak']['datavalue']['value']
-            return resolve_commons_url(filename)
+            return _resolve_commons(filename)
     except Exception as e:
-        print(f"   Wikidata lookup failed ({wikidata_id}): {e}")
+        log.debug('  Wikidata error (%s): %s', wikidata_id, e)
     return None
 
 
-def resolve_commons_url(filename: str):
-    """Resolve a Wikimedia Commons filename to a direct image URL."""
-    params = {
-        'action': 'query',
-        'titles': f"File:{filename}",
-        'prop': 'imageinfo',
-        'iiprop': 'url',
-        'format': 'json'
-    }
-    headers = {'User-Agent': USER_AGENT}
+def _resolve_commons(filename: str) -> str | None:
+    """Resolve a Wikimedia Commons filename to a direct CDN URL."""
+    # Skip non-image file types
+    if not re.search(r'\.(jpe?g|png|gif|webp)$', filename, re.IGNORECASE):
+        log.debug('  Skipping non-image Commons file: %s', filename)
+        return None
     try:
         resp = requests.get(
-            "https://commons.wikimedia.org/w/api.php",
-            params=params, headers=headers, timeout=5
+            COMMONS_API,
+            params={
+                'action': 'query',
+                'titles': f'File:{filename}',
+                'prop': 'imageinfo',
+                'iiprop': 'url',
+                'format': 'json'
+            },
+            headers={'User-Agent': USER_AGENT},
+            timeout=6
         )
         pages = resp.json().get('query', {}).get('pages', {})
         for v in pages.values():
-            if 'imageinfo' in v:
-                return v['imageinfo'][0]['url']
+            info = v.get('imageinfo', [])
+            if info:
+                return info[0]['url']
     except Exception as e:
-        print(f"   Commons resolution failed ({filename}): {e}")
+        log.debug('  Commons resolve error (%s): %s', filename, e)
     return None
 
 
-# ──────────────────────────────── Pexels API ──────────────────────────────────
+# ─────────────────────────── Source 4: Pexels ─────────────────────────────────
 
-def fetch_pexels_image(query: str):
+def _pexels_image(query: str) -> str | None:
     """
-    Pexels API — Free, high-quality landmark photos, excellent for destinations.
-    Sign up at https://www.pexels.com/api/ (free, 200 requests/hour).
+    Fetch from Pexels with smart rate-limit guarding.
+    Falls back to simpler queries if full query returns nothing.
     """
-    if not PEXELS_API_KEY or not PEXELS_API_KEY.strip():
+    if not PEXELS_API_KEY:
         return None
-    try:
-        resp = requests.get(
-            PEXELS_API_URL,
-            headers={'Authorization': PEXELS_API_KEY},
-            params={'query': query, 'per_page': 5, 'orientation': 'landscape'},
-            timeout=5
-        )
-        if resp.status_code == 200:
-            photos = resp.json().get('photos', [])
-            if photos:
-                # Best-rated photo
-                best = max(photos, key=lambda p: p.get('liked', 0))
-                url = best['src'].get('large2x') or best['src'].get('large')
-                print(f"   ✓ Pexels: {query}")
-                return url
-        else:
-            print(f"   Pexels {resp.status_code}")
-    except Exception as e:
-        print(f"   Pexels error: {e}")
-    return None
-
-
-# ──────────────────────────────── Pixabay API ─────────────────────────────────
-
-def fetch_pixabay_image(query: str):
-    """
-    Pixabay API — fallback with progressive query simplification.
-    """
-    if not PIXABAY_API_KEY or not PIXABAY_API_KEY.strip():
+    if not _pexels_allowed():
+        log.warning('  Pexels rate limit reached — skipping')
         return None
 
-    words = query.split()
-    attempts = [
-        query,                          # Full smart query
-        ' '.join(words[:3]),            # First 3 words
-        words[0] if words else query,   # Just the main name word
-    ]
-
-    for attempt in attempts:
-        try:
-            resp = requests.get(
-                PIXABAY_API_URL,
-                params={
-                    'key': PIXABAY_API_KEY,
-                    'q': attempt,
-                    'image_type': 'photo',
-                    'orientation': 'horizontal',
-                    'per_page': 5,
-                    'safesearch': 'true',
-                    'category': 'places',
-                },
-                timeout=5
-            )
-            if resp.status_code == 200:
-                hits = resp.json().get('hits', [])
-                if hits:
-                    best = max(hits, key=lambda h: h.get('likes', 0))
-                    url = best.get('largeImageURL') or best.get('webformatURL')
-                    print(f"   ✓ Pixabay: {attempt}")
-                    return url
-        except Exception as e:
-            print(f"   Pixabay error ({attempt}): {e}")
-
-    return None
-
-
-# ──────────────────────────────── Unsplash API ────────────────────────────────
-
-def fetch_unsplash_image(query: str):
-    """
-    Unsplash API — high-artistic-quality photos.
-    """
-    if not UNSPLASH_ACCESS_KEY or not UNSPLASH_ACCESS_KEY.strip():
-        return None
-
-    words = query.split()
+    words   = query.split()
+    # Try progressively simpler queries for better hit rate
     attempts = [
         query,
-        ' '.join(words[:4]),
-        ' '.join(words[:2]),
+        ' '.join(words[:5]),
+        ' '.join(words[:3]),
     ]
+    # De-duplicate
+    seen, unique_attempts = set(), []
+    for a in attempts:
+        if a not in seen:
+            seen.add(a)
+            unique_attempts.append(a)
 
-    for attempt in attempts:
+    for attempt in unique_attempts:
         try:
             resp = requests.get(
-                UNSPLASH_API_URL,
-                headers={
-                    'Authorization': f'Client-ID {UNSPLASH_ACCESS_KEY}',
-                    'User-Agent': USER_AGENT
-                },
+                PEXELS_API_URL,
+                headers={'Authorization': PEXELS_API_KEY},
                 params={
                     'query': attempt,
                     'per_page': 5,
                     'orientation': 'landscape',
-                    'content_filter': 'high',
                 },
-                timeout=5
+                timeout=6
             )
-            if resp.status_code == 200:
-                results = resp.json().get('results', [])
-                if results:
-                    best = max(results, key=lambda r: r.get('likes', 0))
-                    url = best['urls'].get('regular')
-                    print(f"   ✓ Unsplash: {attempt}")
-                    return url
+            _pexels_increment()
+
+            if resp.status_code == 429:
+                log.warning('  Pexels 429 — backing off')
+                return None
+            if resp.status_code != 200:
+                log.debug('  Pexels %d for query: %s', resp.status_code, attempt)
+                continue
+
+            photos = resp.json().get('photos', [])
+            if photos:
+                # First result is Pexels' best relevance match — don't re-sort by likes
+                best = photos[0]
+                url  = best['src'].get('large2x') or best['src'].get('large')
+                log.info('  ✓ Pexels: %s', attempt)
+                return url
+
         except Exception as e:
-            print(f"   Unsplash error ({attempt}): {e}")
+            log.debug('  Pexels error (%s): %s', attempt, e)
 
     return None
 
 
-# ──────────────────────────────── Curated Fallback ────────────────────────────
+# ─────────────────────────── Source 5: Category Placeholder ───────────────────
 
-# Curated, high-resolution (1200px) images organised by destination type.
-# Selection is DETERMINISTIC: same destination name → always same image (MD5 hash).
-_IMAGE_SETS = {
-    'indian_fort': [
-        'https://images.unsplash.com/photo-1587135941948-670b381f08ce?w=1200',  # Amber Fort
-        'https://images.unsplash.com/photo-1603262110825-c9e0f8086836?w=1200',  # Red Fort
-        'https://images.unsplash.com/photo-1619546952812-aa4f498f3e8e?w=1200',  # Fort architecture
-    ],
-    'indian_palace': [
-        'https://images.unsplash.com/photo-1609137144813-7d9921338f24?w=1200',  # Hawa Mahal
-        'https://images.unsplash.com/photo-1548013146-72479768bada?w=1200',     # Palace architecture
-        'https://images.unsplash.com/photo-1624138784509-3e573425b79e?w=1200',  # City Palace
-    ],
-    'indian_temple': [
-        'https://images.unsplash.com/photo-1564507592333-c60657eea523?w=1200',  # Golden Temple
-        'https://images.unsplash.com/photo-1585135497273-1a86b09fe70e?w=1200',  # Temple
-        'https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=1200',  # Temple detail
-    ],
-    'indian_monument': [
-        'https://images.unsplash.com/photo-1524492412937-b28074a5d7da?w=1200',  # Taj Mahal
-        'https://images.unsplash.com/photo-1587135941948-670b381f08ce?w=1200',  # Historic
-        'https://images.unsplash.com/photo-1548013146-72479768bada?w=1200',     # Architecture
-    ],
-    'beach': [
-        'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1200',  # Tropical beach
-        'https://images.unsplash.com/photo-1519046904884-53103b34b206?w=1200',  # Beach sunset
-        'https://images.unsplash.com/photo-1473116763249-2faaef81ccda?w=1200',  # Paradise beach
-    ],
-    'mountain': [
-        'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1200',  # Mountain peak
-        'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=1200',  # Range
-        'https://images.unsplash.com/photo-1519681393784-d120267933ba?w=1200',  # Landscape
-    ],
-    'nature': [
-        'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=1200',  # Forest
-        'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=1200',  # Nature
-        'https://images.unsplash.com/photo-1518173946687-a4c036bc7b33?w=1200',  # Landscape
-    ],
-    'city': [
-        'https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=1200',  # City skyline
-        'https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=1200',  # Urban
-        'https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?w=1200',  # Architecture
-    ],
-    'default': [
-        'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=1200',  # Travel
-        'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=1200',  # Nature
-        'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1200',  # Beach
-        'https://images.unsplash.com/photo-1519681393784-d120267933ba?w=1200',  # Mountain
-    ],
+# Deterministic, self-contained SVG placeholders per category.
+# These are data-URIs — no external server dependency, never go 404.
+_PLACEHOLDER_SVGS = {
+    'fort':       ('🏯', '#8B4513'),
+    'palace':     ('🏰', '#DAA520'),
+    'temple':     ('⛩️',  '#DC143C'),
+    'mosque':     ('🕌', '#2E8B57'),
+    'church':     ('⛪', '#4682B4'),
+    'beach':      ('🏖️', '#00CED1'),
+    'mountain':   ('⛰️',  '#696969'),
+    'waterfall':  ('💧', '#1E90FF'),
+    'wildlife':   ('🐘', '#228B22'),
+    'garden':     ('🌿', '#32CD32'),
+    'lake':       ('🌊', '#4169E1'),
+    'museum':     ('🏛️', '#708090'),
+    'market':     ('🛍️', '#FF8C00'),
+    'monument':   ('🗿', '#A0522D'),
+    'cave':       ('🕳️',  '#2F4F4F'),
+    'island':     ('🏝️', '#20B2AA'),
+    'default':    ('📍', '#6C757D'),
 }
 
-
-def get_curated_fallback(name: str, tags=None) -> str:
+def _get_placeholder(name: str, tags: dict = None) -> str:
     """
-    Returns a category-appropriate curated image URL.
-    Always returns a valid URL, never None.
-    Selection is deterministic (MD5 hash of name) so repeated calls give the same image.
+    Returns a minimal inline SVG as a data URI.
+    Always succeeds, deterministic, zero external dependencies.
     """
     name_lower = name.lower()
+    category   = 'default'
 
-    # Determine category via name keywords, then OSM tags
-    category = 'default'
-    if any(k in name_lower for k in ('fort', 'qila', 'fortress', 'citadel')):
-        category = 'indian_fort'
-    elif any(k in name_lower for k in ('palace', 'mahal', 'haveli', 'darbar')):
-        category = 'indian_palace'
-    elif any(k in name_lower for k in ('temple', 'mandir', 'gurdwara', 'gurudwara', 'mosque', 'masjid', 'church')):
-        category = 'indian_temple'
-    elif any(k in name_lower for k in ('gate', 'gateway', 'minar', 'memorial', 'stupa', 'pillar')):
-        category = 'indian_monument'
-    elif any(k in name_lower for k in ('beach', 'sea', 'ocean', 'coast', 'shore')):
-        category = 'beach'
-    elif any(k in name_lower for k in ('mountain', 'hill', 'peak', 'valley', 'pass', 'glacier')):
-        category = 'mountain'
-    elif any(k in name_lower for k in ('forest', 'wildlife', 'sanctuary', 'garden', 'park', 'waterfall')):
-        category = 'nature'
-    elif any(k in name_lower for k in ('city', 'town', 'metro', 'urban', 'market', 'bazaar')):
-        category = 'city'
+    checks = [
+        (['fort', 'qila', 'fortress', 'citadel'],            'fort'),
+        (['palace', 'mahal', 'haveli'],                      'palace'),
+        (['temple', 'mandir', 'gurdwara', 'kovil'],          'temple'),
+        (['mosque', 'masjid', 'dargah'],                     'mosque'),
+        (['church', 'cathedral'],                            'church'),
+        (['beach', 'coast'],                                 'beach'),
+        (['mountain', 'hill', 'peak', 'ghats'],              'mountain'),
+        (['waterfall', 'falls'],                             'waterfall'),
+        (['wildlife', 'sanctuary', 'national park', 'jungle'],'wildlife'),
+        (['garden', 'bagh', 'park', 'botanical'],            'garden'),
+        (['lake', 'sagar', 'backwater'],                     'lake'),
+        (['museum', 'gallery'],                              'museum'),
+        (['market', 'bazaar', 'chowk'],                      'market'),
+        (['monument', 'memorial', 'stupa'],                  'monument'),
+        (['cave', 'cavern'],                                 'cave'),
+        (['island'],                                         'island'),
+    ]
+    for keywords, cat in checks:
+        if any(kw in name_lower for kw in keywords):
+            category = cat
+            break
 
-    # Override with OSM tags if available
     if isinstance(tags, dict):
-        if tags.get('historic') in ('castle', 'fort', 'fortress'):
-            category = 'indian_fort'
-        elif tags.get('historic') == 'palace':
-            category = 'indian_palace'
-        elif tags.get('natural') == 'beach':
-            category = 'beach'
-        elif tags.get('natural') in ('peak', 'mountain_range'):
-            category = 'mountain'
-        elif tags.get('tourism') == 'museum':
-            category = 'indian_monument'
+        t = tags.get('historic', '')
+        n = tags.get('natural', '')
+        if t in ('castle', 'fort'):      category = 'fort'
+        elif t == 'palace':              category = 'palace'
+        elif n == 'beach':               category = 'beach'
+        elif n in ('peak',):             category = 'mountain'
 
-    images = _IMAGE_SETS.get(category, _IMAGE_SETS['default'])
-    # Deterministic selection using MD5 hash
-    idx = int(hashlib.md5(name.encode('utf-8')).hexdigest()[:8], 16) % len(images)
-    chosen = images[idx]
-    print(f"   ℹ Curated fallback [{category}]: {name}")
-    return chosen
+    emoji, color = _PLACEHOLDER_SVGS.get(category, _PLACEHOLDER_SVGS['default'])
+
+    svg = (
+        f'<svg xmlns="http://www.w3.org/2000/svg" width="800" height="500">'
+        f'<rect width="800" height="500" fill="{color}" opacity="0.15"/>'
+        f'<text x="400" y="220" font-size="100" text-anchor="middle">{emoji}</text>'
+        f'<text x="400" y="320" font-size="28" text-anchor="middle" '
+        f'fill="#333" font-family="sans-serif">{name}</text>'
+        f'</svg>'
+    )
+    import base64
+    encoded = base64.b64encode(svg.encode('utf-8')).decode('ascii')
+    log.info('  ℹ Placeholder [%s]: %s', category, name)
+    return f'data:image/svg+xml;base64,{encoded}'
 
 
-# ──────────────────────────────── Main Entry Point ────────────────────────────
+# ─────────────────────────── Main Entry Point ─────────────────────────────────
 
-def get_image_for_destination(name: str, tags=None, location_context=None) -> str:
+def get_image(
+    name: str,
+    tags: dict = None,
+    location: dict = None,
+) -> dict:
     """
-    Fetch the best available image for a destination with a 6-level fallback chain.
-
-    Priority:
-        1. Cache              — instant, no API calls
-        2. Wikidata/Wikimedia — Wikipedia-sourced photos for famous landmarks
-        3. Pexels             — high-quality stock photos (requires PEXELS_API_KEY)
-        4. Pixabay            — good variety (requires PIXABAY_API_KEY)
-        5. Unsplash           — artistic photos (requires UNSPLASH_ACCESS_KEY)
-        6. Curated fallback   — always succeeds, category-specific, deterministic
+    Fetch the best available image for a travel destination.
 
     Args:
-        name:             Destination name, e.g. "Amber Fort"
-        tags:             OSM tags dict, e.g. {'historic': 'castle', 'wikidata': 'Q123'}
-        location_context: {'city': 'Jaipur', 'state': 'Rajasthan', 'country': 'India'}
+        name:     Destination name, e.g. "Amber Fort"
+        tags:     OSM tags dict — used for wikidata ID and type hints
+        location: {'city': 'Jaipur', 'state': 'Rajasthan', 'country': 'India'}
 
     Returns:
-        str: A valid image URL (never None)
+        {
+            'url':    str,   # Always populated — data-URI if all APIs fail
+            'source': str,   # 'cache' | 'wikipedia' | 'wikidata' | 'pexels' | 'placeholder'
+            'name':   str,
+        }
     """
     if not isinstance(tags, dict):
         tags = {}
 
+    wikidata_id = tags.get('wikidata', '')
+    cache_key   = wikidata_id if wikidata_id else f'dest:{name}'
+
     # 1. Cache
-    wikidata_id = tags.get('wikidata')
-    cache_key = wikidata_id if wikidata_id else f"dest:{name}"
-
-    cached = get_cached_image(cache_key)
+    cached = _cache_get(cache_key)
     if cached:
-        print(f"✓ Cache hit: {name}")
-        return cached
+        url, source = cached
+        log.info('✓ Cache [%s]: %s', source, name)
+        return {'url': url, 'source': 'cache', 'name': name}
 
-    print(f"\n🔍 Fetching image for: {name}")
+    log.info('🔍 Fetching: %s', name)
 
-    # Build smart query (used by all search APIs)
-    smart_query = build_smart_query(name, tags, location_context)
-    print(f"   Query: '{smart_query}'")
+    url    = None
+    source = None
 
-    result_url = None
+    # 2. Wikipedia REST (most accurate, free, unlimited)
+    url = _wikipedia_image(name)
+    if url:
+        source = 'wikipedia'
 
-    # 2. Wikidata / Wikimedia (highest accuracy for famous landmarks)
-    if wikidata_id:
-        print(f"   Trying Wikidata ({wikidata_id})...")
-        result_url = fetch_wikimedia_image(wikidata_id)
+    # 2b. Wikipedia search fallback (handles alternate spellings)
+    if not url:
+        url = _wikipedia_search_image(name, location)
+        if url:
+            source = 'wikipedia_search'
 
-    # 3. Pexels (best quality for destinations)
-    if not result_url:
-        result_url = fetch_pexels_image(smart_query)
+    # 3. Wikidata P18 (when OSM provides wikidata ID directly)
+    if not url and wikidata_id:
+        url = _wikidata_image(wikidata_id)
+        if url:
+            source = 'wikidata'
 
-    # 4. Pixabay
-    if not result_url:
-        result_url = fetch_pixabay_image(smart_query)
+    # 4. Pexels (rate-limited, used only when Wikipedia misses)
+    if not url:
+        query = build_query(name, tags, location)
+        log.info('  Query: %s', query)
+        url = _pexels_image(query)
+        if url:
+            source = 'pexels'
 
-    # 5. Unsplash
-    if not result_url:
-        result_url = fetch_unsplash_image(smart_query)
+    # 5. Category placeholder (always succeeds)
+    if not url:
+        url    = _get_placeholder(name, tags)
+        source = 'placeholder'
 
-    # 6. Curated fallback (always succeeds)
-    if not result_url:
-        result_url = get_curated_fallback(name, tags)
-
-    # Cache and return
-    cache_image(cache_key, result_url)
-    print(f"✓ Cached: {name}")
-    return result_url
+    _cache_set(cache_key, url, source)
+    log.info('✓ Done [%s]: %s', source, name)
+    return {'url': url, 'source': source, 'name': name}
 
 
-# ──────────────────────────────── Batch Helper ────────────────────────────────
+# ─────────────────────────── Batch Helper ─────────────────────────────────────
 
-def get_images_batch(destinations: list) -> dict:
+def get_images_batch(destinations: list, delay: float = 0.3) -> dict:
     """
-    Fetch images for multiple destinations.
+    Fetch images for multiple destinations with a small delay to respect APIs.
 
     Args:
-        destinations: list of dicts — each has 'name', optional 'tags', 'location_context'
+        destinations: list of dicts with keys: name, tags (optional), location (optional)
+        delay:        seconds between requests (default 0.3s)
 
     Returns:
-        dict: { destination_name: image_url }
+        { destination_name: result_dict }
     """
     results = {}
-    for dest in destinations:
+    total   = len(destinations)
+    for i, dest in enumerate(destinations, 1):
         name = dest.get('name')
         if not name:
             continue
-        results[name] = get_image_for_destination(
-            name=name,
-            tags=dest.get('tags'),
-            location_context=dest.get('location_context')
+        log.info('[%d/%d]', i, total)
+        results[name] = get_image(
+            name     = name,
+            tags     = dest.get('tags'),
+            location = dest.get('location'),
         )
+        if i < total:
+            time.sleep(delay)
     return results
 
 
-# ──────────────────────────────── Self-Test ───────────────────────────────────
+def get_image_for_destination(name: str, tags: dict = None, location: dict = None, **kwargs) -> str | None:
+    """Wrapper function for backward compatibility. Returns only the URL string."""
+    # Catch older parameter names like location_context and use them as location fallback
+    loc = location or kwargs.get('location_context') or kwargs.get('context')
+    res = get_image(name, tags, location=loc)
+    return res.get('url') if res else None
 
-def test_image_service():
-    """Run a quick smoke test with 4 real Indian destinations."""
+
+# ─────────────────────────── CLI Self-Test ────────────────────────────────────
+
+def _self_test():
     test_cases = [
-        {'name': 'Amber Fort',       'tags': {'historic': 'castle'}, 'location_context': {'city': 'Jaipur', 'state': 'Rajasthan', 'country': 'India'}},
-        {'name': 'Hawa Mahal',       'tags': {'historic': 'monument'}, 'location_context': {'city': 'Jaipur', 'state': 'Rajasthan', 'country': 'India'}},
-        {'name': 'Calangute Beach',  'tags': {'natural': 'beach'},    'location_context': {'city': 'Goa', 'state': 'Goa', 'country': 'India'}},
-        {'name': 'Gateway of India', 'tags': {'historic': 'monument'}, 'location_context': {'city': 'Mumbai', 'state': 'Maharashtra', 'country': 'India'}},
+        {
+            'name': 'Taj Mahal',
+            'tags': {'historic': 'monument', 'wikidata': 'Q9620'},
+            'location': {'city': 'Agra', 'state': 'Uttar Pradesh', 'country': 'India'},
+        },
+        {
+            'name': 'Amber Fort',
+            'tags': {'historic': 'castle'},
+            'location': {'city': 'Jaipur', 'state': 'Rajasthan', 'country': 'India'},
+        },
+        {
+            'name': 'Calangute Beach',
+            'tags': {'natural': 'beach'},
+            'location': {'city': 'Goa', 'state': 'Goa', 'country': 'India'},
+        },
+        {
+            'name': 'Shri Balaji Temple Ajmer',
+            'tags': {'amenity': 'place_of_worship'},
+            'location': {'city': 'Ajmer', 'state': 'Rajasthan', 'country': 'India'},
+        },
+        {
+            'name': 'Dudhsagar Waterfalls',
+            'tags': {'natural': 'waterfall'},
+            'location': {'city': 'Mollem', 'state': 'Goa', 'country': 'India'},
+        },
     ]
 
-    print("=" * 60)
-    print("IMAGE SERVICE SELF-TEST")
-    print("=" * 60)
-    for case in test_cases:
-        url = get_image_for_destination(case['name'], case['tags'], case['location_context'])
-        status = "✅" if url and url.startswith('http') else "❌"
-        print(f"{status} {case['name']}: {url[:80] if url else 'NONE'}...")
-    print("=" * 60)
+    print('\n' + '=' * 65)
+    print('IMAGE SERVICE SELF-TEST')
+    print('=' * 65)
+    results = get_images_batch(test_cases, delay=0.5)
+    print()
+    for name, res in results.items():
+        ok     = res['url'] and (res['url'].startswith('http') or res['url'].startswith('data:'))
+        status = '✅' if ok else '❌'
+        src    = res['source']
+        url    = res['url'][:70] if res['url'] else 'NONE'
+        print(f"{status} [{src:20s}] {name}")
+        print(f"   {url}...")
+    print('=' * 65)
 
 
 if __name__ == '__main__':
-    test_image_service()
+    _self_test()

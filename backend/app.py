@@ -28,6 +28,7 @@ from routes.ai import ai_bp
 from routes.destinations import destinations_bp
 from routes.content import content_bp
 from routes.admin import admin_bp
+from routes.affiliates import affiliates_bp
 
 app.register_blueprint(auth_bp, url_prefix='/auth')
 app.register_blueprint(trips_bp) # No prefix to keep existing /api/save-trip etc
@@ -35,6 +36,7 @@ app.register_blueprint(ai_bp)    # No prefix for /recommend-destinations etc
 app.register_blueprint(destinations_bp) # No prefix for /countries etc
 app.register_blueprint(content_bp) # No prefix for /blogs etc
 app.register_blueprint(admin_bp) # No prefix for /api/admin keys
+app.register_blueprint(affiliates_bp) # No prefix for /affiliates etc
 
 # Database Teardown
 @app.teardown_appcontext

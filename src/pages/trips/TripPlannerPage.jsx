@@ -136,9 +136,9 @@ const TripPlannerPage = () => {
         const fetchData = async () => {
             try {
                 const [countriesRes, destsRes, regionsRes] = await Promise.all([
-                    fetch(`${API_BASE_URL}/countries`),
-                    fetch(`${API_BASE_URL}/destinations`),
-                    fetch(`${API_BASE_URL}/regions`)
+                    fetch(`${API_BASE_URL}/countries`, { headers: { 'X-Requested-With': 'XMLHttpRequest' } }),
+                    fetch(`${API_BASE_URL}/destinations`, { headers: { 'X-Requested-With': 'XMLHttpRequest' } }),
+                    fetch(`${API_BASE_URL}/regions`, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
                 ]);
                 const countriesData = await countriesRes.json();
                 const destsData = await destsRes.json();

@@ -38,17 +38,30 @@ const DestinationCard = memo(({ dest, isSelected, onToggle, onViewDetails }) => 
                     </span>
                 </div>
 
-                <Link
-                    to={`/destinations/${dest.id}`}
-                    state={{ from: window.location.pathname + window.location.search }}
-                    className={styles.viewDetailsBtn}
-                    onClick={(e) => {
-                        e.stopPropagation();
-                    }}
-                    style={{ background: 'transparent', color: 'var(--primary)', border: '1px solid var(--primary)', marginTop: '1rem', width: '100%' }}
-                >
-                    View Details <ExternalLink size={14} style={{ display: 'inline', marginLeft: '4px' }} />
-                </Link>
+                {onViewDetails ? (
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onViewDetails(dest);
+                        }}
+                        className={styles.viewDetailsBtn}
+                        style={{ background: 'transparent', color: 'var(--primary)', border: '1px solid var(--primary)', marginTop: '1rem', width: '100%' }}
+                    >
+                        View Details <ExternalLink size={14} style={{ display: 'inline', marginLeft: '4px' }} />
+                    </button>
+                ) : (
+                    <Link
+                        to={`/destinations/${dest.id}`}
+                        state={{ from: window.location.pathname + window.location.search }}
+                        className={styles.viewDetailsBtn}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                        }}
+                        style={{ background: 'transparent', color: 'var(--primary)', border: '1px solid var(--primary)', marginTop: '1rem', width: '100%', textAlign: 'center', display: 'block', textDecoration: 'none' }}
+                    >
+                        View Details <ExternalLink size={14} style={{ display: 'inline', marginLeft: '4px' }} />
+                    </Link>
+                )}
             </div>
         </div>
     );

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
     LayoutDashboard, MapPin, FileText, Users, LogOut, Package,
-    Pencil, Trash2, ChevronLeft, ChevronRight, Globe, Map, Plane, BookOpen, X, Eye, Inbox, CheckCircle2, XCircle
+    Pencil, Trash2, ChevronLeft, ChevronRight, Globe, Map, Plane, BookOpen, X, Eye, Inbox, CheckCircle2, XCircle, TrendingUp, DollarSign
 } from 'lucide-react';
 import { API_BASE_URL } from '../../config';
 import BlogContent from '../../components/Blogs/BlogContent';
@@ -77,12 +77,13 @@ const AdminDashboard = () => {
     const [destPages, setDestPages] = useState(1);
     const [destSearch, setDestSearch] = useState('');
 
-    // Blogs, Packages, Users, Trips, Requests
+    // Blogs, Packages, Users, Trips, Requests, Affiliates
     const [blogs, setBlogs] = useState([]);
     const [packages, setPackages] = useState([]);
     const [users, setUsers] = useState([]);
     const [trips, setTrips] = useState([]);
     const [destRequests, setDestRequests] = useState([]);
+    const [affiliateStats, setAffiliateStats] = useState(null);
 
     // Pagination State (Client-Side)
     const ITEMS_PER_PAGE = 10;
@@ -180,6 +181,14 @@ const AdminDashboard = () => {
         } catch (e) { console.error(e); }
     }, [token, getHeaders]);
 
+    const fetchAffiliateStats = useCallback(async () => {
+        if (!token) return;
+        try {
+            const res = await fetch(`${API_BASE_URL}/api/admin/affiliate-stats`, { headers: getHeaders() });
+            if (res.ok) setAffiliateStats(await res.json());
+        } catch (e) { console.error(e); }
+    }, [token, getHeaders]);
+
     useEffect(() => { fetchStats(); fetchVisitors(); fetchTrips(); }, [fetchStats, fetchVisitors, fetchTrips]);
 
     // Auto-refresh visitors every 30 seconds
@@ -194,7 +203,8 @@ const AdminDashboard = () => {
         if (tab === 'blogs') { fetchBlogs(); fetchPackages(); }
         if (tab === 'users') { fetchUsers(); fetchTrips(); }
         if (tab === 'requests') fetchDestRequests();
-    }, [tab, fetchDestinations, fetchBlogs, fetchPackages, fetchUsers, fetchTrips, fetchDestRequests]);
+        if (tab === 'affiliates') fetchAffiliateStats();
+    }, [tab, fetchDestinations, fetchBlogs, fetchPackages, fetchUsers, fetchTrips, fetchDestRequests, fetchAffiliateStats]);
 
     // ── Destination CRUD ──
     const handleDelete = async (id) => {
@@ -266,6 +276,7 @@ const AdminDashboard = () => {
         { id: 'blogs', icon: FileText, label: 'Content' },
         { id: 'users', icon: Users, label: 'Users & Trips' },
         { id: 'requests', icon: Inbox, label: 'Requests', badge: destRequests.length },
+        { id: 'affiliates', icon: TrendingUp, label: 'Affiliates & Revenue' },
     ];
 
     const statCards = stats ? [
@@ -633,6 +644,69 @@ const AdminDashboard = () => {
                                 </tbody>
                             </table>
                         </div>
+                    </>
+                )}
+
+                {/* ═══════════ AFFILIATES ═══════════ */}
+                {tab === 'affiliates' && (
+                    <>
+                        <div className={s.pageHeader}>
+                            <h1>Affiliate Tracking & Revenue</h1>
+                            <p>Monitor your booking link performance and estimated commissions</p>
+                        </div>
+
+                        {affiliateStats ? (
+                            <>
+                                <div className={s.statsGrid}>
+                                    <div className={s.statCard}>
+                                        <div className={s.statIcon} style={{ background: 'rgba(52,211,153,0.1)' }}>
+                                            <TrendingUp size={22} color="#34d399" />
+                                        </div>
+                                        <div>
+                                            <div className={s.statValue}>{affiliateStats.total_clicks}</div>
+                                            <div className={s.statLabel}>Total Clicks Tracked</div>
+                                        </div>
+                                    </div>
+
+                                    <div className={s.statCard} style={{ background: 'linear-gradient(135deg, rgba(34,197,94,0.1) 0%, rgba(20,83,45,0.05) 100%)', border: '1px solid rgba(74,222,128,0.2)' }}>
+                                        <div className={s.statIcon} style={{ background: '#dcfce7' }}>
+                                            <DollarSign size={22} color="#166534" />
+                                        </div>
+                                        <div>
+                                            <div className={s.statValue} style={{ color: '#166534' }}>₹{affiliateStats.estimated_revenue.toLocaleString()}</div>
+                                            <div className={s.statLabel} style={{ color: '#15803d', fontWeight: 600 }}>Est. AI Revenue Pipeline</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className={s.tableContainer} style={{ marginTop: '2rem' }}>
+                                    <div className={s.tableHeader}>
+                                        <span className={s.tableTitle}>Click Breakdown by Category</span>
+                                    </div>
+                                    <table className={s.table}>
+                                        <thead><tr><th>Service Type</th><th>Total Clicks</th><th>Est. Conversion Rate</th><th>Est. Commission</th></tr></thead>
+                                        <tbody>
+                                            {Object.entries(affiliateStats.breakdown || {}).map(([type, count]) => (
+                                                <tr key={type}>
+                                                    <td style={{ fontWeight: 600, color: '#f1f5f9', textTransform: 'capitalize' }}>
+                                                        {type === 'flight' ? <Plane size={14} style={{ marginRight: '6px' }} /> : null}
+                                                        {type}
+                                                    </td>
+                                                    <td><span className={`${s.badge} ${s.badgeBlue}`}>{count}</span></td>
+                                                    <td>8%</td>
+                                                    <td><span className={`${s.badge} ${s.badgeGreen}`}>~{type === 'hotel' ? '5%' : type === 'flight' ? '3%' : '10%'}</span></td>
+                                                </tr>
+                                            ))}
+                                            {Object.keys(affiliateStats.breakdown || {}).length === 0 && (
+                                                <tr><td colSpan="4" style={{ textAlign: 'center', padding: '2rem', color: '#64748b' }}>No clicks tracked yet.</td></tr>
+                                            )}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </>
+                        ) : (
+                            <div style={{ color: '#94a3b8' }}>Loading affiliate data...</div>
+                        )}
                     </>
                 )}
             </div>

@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
 from database import db_session
 from models import Destination, State, Country, DestinationRequest
-from services.ai_destination_service import generate_destinations_for_region
+from services.ai_destination_service import generate_destinations
 from services.image_service import get_image_for_destination
 from services.generation_service import generate_smart_destinations
 import random
@@ -90,7 +90,7 @@ def populate_region_endpoint(region_id):
         print(f"🌍 AI Generating destinations for {region_name}, {country_name}...")
         
         # Generate destinations using AI
-        ai_destinations = generate_destinations_for_region(
+        ai_destinations = generate_destinations(
             region_name=region_name,
             country_name=country_name,
             country_code=country_code,
@@ -205,9 +205,17 @@ def handle_destinations():
         
         return jsonify(new_dest.to_dict()), 201
 
-@destinations_bp.route('/destinations/<int:dest_id>', methods=['GET'])
+@destinations_bp.route('/destinations/<dest_id>', methods=['GET'])
 def get_destination_detail(dest_id):
-    dest = db_session.query(Destination).get(dest_id)
+    # Try integer lookup first
+    try:
+        numeric_id = int(dest_id)
+        dest = db_session.query(Destination).get(numeric_id)
+    except (ValueError, TypeError):
+        # If not an integer, it might be an AI destination (not yet in DB)
+        # or it might be in DB by name if we support that later
+        dest = None
+
     if dest:
         # Merge reviews into the response
         reviews_data = load_reviews()
@@ -217,15 +225,22 @@ def get_destination_detail(dest_id):
         response = dest.to_dict()
         response['reviews_data'] = dest_reviews
         return jsonify(response)
+        
     return jsonify({"error": "Destination not found"}), 404
 
-@destinations_bp.route('/destinations/<int:dest_id>/reviews', methods=['POST'])
+@destinations_bp.route('/destinations/<dest_id>/reviews', methods=['POST'])
 def add_review(dest_id):
     data = request.json
     if not data or 'name' not in data or 'rating' not in data or 'text' not in data:
         return jsonify({"error": "Invalid review data"}), 400
     
-    dest = db_session.query(Destination).get(dest_id)
+    # Try integer lookup
+    try:
+        numeric_id = int(dest_id)
+        dest = db_session.query(Destination).get(numeric_id)
+    except (ValueError, TypeError):
+        dest = None
+
     if not dest:
         return jsonify({"error": "Destination not found"}), 404
 

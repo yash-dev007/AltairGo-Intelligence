@@ -11,7 +11,10 @@ export const TripAI = {
         try {
             const response = await fetch(`${API_BASE}/generate-itinerary`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
                 body: JSON.stringify({
                     selectedDestIds,
                     preferences: {
@@ -35,7 +38,10 @@ export const TripAI = {
         try {
             const response = await fetch(`${API_BASE}/recommend-destinations`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
                 body: JSON.stringify({ countryName, regionNames, prefs })
             });
             if (!response.ok) throw new Error('Failed to recommend');
@@ -52,7 +58,10 @@ export const TripAI = {
         try {
             const response = await fetch(`${API_BASE}/recommend-regions`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
                 body: JSON.stringify({ countryId })
             });
             if (!response.ok) throw new Error('Failed to recommend regions');
@@ -69,7 +78,10 @@ export const TripAI = {
         try {
             const response = await fetch(`${API_BASE}/destination-details-ai`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
                 body: JSON.stringify({ destinationName })
             });
             if (!response.ok) throw new Error('Failed to get details');
@@ -83,7 +95,9 @@ export const TripAI = {
     // Get DB Destination Details by ID
     getDestinationById: async (id) => {
         try {
-            const response = await fetch(`${API_BASE}/destinations/${id}`);
+            const response = await fetch(`${API_BASE}/destinations/${id}`, {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            });
             if (!response.ok) throw new Error('Failed to get DB details');
             return await response.json();
         } catch (error) {
@@ -97,7 +111,10 @@ export const TripAI = {
         try {
             const response = await fetch(`${API_BASE}/calculate-budget`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
                 body: JSON.stringify({ itinerary })
             });
             if (!response.ok) throw new Error('Failed to calculate budget');
@@ -114,7 +131,10 @@ export const TripAI = {
         try {
             const response = await fetch(`${API_BASE}/smart-insight`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
                 body: JSON.stringify({ itinerary })
             });
             if (!response.ok) throw new Error('Failed to get insights');
@@ -130,7 +150,10 @@ export const TripAI = {
         try {
             const response = await fetch(`${API_BASE}/chat`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
                 body: JSON.stringify({ message })
             });
             if (!response.ok) throw new Error('Chat failed');
@@ -144,7 +167,10 @@ export const TripAI = {
 
     saveTrip: async (tripData, token) => {
         try {
-            const headers = { 'Content-Type': 'application/json' };
+            const headers = {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            };
             if (token) {
                 headers['Authorization'] = `Bearer ${token}`;
             }
