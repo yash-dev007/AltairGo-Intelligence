@@ -1,44 +1,44 @@
 # AltairGo Intelligence 🌍✈️
 
-**AltairGo Intelligence** is a next-generation travel planning platform designed to empower travelers with smart, data-driven insights. It combines a modern, responsive React frontend with a Flask-based backend to provide intelligent itinerary generation, budget estimation, and crowd-aware travel advice.
+**AltairGo Intelligence** is a state-of-the-art travel planning platform that leverages the power of Large Language Models (LLMs) to provide travelers with personalized, data-driven insights. From intelligent itinerary generation to a collaborative "Destination Architect" system, AltairGo simplifies the complexities of travel planning.
 
 ![Project Status](https://img.shields.io/badge/Status-In%20Development-blue)
 ![License](https://img.shields.io/badge/License-MIT-green)
 
 ## 🚀 Key Features
 
-*   **🤖 Smart Trip Planner**: AI-powered itinerary generation that creates personalized day-by-day plans based on your interests.
-*   **🌍 Global Start Location**: Integrated **OpenStreetMap (Nominatim)** search allows you to pinpoint your exact starting origin, from major cities to rural villages.
-*   **📅 Intelligent Date Selection**: 
-    *   **Flexible Dates**: Plan by duration (e.g., "7 days in June").
-    *   **Anytime**: Perfect for early-stage planning.
-    *   **Fixed Dates**: Precise scheduling.
-*   **💰 Budget Calculator**: Real-time estimation of travel costs based on your itinerary.
-*   **👥 Crowd Intelligence**: unique "Smart Insights" that warn you about high tourist density and suggest optimal times to visit.
-*   **🌏 Multi-Country Support**: Curated data for **India**, **Vietnam**, **Thailand**, **Philippines**, **Japan**, **France**, **Spain**, and **Italy**.
+*   **🤖 AI-Powered Itinerary Planner**: Uses **Google Gemini** to generate highly personalized day-by-day itineraries based on user preferences, dates, and budget.
+*   **🏗️ AI Destination Architect**: A unique system for users to suggest new destinations. Includes an automated verification flow where AI validates destination details before admin approval.
+*   **🌍 Global Origin Search**: Integrated **OpenStreetMap (Nominatim)** for precise start location selection.
+*   **📅 Flexi-Schedule Engine**: Support for multiple planning modes:
+    *   **Duration-Based**: "10 days in October."
+    *   **Fixed Dates**: Precise scheduling with calendar integration.
+    *   **Anytime**: Exploratory planning for the future.
+*   **💰 Dynamic Budget Estimation**: Real-time travel cost calculation integrated with itinerary steps.
+*   **🎟️ Affiliate & Booking System**: Seamless integration with booking services for attractions, stays, and flights via curated affiliate links.
+*   **🛡️ Admin Control Plane**: Dedicated dashboard for administrators to manage destination requests and site content.
 
 ## 🛠️ Tech Stack
 
 ### Frontend
-*   **Framework**: React 19 (via Vite)
-*   **Styling**: CSS Modules with modern Glassmorphism UI
-*   **Icons**: Lucide React
-*   **State**: React Hooks (useState, useEffect)
+- **Framework**: React 19 (Vite)
+- **UI/UX**: Custom CSS Modules with **Glassmorphism** aesthetics.
+- **Icons**: Lucide React & FontAwesome.
+- **Data Fetching**: Axios with custom API interceptors.
 
 ### Backend
-*   **Server**: Python Flask
-*   **AI Logic**: Custom heuristic algorithms for itinerary generation
-*   **API**: RESTful endpoints (`/generate-itinerary`, `/calculate-budget`, `/smart-insight`)
-*   **Data**: JSON-based destination data & OSM Nominatim API integration
+- **Core**: Python Flask
+- **AI Integration**: Google Generative AI (Gemini SDK)
+- **Database**: SQLite with **SQLAlchemy ORM** for robust data management.
+- **Architecture**: Modular Service-Route-Model pattern for scalability.
+- **Routing**: Secure RESTful API endpoints with structured JSON responses.
 
 ## 🏁 Getting Started
 
-Follow these instructions to set up the project locally.
-
 ### Prerequisites
-*   Node.js (v18 or higher)
-*   Python (v3.9 or higher)
-*   Git
+- Node.js (v18+)
+- Python (v3.9+)
+- Google Gemini API Key
 
 ### 1. Clone the Repository
 ```bash
@@ -47,62 +47,54 @@ cd AltairGo-Intelligence
 ```
 
 ### 2. Backend Setup
-The backend runs on Flask and serves the intelligent features of the app.
+Create a `.env` file in the `backend/` directory:
+```env
+GEMINI_API_KEY=your_api_key_here
+SECRET_KEY=your_flask_secret
+DATABASE_URL=sqlite:///travel.db
+```
 
+Install and run:
 ```bash
-# Navigate to backend directory
 cd backend
-
-# Install dependencies
 pip install -r requirements.txt
-
-# Run the server
 python app.py
 ```
-> The backend server will start at `http://127.0.0.1:5000`
 
 ### 3. Frontend Setup
-The frontend is a fast Vite + React application.
-
 ```bash
-# Open a new terminal and navigate to the root directory
-# Install dependencies
+# From root directory
 npm install
-
-# Start the development server
 npm run dev
 ```
-> The frontend will be available at `http://localhost:5173`
 
 ## 📂 Project Structure
 
-```
+```text
 AltairGo-Intelligence/
-├── backend/                # Python Flask Application
-│   ├── app.py             # Main application entry point & API routes
-│   ├── destinations.py    # Destination data source
-│   ├── regions.py         # Region data source
-│   └── requirements.txt   # Python dependencies
-├── src/                    # React Frontend Source
-│   ├── components/        # Reusable UI components
-│   │   └── TripPlanner/   # Complex planner components (DateModal, etc.)
-│   ├── pages/             # Page components (TripPlannerPage, etc.)
-│   ├── services/          # API integration services (TripAI.js)
-│   ├── App.jsx            # Main App Layout
-│   └── main.jsx           # Entry point
-└── package.json            # Node.js dependencies
+├── backend/                # Flask Backend
+│   ├── routes/            # API Endpoints (Admin, AI, Destinations)
+│   ├── services/          # Business Logic (Gemini, Itinerary, Images)
+│   ├── models.py          # SQLAlchemy Database Models
+│   ├── validation.py      # Schema & Pydantic Validation
+│   └── app.py             # Flask App Factory
+├── src/                    # React Frontend
+│   ├── components/        # Reusable Atomic & Grouped UI
+│   ├── pages/             # Route-level Page Components
+│   ├── services/          # Frontend API Clients (TripAI.js)
+│   └── App.jsx            # Main Router & Layout
+├── public/                 # Static Assets
+└── vite.config.js          # Vite configuration with SPA proxying
 ```
 
 ## 🤝 Contributing
+Contributions make the open-source community an amazing place to learn and inspire. Any contributions you make are **greatly appreciated**.
 
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-1.  Fork the project
-2.  Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3.  Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4.  Push to the branch (`git push origin feature/AmazingFeature`)
-5.  Open a Pull Request
+1. Fork the Project
+2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the Branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
 ## 📄 License
-
-This project is licensed under the MIT License.
+Distributed under the MIT License. See `LICENSE` for more information.
