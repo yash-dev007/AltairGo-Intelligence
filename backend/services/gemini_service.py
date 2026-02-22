@@ -9,7 +9,7 @@ load_dotenv()
 # Configure Gemini Client
 API_KEY = os.getenv("GEMINI_API_KEY")
 if not API_KEY:
-    print("⚠️ WARNING: GEMINI_API_KEY not found in .env")
+    print("WARNING: GEMINI_API_KEY not found in .env")
 
 GEMINI_TEMPERATURE = float(os.getenv("GEMINI_TEMPERATURE", "0.3"))
 
@@ -289,12 +289,13 @@ USER REQUIREMENTS:
 {dest_clause}
 
 RULES:
-1. Use ONLY real, specific place names. Never "local market" or "city center".
-2. Total cost must be within ₹{budget} ± 5%. Show a cost_breakdown.
-3. Max 4 major activities per day.
-4. Include how_to_reach for every activity (mode + time + cost).
-5. Group geographically nearby spots on the same day.
-6. For {style} style: budget costs × 0.7, standard × 1.0, luxury × 1.5.
+1. Use ONLY real, specific place names. NEVER use generic names like "local market", "city center", "mall", "beach", "hotel", or "restaurant". Be explicit (e.g., "Colaba Causeway", "Marina Beach").
+2. The user is starting their trip from {origin} to the destination. YOU MUST include the travel/transit details from {origin} to the destination on Day 1, and back to {origin} on the last day, as part of the itinerary.
+3. Total cost must be within ₹{budget} ± 5%. Show a cost_breakdown.
+4. Max 4 major activities per day to keep the schedule realistic.
+5. Include how_to_reach for every activity (mode + time + cost).
+6. Group geographically nearby spots on the same day.
+7. For {style} style: budget costs × 0.7, standard × 1.0, luxury × 1.5.
 
 OUTPUT: Respond with ONLY valid JSON matching this schema:
 {{
@@ -383,7 +384,7 @@ USER QUERY: {user_message}
             resp = requests.post(url, headers={"Content-Type": "application/json"}, json=payload, timeout=60)
             if resp.status_code == 200:
                 text = resp.json()['candidates'][0]['content']['parts'][0]['text']
-                print(f"ChatAI: ✅ Success with {model_name}")
+                print(f"ChatAI: Success with {model_name}")
                 return text
         except Exception as e:
             print(f"ChatAI: Failed {model_name}: {e}")
@@ -425,3 +426,88 @@ Respond with ONLY valid JSON:
             continue
 
     return {"error": "Failed to generate destination details."}
+
+def generate_destination_recommendations(country_name: str, region_names: list, prefs: dict) -> list:
+    """Uses Gemini to generate 6 real, famous destinations based on preferences."""
+    regions_str = ", ".join(region_names) if region_names else "Any region"
+    budget = prefs.get('budget', 50000)
+    style = prefs.get('style', 'Balanced')
+    
+    prompt = f"""
+You are a travel expert recommending excellent real-world places to visit.
+The user is planning a trip to:
+Country: {country_name}
+Regions/States: {regions_str}
+Budget: ₹{budget}
+Style: {style}
+
+Suggest exactly 20 REAL, famous, and verifiable specific destinations/spots (not just general cities, but specific attractions, parks, or iconic areas like "Taj Mahal, Agra" or "Calangute Beach, Goa").
+DO NOT suggest generic places like "City Centre", "Shopping Mall", "Local Market", or "Main Beach". You MUST provide specific, real names.
+
+Respond with ONLY valid JSON returning an array of exactly 20 objects:
+[
+  {{
+    "name": "Specific Real Place Name",
+    "location": "State or City Name",
+    "type": "Category (Beach/Temple/Mountain/Monument/etc)",
+    "description": "Engaging 1-2 sentence description",
+    "best_time": "Months",
+    "crowd_level": "Low/Moderate/High",
+    "rating": 4.8,
+    "estimated_cost_per_day": 3000,
+    "highlights": ["Highlight 1", "Highlight 2"],
+    "image_keyword": "Best HIGH QUALITY landscape photography search term for a beautiful photo of this exact place",
+    "tags": ["Tag1", "Tag2"]
+  }}
+]
+"""
+
+    for model_name in MODELS_TO_TRY:
+        try:
+            print(f"RecommendAI: Attempting {model_name}...")
+            text_resp = _generate_content_http(prompt, model_name)
+            clean_text = re.sub(r'^```json\s*', '', text_resp.strip())
+            clean_text = re.sub(r'\s*```$', '', clean_text.strip())
+            data = json.loads(clean_text)
+            if isinstance(data, list):
+                return data
+            elif "destinations" in data:
+                return data["destinations"]
+        except Exception as e:
+            print(f"RecommendAI {model_name} failed: {e}")
+            continue
+
+    return []
+
+def generate_smart_destination_details(destination_name: str) -> dict:
+    """Generates specific AI insights for a destination to replace the static fallback."""
+    prompt = f"""
+Provide a rich travel overview for exactly this destination: "{destination_name}".
+Respond with ONLY valid JSON:
+{{
+    "special": "Detailed paragraph about what makes it special.",
+    "food": ["Specific Dish 1", "Specific Dish 2", "Food experience"],
+    "hidden_gems": ["Secret spot 1", "Local favorite 2"],
+    "culture": "Paragraph about local culture/history.",
+    "best_time_pace": "Advice on best time of day/year and pacing.",
+    "best_for": "Who this is best for (e.g. History buffs, families)."
+}}
+"""
+    for model_name in MODELS_TO_TRY:
+        try:
+            text_resp = _generate_content_http(prompt, model_name)
+            clean_text = re.sub(r'^```json\s*', '', text_resp.strip())
+            clean_text = re.sub(r'\s*```$', '', clean_text.strip())
+            return json.loads(clean_text)
+        except Exception as e:
+            continue
+            
+    # Fallback to static if AI fails
+    return {{
+        "special": f"A wonderful destination known as {destination_name}.",
+        "food": ["Local Delicacies", "Street Food", "Traditional Meals"],
+        "hidden_gems": ["Local Markets", "Scenic Viewpoints"],
+        "culture": "Locals are very welcoming and the heritage is preserved.",
+        "best_time_pace": "Early mornings are best for sightseeing.",
+        "best_for": "Travelers seeking authentic experiences."
+    }}

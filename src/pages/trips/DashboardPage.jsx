@@ -6,7 +6,7 @@ import styles from './TripPlanner.module.css';
 import { DashboardSkeleton } from '../../components/Skeleton/Skeleton';
 
 const DashboardPage = () => {
-    const { user, loading, logout } = useAuth();
+    const { user, token, loading, logout } = useAuth();
     const navigate = useNavigate();
 
     const [trips, setTrips] = React.useState([]);
@@ -23,7 +23,7 @@ const DashboardPage = () => {
         const fetchTrips = async () => {
             try {
                 const response = await fetch(`${API_BASE_URL}/api/user/trips`, {
-                    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                    headers: { 'Authorization': `Bearer ${token}` }
                 });
                 if (response.ok) {
                     const data = await response.json();

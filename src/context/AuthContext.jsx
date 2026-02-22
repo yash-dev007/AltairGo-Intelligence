@@ -10,9 +10,22 @@ const AuthContext = createContext({
     logout: () => { }
 });
 
+// Safe localStorage wrapper to prevent SecurityError in restrictive browsers
+const safeLocalStorage = {
+    getItem: (key) => {
+        try { return window.localStorage.getItem(key); } catch (e) { return null; }
+    },
+    setItem: (key, value) => {
+        try { window.localStorage.setItem(key, value); } catch (e) { }
+    },
+    removeItem: (key) => {
+        try { window.localStorage.removeItem(key); } catch (e) { }
+    }
+};
+
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
-    const [token, setToken] = useState(localStorage.getItem('token'));
+    const [token, setToken] = useState(safeLocalStorage.getItem('token'));
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -55,7 +68,7 @@ export const AuthProvider = ({ children }) => {
 
         setToken(data.token);
         setUser(data.user);
-        localStorage.setItem('token', data.token);
+        safeLocalStorage.setItem('token', data.token);
         return data;
     };
 
@@ -73,7 +86,7 @@ export const AuthProvider = ({ children }) => {
     const logout = () => {
         setToken(null);
         setUser(null);
-        localStorage.removeItem('token');
+        safeLocalStorage.removeItem('token');
     };
 
     return (

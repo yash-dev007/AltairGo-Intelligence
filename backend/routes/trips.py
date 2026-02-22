@@ -22,7 +22,7 @@ def _log_event(event_type: str, event_data: dict, user_id=None):
         db_session.add(event)
         db_session.commit()
     except Exception as e:
-        print(f"⚠️ Analytics log failed (non-critical): {e}")
+        print(f"Analytics log failed (non-critical): {e}")
         db_session.rollback()
 
 
@@ -104,7 +104,7 @@ def get_trip(trip_id):
 
 @trips_bp.route('/generate-itinerary', methods=['POST'])
 def generate_itinerary():
-    print("🧠 AI Agent: Generating itinerary...")
+    print("AI Agent: Generating itinerary...")
     data = request.json
     selected_ids = data.get('selectedDestIds', [])
     user_preferences = data.get('preferences', {})
@@ -123,7 +123,7 @@ def generate_itinerary():
 
     # 3. Check for hard errors
     if "error" in ai_result:
-        print(f"❌ AI Error: {ai_result['error']}")
+        print(f"AI Error: {ai_result['error']}")
         _log_event('ai_failed', {
             "error": ai_result['error'],
             "preferences": user_preferences,
@@ -152,7 +152,7 @@ def generate_itinerary():
         ai_result['budget_adjusted'] = True
 
     # 5. Enrich with real images
-    print("✨ Enriching itinerary with images...")
+    print("Enriching itinerary with images...")
     if ai_result.get("image_keyword"):
         ai_result["image"] = get_image_for_destination(ai_result["image_keyword"], {})
     elif not ai_result.get("image"):

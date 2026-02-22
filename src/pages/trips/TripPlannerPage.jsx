@@ -12,6 +12,7 @@ import BudgetSelectionModal from '../../components/TripPlanner/BudgetSelectionMo
 import TripOptions from '../../components/TripPlanner/TripOptions';
 import AIDestinationDetailsModal from '../../components/TripPlanner/AIDestinationDetailsModal';
 import ChatWidget from '../../components/ChatWidget/ChatWidget';
+import LoadingOverlay from '../../components/LoadingOverlay';
 import styles from './TripPlanner.module.css';
 
 
@@ -84,6 +85,7 @@ const TripPlannerPage = () => {
     const [destSearch, setDestSearch] = useState('');
     const [startLocation, setStartLocation] = useState('Mumbai'); // Default
     const [isCustomLocation, setIsCustomLocation] = useState(false);
+    const [generatingAiSpots, setGeneratingAiSpots] = useState(false);
 
     // AI Decision Flags
     const [isAiRegionDecide, setIsAiRegionDecide] = useState(false);
@@ -185,36 +187,29 @@ const TripPlannerPage = () => {
         setFetchingRegion(true);
 
         try {
-            await Promise.all(targets.map(async (stateId) => {
-                // Resolve to numeric DB id — prefer numericId, fall back to parsing
+            const countryObj = countries.find(c => c.id === selectedCountry);
+            const countryName = countryObj?.name || 'India';
+
+            // Collect selected state names
+            const stateNames = targets.map(stateId => {
                 const allRegions = [...(availableStates || []), ...(regions || [])];
                 const regionObj = allRegions.find(r => r.id === stateId || r.name === stateId || r.id === Number(stateId));
-                // numericId is set by getStatesForCountry; regions[] from /regions uses .id directly
-                const finalId = regionObj?.numericId ?? regionObj?.id ?? parseInt(stateId, 10);
+                return regionObj?.name || stateId;
+            });
 
-                // Guard: if finalId is still a non-numeric value, skip
-                if (!finalId || isNaN(Number(finalId))) {
-                    console.warn(`Skipping populate for unresolvable region: "${stateId}"`);
-                    return;
-                }
+            // Automatically prompt Gemini for recommendations based on these regions
+            console.log(`Auto-generating AI spots for regions: ${stateNames.join(', ')}...`);
+            const aiDestinations = await TripAI.recommendDestinations(countryName, stateNames, tripContext);
 
-                const url = `${API_BASE_URL}/regions/${finalId}/populate`;
-                const res = await fetch(url, { method: 'POST' });
-
-                const contentType = res.headers.get("content-type");
-                if (contentType && contentType.includes("application/json")) {
-                    const result = await res.json();
-                    if (result.status === 'success' && result.data.length > 0) {
-                        setDestinations(prev => {
-                            const existingIds = new Set(prev.map(d => d.name));
-                            const newItems = result.data.filter(d => !existingIds.has(d.name));
-                            return [...prev, ...newItems];
-                        });
-                    }
-                }
-            }));
+            if (aiDestinations && aiDestinations.length > 0) {
+                setDestinations(prev => {
+                    const existingIds = new Set(prev.map(d => d.name));
+                    const newItems = aiDestinations.filter(d => !existingIds.has(d.name));
+                    return [...prev, ...newItems];
+                });
+            }
         } catch (err) {
-            console.error("Auto-population failed", err);
+            console.error("Auto AI Gen failed for region:", err);
         } finally {
             setFetchingRegion(false);
         }
@@ -347,10 +342,16 @@ const TripPlannerPage = () => {
 
             // NEW: Single Itinerary Object (Direct Mode)
             if (data.itinerary && Array.isArray(data.itinerary)) {
+                if (data.itinerary.length === 0) {
+                    alert("The AI generated an empty itinerary. Please modify your preferences or destination choices and try again.");
+                    setLoading(false);
+                    clearInterval(loadingIntervalRef.current);
+                    return;
+                }
                 setItinerary(data.itinerary);
                 setTripContext(prev => ({
                     ...prev,
-                    title: data.title,
+                    title: data.trip_title || data.title,
                     estimatedCost: data.total_cost
                 }));
                 setStep(5);
@@ -360,6 +361,12 @@ const TripPlannerPage = () => {
                 setTripOptions(data.options);
                 setStep(4);
             } else if (Array.isArray(data)) {
+                if (data.length === 0) {
+                    alert("The AI generated an empty itinerary. Please modify your preferences or destination choices and try again.");
+                    setLoading(false);
+                    clearInterval(loadingIntervalRef.current);
+                    return;
+                }
                 setItinerary(data);
                 setStep(5);
             } else if (data.error) {
@@ -789,6 +796,9 @@ const TripPlannerPage = () => {
         // 3. Filter Destinations based on Selected States & Search
         // Robust Filter: Map selected keys (which might be names "Assam") to IDs (251)
         const regionFiltered = destinations.filter(d => {
+            // Only show AI generated or newly added spots (skip static DB ones)
+            if (!d.isAiGenerated && !d.isNewUserAdded) return false;
+
             // If AI decides regions, allow any destination from available states in this country
             if (isAiRegionDecide) {
                 return availableStates.some(state =>
@@ -857,32 +867,52 @@ const TripPlannerPage = () => {
                 </div>
 
                 {/* AI Decide Checkbox for Destinations */}
+                {/* AI Generate Spots Button */}
                 <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1rem', gap: '0.5rem' }}>
-                    <label style={{
-                        display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer',
-                        padding: '0.75rem 1.25rem',
-                        background: isAiDestDecide ? '#eff6ff' : '#f8fafc',
-                        borderRadius: '50px',
-                        border: isAiDestDecide ? '2px solid #3b82f6' : '1px solid #e2e8f0',
-                        transition: 'all 0.2s',
-                        boxShadow: isAiDestDecide ? '0 4px 6px -1px rgba(59, 130, 246, 0.1), 0 2px 4px -1px rgba(59, 130, 246, 0.06)' : 'none'
-                    }}>
-                        <input
-                            type="checkbox"
-                            checked={isAiDestDecide}
-                            onChange={(e) => {
-                                setIsAiDestDecide(e.target.checked);
-                                if (e.target.checked) {
-                                    setSelectedDestinations([]);
+                    <button
+                        onClick={async () => {
+                            if (generatingAiSpots) return;
+                            setGeneratingAiSpots(true);
+                            try {
+                                const countryObj = countries.find(c => c.id === selectedCountry);
+                                const stateNames = selectedStates.map(id => availableStates.find(s => s.id === id)?.name || id);
+                                const aiDestinations = await TripAI.recommendDestinations(countryObj?.name || 'India', stateNames, tripContext);
+
+                                if (aiDestinations && aiDestinations.length > 0) {
+                                    // Add to main destinations list so they show up
+                                    setDestinations(prev => {
+                                        const existingIds = new Set(prev.map(d => d.name));
+                                        const newItems = aiDestinations.filter(d => !existingIds.has(d.name));
+                                        return [...prev, ...newItems];
+                                    });
+                                    // Select them
+                                    setSelectedDestinations(aiDestinations.map(d => d.id));
+                                } else {
+                                    alert("AI couldn't find spots right now. Please select manually.");
                                 }
-                            }}
-                            style={{ width: '18px', height: '18px', accentColor: '#3b82f6' }}
-                        />
-                        <Sparkles size={18} fill={isAiDestDecide ? "#3b82f6" : "none"} color={isAiDestDecide ? "#3b82f6" : "#64748b"} />
-                        <span style={{ fontSize: '0.95rem', fontWeight: '600', color: isAiDestDecide ? '#1e40af' : '#64748b' }}>
-                            Let AI Pick Best Spots
+                            } catch (e) {
+                                console.error("AI spots error", e);
+                                alert("Failed to fetch AI spots.");
+                            } finally {
+                                setGeneratingAiSpots(false);
+                            }
+                        }}
+                        disabled={generatingAiSpots}
+                        style={{
+                            display: 'flex', alignItems: 'center', gap: '8px', cursor: generatingAiSpots ? 'wait' : 'pointer',
+                            padding: '0.75rem 1.25rem',
+                            background: '#eff6ff',
+                            borderRadius: '50px',
+                            border: '2px solid #3b82f6',
+                            transition: 'all 0.2s',
+                            boxShadow: '0 4px 6px -1px rgba(59, 130, 246, 0.1), 0 2px 4px -1px rgba(59, 130, 246, 0.06)'
+                        }}
+                    >
+                        <Sparkles size={18} fill="#3b82f6" color="#3b82f6" className={generatingAiSpots ? styles.pulse : ''} />
+                        <span style={{ fontSize: '0.95rem', fontWeight: '600', color: '#1e40af' }}>
+                            {generatingAiSpots ? "AI is gathering data..." : "Let AI Generate Spots"}
                         </span>
-                    </label>
+                    </button>
                 </div>
 
 
@@ -1029,33 +1059,10 @@ const TripPlannerPage = () => {
                                     ) : (
                                         <>
                                             <Sparkles size={48} strokeWidth={1} style={{ color: '#fbbf24' }} />
-                                            <div className={styles.emptyTitle}>New Region Detected!</div>
+                                            <div className={styles.emptyTitle}>AI is analyzing your preferences...</div>
                                             <p style={{ maxWidth: '400px', margin: '0 auto 1.5rem' }}>
-                                                This region doesn't have curated spots yet. Be the first to add one, or explore our global favorites below.
+                                                If you don't see results soon, click the "Let AI Generate Spots" button above.
                                             </p>
-                                            <button
-                                                className={styles.nextBtn}
-                                                onClick={() => setIsAddModalOpen(true)}
-                                                style={{ marginBottom: '3rem' }}
-                                            >
-                                                Add a Destination <ExternalLink size={16} />
-                                            </button>
-
-                                            <div className={styles.sectionHeader} style={{ justifyContent: 'center', width: '100%', borderTop: '1px solid #e2e8f0', paddingTop: '2rem' }}>
-                                                <MapPin size={20} color="#64748b" /> Global Favorites
-                                            </div>
-                                            <div className={styles.grid} style={{ width: '100%', marginTop: '1rem' }}>
-                                                {/* Show random 6 destinations from global list */}
-                                                {destinations.slice(0, 6).map(dest => (
-                                                    <DestinationCard
-                                                        key={dest.id}
-                                                        dest={dest}
-                                                        isSelected={selectedDestinations.includes(dest.id)}
-                                                        onToggle={handleDestinationToggle}
-                                                        onViewDetails={(d) => navigate(`/destination/${d.id}`)}
-                                                    />
-                                                ))}
-                                            </div>
                                         </>
                                     )}
                                 </div>
@@ -1073,7 +1080,7 @@ const TripPlannerPage = () => {
                         <button
                             id="next-step-btn"
                             className={styles.nextBtn}
-                            disabled={selectedDestinations.length === 0 && !isAiDestDecide}
+                            disabled={selectedDestinations.length === 0}
                             onClick={generateItinerary}
                             style={{ flex: '1 1 auto', minWidth: '140px' }}
                         >
@@ -1365,23 +1372,12 @@ const TripPlannerPage = () => {
                                         transition: 'all 0.2s'
                                     }}
                                 >
-                                    Proceed to Booking <ChevronRight size={18} />
                                 </Link>
                             </div>
                         </>
                     ) : (
-                        <div style={{
-                            textAlign: 'center',
-                            padding: '4rem 2rem',
-                            background: 'linear-gradient(135deg, #f8fafc, #f1f5f9)',
-                            borderRadius: '24px'
-                        }}>
-                            <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🎯</div>
-                            <div style={{ fontSize: '1.25rem', fontWeight: '700', color: '#1e293b', marginBottom: '0.5rem' }}>
-                                Generating your plan...
-                            </div>
-                            <p style={{ color: '#64748b' }}>This usually takes a few seconds.</p>
-                        </div>
+                        // New loading overlay takes care of the UI 
+                        <div style={{ display: 'none' }}></div>
                     )}
 
                     {/* Booking Assistance Section */}

@@ -70,6 +70,7 @@ const AddDestinationModal = ({ isOpen, onClose, onSubmit, selectedRegionId }) =>
 
             if (response.ok) {
                 const newDest = await response.json();
+                newDest.isNewUserAdded = true;
                 setSubmitted(true);
                 setFormData(EMPTY_FORM);
                 if (onSubmit) onSubmit(newDest); // Add card to parent list

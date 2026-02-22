@@ -31,18 +31,19 @@ export const TripAI = {
     },
 
     // Recommend destinations based on Country/Region choices + Budget Prefs
-    recommendDestinations: async (countryId, regionIds, prefs = {}) => {
+    recommendDestinations: async (countryName, regionNames, prefs = {}) => {
         try {
             const response = await fetch(`${API_BASE}/recommend-destinations`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ countryId, regionIds, ...prefs })
+                body: JSON.stringify({ countryName, regionNames, prefs })
             });
             if (!response.ok) throw new Error('Failed to recommend');
-            return await response.json();
+            const data = await response.json();
+            return data.destinations || [];
         } catch (error) {
             console.error("AI Recommendation Error:", error);
-            return { recommendedIds: [], aiNames: [] };
+            return [];
         }
     },
 

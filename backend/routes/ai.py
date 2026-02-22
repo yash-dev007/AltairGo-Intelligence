@@ -2,26 +2,51 @@ from flask import Blueprint, request, jsonify
 from database import db_session
 from models import Destination, State
 import random
+import uuid
+from services.gemini_service import generate_destination_recommendations, generate_smart_destination_details
+from services.image_service import get_image_for_destination
 
 ai_bp = Blueprint('ai', __name__)
 
 @ai_bp.route('/recommend-destinations', methods=['POST'])
 def recommend_destinations():
-    # Simple Rule-Based Recommendation (Random Shuffle for Variety in MVP)
-    data = request.json
+    data = request.json or {}
+    country_name = data.get('countryName', 'India')
+    region_names = data.get('regionNames', [])
+    prefs = data.get('prefs', {})
+
     try:
-        # Get all destinations or filter by country if needed
-        # For now, just return 4 random IDs to simulate "AI Selection"
-        all_dests = db_session.query(Destination).all()
-        if not all_dests:
-            return jsonify({"recommendedIds": []})
-            
-        random.shuffle(all_dests)
-        recommended = all_dests[:4]
+        # Call Gemini to suggest 6 real spots
+        ai_spots = generate_destination_recommendations(country_name, region_names, prefs)
         
+        # Format for frontend (convert to Destination-like dictionaries with temp IDs)
+        cards = []
+        for spot in ai_spots:
+            # Try fetching a high quality image using the smart query generator 
+            img_url = get_image_for_destination(
+                name=spot.get("name", "Unknown Spot"),
+                location_context={"city": spot.get('location', country_name), "country": country_name}
+            )
+
+            cards.append({
+                "id": str(uuid.uuid4()),  # Temporary ID so frontend can select them
+                "name": spot.get("name", "Unknown Spot"),
+                "location": f"{spot.get('location', country_name)}, {region_names[0] if region_names else country_name}",
+                "state_id": region_names[0] if region_names else None,
+                "tag": spot.get("type", "Attraction"),
+                "desc": spot.get("description", ""),
+                "bestTime": spot.get("best_time", "Anytime"),
+                "crowdLevel": spot.get("crowd_level", "Moderate"),
+                "rating": float(spot.get("rating", 4.5)),
+                "estimatedCostPerDay": int(spot.get("estimated_cost_per_day", 3000)),
+                "highlights": spot.get("highlights", []),
+                "image": img_url,
+                "image_keyword": spot.get("image_keyword", spot.get("name")),
+                "isAiGenerated": True 
+            })
+            
         return jsonify({
-            "recommendedIds": [d.id for d in recommended],
-            "aiNames": [d.name for d in recommended]
+            "destinations": cards
         })
     except Exception as e:
         print(f"Recommend Error: {e}")
@@ -57,15 +82,16 @@ def recommend_regions():
 
 @ai_bp.route('/destination-details-ai', methods=['POST'])
 def destination_details_ai():
-    # Static Fallback for Details (No AI)
-    return jsonify({
-        "special": "A wonderful destination with rich history and culture.",
-        "food": ["Local Delicacies", "Street Food", "Traditional Meals"],
-        "hidden_gems": ["Old Town Market", "Sunset Viewpoint"],
-        "culture": "Locals are very welcoming and the heritage is preserved.",
-        "best_time_pace": "Early mornings are best for sightseeing.",
-        "best_for": "Travelers seeking authentic experiences."
-    })
+    data = request.json or {}
+    dest_name = data.get('destinationName', '')
+    if not dest_name:
+        return jsonify({"error": "No destination provided"}), 400
+        
+    try:
+        details = generate_smart_destination_details(dest_name)
+        return jsonify(details)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 @ai_bp.route('/calculate-budget', methods=['POST'])
 def calculate_budget():
