@@ -1,0 +1,577 @@
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+    font-family: 'Inter', sans-serif;
+    color: #1e293b;
+}
+
+/* Hero Section */
+.heroSection {
+    position: relative;
+    width: 100%;
+    height: 350px;
+    border-radius: 24px;
+    overflow: hidden;
+    margin-bottom: 3rem;
+    box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.2);
+}
+
+.heroImage {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.heroOverlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to right, rgba(15, 23, 42, 0.9) 0%, rgba(15, 23, 42, 0.4) 50%, rgba(15, 23, 42, 0) 100%);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 3rem;
+}
+
+.aiBadge {
+    display: inline-flex;
+    align-items: center;
+    background: rgba(16, 185, 129, 0.2);
+    color: #10b981;
+    border: 1px solid rgba(16, 185, 129, 0.5);
+    padding: 0.25rem 0.75rem;
+    border-radius: 50px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    width: fit-content;
+    margin-bottom: 0.5rem;
+}
+
+.heroMeta {
+    color: #f8fafc;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+
+.heroTitle {
+    font-size: 3.5rem;
+    font-weight: 800;
+    color: white;
+    line-height: 1.1;
+    margin: 0;
+    max-width: 600px;
+}
+
+.heroTitle span {
+    color: #10b981;
+    font-weight: 400;
+    font-style: italic;
+}
+
+/* Smart Budget Box */
+.budgetBox {
+    position: absolute;
+    right: 3rem;
+    bottom: 3rem;
+    background: rgba(30, 41, 59, 0.85);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 1.5rem;
+    width: 280px;
+    color: white;
+}
+
+.budgetHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.budgetValue {
+    color: #10b981;
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
+.budgetBars {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.budgetRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    color: #94a3b8;
+}
+
+.barTrack {
+    flex: 1;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    margin: 0 1rem;
+    position: relative;
+}
+
+.barFill {
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    border-radius: 4px;
+}
+
+/* Two Column Layout */
+.layout {
+    display: grid;
+    grid-template-columns: 1fr 350px;
+    gap: 3rem;
+}
+
+/* Timeline */
+.timeline {
+    position: relative;
+    padding-left: 2rem;
+}
+
+.timeline::before {
+    content: '';
+    position: absolute;
+    left: 15px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: #e2e8f0;
+    border-left: 2px dashed #cbd5e1;
+}
+
+.dayWrapper {
+    position: relative;
+    margin-bottom: 3rem;
+}
+
+.dayNumberBadge {
+    position: absolute;
+    left: -2rem;
+    top: 1.5rem;
+    transform: translateX(-50%);
+    width: 30px;
+    height: 30px;
+    background: #10b981;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.9rem;
+    box-shadow: 0 0 0 6px #fff;
+    z-index: 2;
+}
+
+.dayCard {
+    background: white;
+    border-radius: 20px;
+    padding: 2rem;
+    box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.05);
+    border: 1px solid #f1f5f9;
+}
+
+/* Day content layout is different for Image vs Stats */
+.dayContentRow {
+    display: flex;
+    gap: 2rem;
+}
+
+.dayMain {
+    flex: 1;
+}
+
+.dayHeader {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.dayTitle {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: #0f172a;
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.aiOptimized {
+    font-size: 0.65rem;
+    padding: 0.2rem 0.5rem;
+    background: #eff6ff;
+    color: #3b82f6;
+    border-radius: 6px;
+    font-weight: 700;
+}
+
+.routeBox {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background: #f8fafc;
+    padding: 0.75rem 1rem;
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+    font-size: 0.9rem;
+    color: #64748b;
+}
+
+.routeIcon {
+    color: #3b82f6;
+}
+
+.stopsGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.stopItem {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 1rem;
+    background: white;
+    border: 1px solid #f1f5f9;
+    border-radius: 12px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
+}
+
+.stopIcon {
+    color: #10b981;
+    margin-top: 2px;
+}
+
+.stopInfo {
+    display: flex;
+    flex-direction: column;
+}
+
+.stopName {
+    font-weight: 700;
+    color: #1e293b;
+    font-size: 0.9rem;
+    margin-bottom: 0.2rem;
+}
+
+.stopDesc {
+    font-size: 0.8rem;
+    color: #94a3b8;
+}
+
+.dayStats {
+    width: 140px;
+    padding-left: 2rem;
+    border-left: 1px solid #f1f5f9;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 1.5rem;
+}
+
+.statItem {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.statLabel {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    color: #94a3b8;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+}
+
+.statValue {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: #0f172a;
+}
+
+.intensityBar {
+    width: 100%;
+    height: 4px;
+    background: #f1f5f9;
+    border-radius: 4px;
+    margin-top: 0.5rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.intensityFill {
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    background: #10b981;
+}
+
+.aiTip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 1.5rem;
+    padding: 0.5rem 1rem;
+    background: rgba(16, 185, 129, 0.05);
+    border: 1px solid rgba(16, 185, 129, 0.2);
+    border-radius: 30px;
+    font-size: 0.8rem;
+    color: #047857;
+    font-weight: 600;
+}
+
+.aiTipIcon {
+    color: #10b981;
+}
+
+/* Alternate Day Layout (Image based) */
+.dayImage {
+    width: 250px;
+    height: 180px;
+    object-fit: cover;
+    border-radius: 12px;
+}
+
+/* Sidebar */
+.sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.structureCard {
+    background: white;
+    border-radius: 20px;
+    padding: 1.5rem;
+    box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.05);
+    border: 1px solid #f1f5f9;
+}
+
+.cardTitle {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: #1e293b;
+    margin: 0 0 1.5rem;
+}
+
+.structureTable {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+}
+
+.structureTable th {
+    text-align: left;
+    color: #94a3b8;
+    text-transform: uppercase;
+    font-size: 0.7rem;
+    letter-spacing: 0.05em;
+    padding-bottom: 0.75rem;
+    font-weight: 700;
+}
+
+.structureTable td {
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #f1f5f9;
+    color: #334155;
+}
+
+.structureTable tr:last-child td {
+    border-bottom: none;
+}
+
+.intBadge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    color: white;
+    font-weight: 700;
+    font-size: 0.75rem;
+}
+
+.perfectCard {
+    background: #0f172a;
+    border-radius: 20px;
+    padding: 2rem;
+    color: white;
+}
+
+.perfectIconBox {
+    background: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+}
+
+.perfectTitle {
+    font-size: 1.25rem;
+    font-weight: 800;
+    margin: 0 0 1.5rem;
+}
+
+.perfectList {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.perfectItem {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    font-size: 0.85rem;
+    line-height: 1.5;
+    color: #cbd5e1;
+}
+
+.perfectItem strong {
+    color: white;
+}
+
+.perfectCheck {
+    color: #10b981;
+    margin-top: 2px;
+    flex-shrink: 0;
+}
+
+.imagesGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.miniImage {
+    width: 100%;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 12px;
+}
+
+/* Map Placeholder */
+.mapPlaceholder {
+    background: #e2e8f0;
+    border-radius: 20px;
+    height: 300px;
+    margin-top: 3rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.mapLines {
+    position: absolute;
+    inset: 0;
+    opacity: 0.3;
+}
+
+.viewMapBtn {
+    background: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 50px;
+    font-weight: 700;
+    color: #1e293b;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    border: none;
+    cursor: pointer;
+    position: relative;
+    z-index: 2;
+}
+
+/* Detail link */
+.detailLink {
+    color: #3b82f6;
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    margin-top: 1rem;
+}
+
+/* Export Button */
+.exportBtn {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    background: #3b82f6;
+    color: white;
+    padding: 1rem 1.5rem;
+    border-radius: 50px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    border: none;
+    box-shadow: 0 10px 25px rgba(59, 130, 246, 0.4);
+    cursor: pointer;
+    z-index: 50;
+    transition: transform 0.2s;
+}
+
+.exportBtn:hover {
+    transform: translateY(-2px);
+}
+
+@media (max-width: 992px) {
+    .layout {
+        grid-template-columns: 1fr;
+    }
+
+    .dayContentRow {
+        flex-direction: column;
+    }
+
+    .dayStats {
+        width: 100%;
+        padding-left: 0;
+        border-left: none;
+        border-top: 1px solid #f1f5f9;
+        padding-top: 1.5rem;
+        flex-direction: row;
+        justify-content: flex-start;
+        gap: 3rem;
+    }
+
+    .dayImage {
+        width: 100%;
+        height: 250px;
+    }
+}

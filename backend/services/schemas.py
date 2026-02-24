@@ -48,13 +48,20 @@ class AccommodationConfig(BaseModel):
 class ItineraryDay(BaseModel):
     day: int
     date: Optional[str] = None
-    location: str
+    location: Optional[str] = Field(default="City")
     theme: Optional[str] = Field(default="Exploration")
     activities: List[ActivityList] = Field(default_factory=list)
     accommodation: Optional[AccommodationConfig] = None
     day_total: Optional[int] = Field(default=0)
     transport_within_city: Optional[int] = Field(default=500)
     notes: Optional[str] = Field(default="")
+    travel_hours: Optional[str] = Field(default="2 hrs", description="e.g. '4-5 hrs'")
+    intensity_score: Optional[int] = Field(default=5, description="1 to 10")
+    weather_sensitivity: Optional[str] = Field(default="Low", description="Low/Medium/High")
+    risk: Optional[str] = Field(default="Low", description="Low/Medium/High")
+    base_location: Optional[str] = Field(default="", description="Base city for the night")
+    purpose: Optional[str] = Field(default="", description="e.g. 'Body adjustment after travel'")
+    stay_logic: Optional[str] = Field(default="", description="Reasoning for stay location")
 
 class CostBreakdown(BaseModel):
     transport: Optional[int] = 0
@@ -64,14 +71,15 @@ class CostBreakdown(BaseModel):
     miscellaneous: Optional[int] = 0
     
 class TripPlan(BaseModel):
-    trip_title: str
-    total_cost: Optional[int] = 0
+    trip_title: Optional[str] = Field(default="Standard Trip")
+    total_cost: Optional[int] = Field(default=50000)
     cost_breakdown: Optional[CostBreakdown] = None
-    budget_status: Optional[str] = "Within Budget"
+    budget_status: Optional[str] = Field(default="Within Budget")
     smart_insights: List[str] = Field(default_factory=list)
     itinerary: List[ItineraryDay] = Field(default_factory=list)
     travel_between_cities: List[dict] = Field(default_factory=list)
     packing_tips: List[str] = Field(default_factory=list)
     important_tips: List[str] = Field(default_factory=list)
     money_saving_hacks: List[str] = Field(default_factory=list)
-    image_keyword: Optional[str] = ""
+    image_keyword: Optional[str] = Field(default="")
+    ai_perfect_reasons: List[str] = Field(default_factory=list, description="List of reasons why this is AI perfect, e.g. 'Geographic flow optimized: No backtracking'")

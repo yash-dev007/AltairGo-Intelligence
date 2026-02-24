@@ -88,17 +88,7 @@ const Navbar = () => {
                         We'll stick to simple Links that redirect to "/" for now for sections.
                     */}
 
-                    {/* Efficient Hybrid Approach: */}
-                    {/* Efficient Hybrid Approach: */}
-                    {isHome ? (
-                        <>
-                            <a href="#about" className={styles.link} onClick={(e) => { e.preventDefault(); handleNavClick('about'); }}>About Us</a>
-                        </>
-                    ) : (
-                        <>
-                            <Link to="/#about" className={styles.link} onClick={() => setIsOpen(false)}>About Us</Link>
-                        </>
-                    )}
+                    {/* Removed About Us link as per user request */}
 
                     <Link to="/destinations" className={styles.link} onClick={() => setIsOpen(false)}>Destinations</Link>
 

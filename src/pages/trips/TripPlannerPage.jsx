@@ -7,11 +7,11 @@ import { API_BASE_URL } from '../../config';
 import AddDestinationModal from '../../components/AddDestinationModal';
 import DateSelectionModal from '../../components/TripPlanner/DateSelectionModal';
 import DestinationCard from '../../components/TripPlanner/DestinationCard';
-import ItineraryTimeline from '../../components/TripPlanner/ItineraryTimeline';
+import ModernItineraryView from '../../components/TripPlanner/ModernItineraryView';
 import BudgetSelectionModal from '../../components/TripPlanner/BudgetSelectionModal';
+import ChatWidget from '../../components/ChatWidget/ChatWidget';
 import TripOptions from '../../components/TripPlanner/TripOptions';
 import AIDestinationDetailsModal from '../../components/TripPlanner/AIDestinationDetailsModal';
-import ChatWidget from '../../components/ChatWidget/ChatWidget';
 import LoadingOverlay from '../../components/LoadingOverlay';
 import styles from './TripPlanner.module.css';
 
@@ -352,7 +352,8 @@ const TripPlannerPage = () => {
                 setTripContext(prev => ({
                     ...prev,
                     title: data.trip_title || data.title,
-                    estimatedCost: data.total_cost
+                    estimatedCost: data.total_cost,
+                    ai_perfect_reasons: data.ai_perfect_reasons || []
                 }));
                 setStep(5);
             }
@@ -1235,255 +1236,121 @@ const TripPlannerPage = () => {
                     </div>
                 )}
 
-                {/* Summary Stats */}
-                <div className={styles.summaryCard}>
-                    <div className={styles.summaryItem}>
-                        <span className={styles.summaryLabel}>Duration</span>
-                        <span className={styles.summaryValue}>
-                            {itinerary[itinerary.length - 1]?.day || tripContext.days || 0} Days
-                        </span>
-                    </div>
-                    <div className={styles.summaryItem}>
-                        <span className={styles.summaryLabel}>Destinations</span>
-                        <span className={styles.summaryValue}>{itinerary.length || 0}</span>
-                    </div>
-                    <div className={styles.summaryItem}>
-                        <span className={styles.summaryLabel}>Est. Budget</span>
-                        <span className={styles.summaryValue}>
-                            ₹{(tripContext.budget || 50000).toLocaleString()}
-                            <div style={{ fontSize: '0.7em', fontWeight: 'normal', color: '#64748b' }}>
-                                ({tripContext.style} Style)
+                {/* Modern AI Itinerary View */}
+                {itinerary.length > 0 && <ChatWidget />}
+                {itinerary.length > 0 ? (
+                    <ModernItineraryView
+                        itinerary={itinerary}
+                        tripContext={tripContext}
+                        insight={insight}
+                    />
+                ) : (
+                    <div style={{ display: 'none' }}></div>
+                )}
+
+                {/* Booking Assistance Section */}
+                <div style={{ marginTop: '3rem', borderTop: '1px solid #e2e8f0', paddingTop: '2rem' }}>
+                    <h3 className={styles.sectionHeader}>
+                        <Sparkles size={24} />
+                        Booking Assistance
+                    </h3>
+                    <p className={styles.subtitle} style={{ marginBottom: '2rem' }}>
+                        Complete your trip with these matching options for your <strong>{tripContext.style}</strong> style
+                    </p>
+
+                    <div className={styles.grid} style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))' }}>
+                        {/* Stays Card */}
+                        <div className={styles.card} style={{ padding: '1.5rem' }}>
+                            <div style={{ marginBottom: '1rem', background: '#eff6ff', width: 'fit-content', padding: '0.75rem', borderRadius: '12px' }}>
+                                <MapPin size={24} color="#3b82f6" />
                             </div>
-                        </span>
-                    </div>
-                    {insight && (
-                        <div className={styles.smartInsight}>
-                            <Sparkles size={20} style={{ minWidth: '20px' }} />
-                            <div>
-                                <strong>Smart Insight:</strong> {insight.text}
-                            </div>
+                            <h4 style={{ margin: '0 0 0.5rem', fontWeight: '700', color: 'var(--text-main)' }}>Stays</h4>
+                            <p style={{ fontSize: '0.9rem', color: '#64748b', marginBottom: '1rem' }}>
+                                12+ {tripContext.style} hotels near your destinations
+                            </p>
+                            <Link to="/booking" className={styles.viewDetailsBtn} style={{ textDecoration: 'none', textAlign: 'center', display: 'block' }}>
+                                View Hotels
+                            </Link>
                         </div>
-                    )}
+
+                        {/* Transport Card */}
+                        <div className={styles.card} style={{ padding: '1.5rem' }}>
+                            <div style={{ marginBottom: '1rem', background: '#fefce8', width: 'fit-content', padding: '0.75rem', borderRadius: '12px' }}>
+                                <ExternalLink size={24} color="#ca8a04" />
+                            </div>
+                            <h4 style={{ margin: '0 0 0.5rem', fontWeight: '700', color: 'var(--text-main)' }}>Transport</h4>
+                            <p style={{ fontSize: '0.9rem', color: '#64748b', marginBottom: '1rem' }}>
+                                Flights & trains for your {tripContext.days || itinerary.length} day trip
+                            </p>
+                            <Link to="/booking" className={styles.viewDetailsBtn} style={{ textDecoration: 'none', textAlign: 'center', display: 'block' }}>
+                                Check Flights
+                            </Link>
+                        </div>
+
+                        {/* Experiences Card */}
+                        <div className={styles.card} style={{ padding: '1.5rem' }}>
+                            <div style={{ marginBottom: '1rem', background: '#f0fdf4', width: 'fit-content', padding: '0.75rem', borderRadius: '12px' }}>
+                                <Sparkles size={24} color="#16a34a" />
+                            </div>
+                            <h4 style={{ margin: '0 0 0.5rem', fontWeight: '700', color: 'var(--text-main)' }}>Experiences</h4>
+                            <p style={{ fontSize: '0.9rem', color: '#64748b', marginBottom: '1rem' }}>
+                                Curated activities based on your interests
+                            </p>
+                            <Link to="/booking" className={styles.viewDetailsBtn} style={{ textDecoration: 'none', textAlign: 'center', display: 'block' }}>
+                                Browse Activities
+                            </Link>
+                        </div>
+                    </div>
                 </div>
 
-                <div className={styles.itineraryContainer} style={{ maxWidth: '900px', padding: '0 1rem' }}>
-                    {/* Chat Widget */}
-                    <ChatWidget />
+                {/* Booking anchor */}
+                <div id="booking-section"></div>
 
-                    {/* Destinations Summary */}
-                    {itinerary.length > 0 && (
-                        <div style={{ marginBottom: '2rem' }}>
-                            <div className={styles.sectionHeader} style={{ fontSize: '0.9rem', marginBottom: '1rem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                                Destinations in this Trip
-                            </div>
-                            <div style={{ display: 'flex', gap: '1rem', overflowX: 'auto', paddingBottom: '1rem', scrollbarWidth: 'none' }}>
-                                {[...new Set(itinerary.map(i => i.location))].map(locName => {
-                                    const dayCount = itinerary.filter(i => i.location === locName).length;
-                                    const firstItem = itinerary.find(i => i.location === locName);
-                                    return (
-                                        <div key={locName} style={{ minWidth: '220px', background: 'white', borderRadius: '16px', border: '1px solid #e2e8f0', overflow: 'hidden', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
-                                            <div style={{ height: '140px', background: '#e2e8f0', position: 'relative' }}>
-                                                <img src={firstItem?.image || 'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1'} alt={locName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                                                <div style={{ position: 'absolute', bottom: '0.5rem', left: '0.5rem', background: 'rgba(0,0,0,0.6)', color: 'white', padding: '0.2rem 0.6rem', borderRadius: '12px', fontSize: '0.75rem', fontWeight: '600' }}>
-                                                    {dayCount} {dayCount === 1 ? 'Day' : 'Days'}
-                                                </div>
-                                            </div>
-                                            <div style={{ padding: '1rem' }}>
-                                                <div style={{ fontWeight: '700', color: '#1e293b', fontSize: '1.1rem', marginBottom: '0.25rem' }}>{locName}</div>
-                                                <button
-                                                    onClick={() => {
-                                                        setSelectedDetailDest({ name: locName, image: firstItem?.image, location: locName });
-                                                        setDetailsModalOpen(true);
-                                                    }}
-                                                    className={styles.secondaryBtn}
-                                                    style={{ width: '100%', marginTop: '0.5rem', padding: '0.5rem', fontSize: '0.9rem' }}
-                                                >
-                                                    Destination Details
-                                                </button>
-                                            </div>
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        </div>
-                    )}
-
-                    {itinerary.length > 0 ? (
-                        <>
-                            {/* Timeline Component */}
-                            <div style={{ marginBottom: '3rem' }}>
-                                <ItineraryTimeline itinerary={itinerary} onItineraryChange={setItinerary} />
-                            </div>
-
-                            {/* Action Buttons */}
-                            <div style={{
-                                display: 'flex',
-                                justifyContent: 'center',
-                                gap: '1rem',
-                                marginTop: '3rem',
-                                flexWrap: 'wrap'
-                            }}>
-                                <button
-                                    className={styles.secondaryBtn}
-                                    onClick={() => window.print()}
-                                    style={{
-                                        background: 'white',
-                                        border: '2px solid #e2e8f0',
-                                        padding: '0.875rem 2rem',
-                                        borderRadius: '50px',
-                                        fontWeight: '600',
-                                        cursor: 'pointer',
-                                        transition: 'all 0.2s'
-                                    }}
-                                >
-                                    🖨️ Print Itinerary
-                                </button>
-                                <button
-                                    onClick={() => { setShowFeedbackModal(true); setFeedbackSent(false); }}
-                                    style={{
-                                        background: 'white',
-                                        border: '2px solid #fee2e2',
-                                        color: '#dc2626',
-                                        padding: '0.875rem 2rem',
-                                        borderRadius: '50px',
-                                        fontWeight: '600',
-                                        cursor: 'pointer',
-                                        transition: 'all 0.2s',
-                                        display: 'inline-flex',
-                                        alignItems: 'center',
-                                        gap: '0.4rem'
-                                    }}
-                                >
-                                    🚩 Report Issue
-                                </button>
-                                <Link
-                                    to="/booking"
-                                    style={{
-                                        textDecoration: 'none',
-                                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                                        color: 'white',
-                                        padding: '0.875rem 2rem',
-                                        borderRadius: '50px',
-                                        fontWeight: '700',
-                                        display: 'inline-flex',
-                                        alignItems: 'center',
-                                        gap: '0.5rem',
-                                        boxShadow: '0 8px 24px rgba(102, 126, 234, 0.3)',
-                                        transition: 'all 0.2s'
-                                    }}
-                                >
-                                </Link>
-                            </div>
-                        </>
-                    ) : (
-                        // New loading overlay takes care of the UI 
-                        <div style={{ display: 'none' }}></div>
-                    )}
-
-                    {/* Booking Assistance Section */}
-                    <div style={{ marginTop: '3rem', borderTop: '1px solid #e2e8f0', paddingTop: '2rem' }}>
-                        <h3 className={styles.sectionHeader}>
-                            <Sparkles size={24} />
-                            Booking Assistance
-                        </h3>
-                        <p className={styles.subtitle} style={{ marginBottom: '2rem' }}>
-                            Complete your trip with these matching options for your <strong>{tripContext.style}</strong> style
-                        </p>
-
-                        <div className={styles.grid} style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))' }}>
-                            {/* Stays Card */}
-                            <div className={styles.card} style={{ padding: '1.5rem' }}>
-                                <div style={{ marginBottom: '1rem', background: '#eff6ff', width: 'fit-content', padding: '0.75rem', borderRadius: '12px' }}>
-                                    <MapPin size={24} color="#3b82f6" />
-                                </div>
-                                <h4 style={{ margin: '0 0 0.5rem', fontWeight: '700', color: 'var(--text-main)' }}>Stays</h4>
-                                <p style={{ fontSize: '0.9rem', color: '#64748b', marginBottom: '1rem' }}>
-                                    12+ {tripContext.style} hotels near your destinations
-                                </p>
-                                <Link to="/booking" className={styles.viewDetailsBtn} style={{ textDecoration: 'none', textAlign: 'center', display: 'block' }}>
-                                    View Hotels
-                                </Link>
-                            </div>
-
-                            {/* Transport Card */}
-                            <div className={styles.card} style={{ padding: '1.5rem' }}>
-                                <div style={{ marginBottom: '1rem', background: '#fefce8', width: 'fit-content', padding: '0.75rem', borderRadius: '12px' }}>
-                                    <ExternalLink size={24} color="#ca8a04" />
-                                </div>
-                                <h4 style={{ margin: '0 0 0.5rem', fontWeight: '700', color: 'var(--text-main)' }}>Transport</h4>
-                                <p style={{ fontSize: '0.9rem', color: '#64748b', marginBottom: '1rem' }}>
-                                    Flights & trains for your {tripContext.days || itinerary.length} day trip
-                                </p>
-                                <Link to="/booking" className={styles.viewDetailsBtn} style={{ textDecoration: 'none', textAlign: 'center', display: 'block' }}>
-                                    Check Flights
-                                </Link>
-                            </div>
-
-                            {/* Experiences Card */}
-                            <div className={styles.card} style={{ padding: '1.5rem' }}>
-                                <div style={{ marginBottom: '1rem', background: '#f0fdf4', width: 'fit-content', padding: '0.75rem', borderRadius: '12px' }}>
-                                    <Sparkles size={24} color="#16a34a" />
-                                </div>
-                                <h4 style={{ margin: '0 0 0.5rem', fontWeight: '700', color: 'var(--text-main)' }}>Experiences</h4>
-                                <p style={{ fontSize: '0.9rem', color: '#64748b', marginBottom: '1rem' }}>
-                                    Curated activities based on your interests
-                                </p>
-                                <Link to="/booking" className={styles.viewDetailsBtn} style={{ textDecoration: 'none', textAlign: 'center', display: 'block' }}>
-                                    Browse Activities
-                                </Link>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Booking anchor */}
-                    <div id="booking-section"></div>
-
-                    <div className={styles.actions}>
-                        <button className={styles.backBtn} onClick={() => setStep(3)}>
-                            <ChevronLeft size={18} /> Modify
+                <div className={styles.actions}>
+                    <button className={styles.backBtn} onClick={() => setStep(3)}>
+                        <ChevronLeft size={18} /> Modify
+                    </button>
+                    <div style={{ display: 'flex', gap: '1rem' }}>
+                        {/* Save & Share Button */}
+                        <button
+                            className={styles.nextBtn}
+                            style={{ background: 'white', color: '#0f172a', border: '1px solid #e2e8f0' }}
+                            onClick={async () => {
+                                // Save Trip Logic with all preferences
+                                const tripPayload = {
+                                    title: `Trip to ${countries.find(c => c.id === selectedCountry)?.name || 'Unknown'}`,
+                                    startCity: startLocation,
+                                    country: countries.find(c => c.id === selectedCountry)?.name || 'Unknown',
+                                    duration: travelDates.duration || tripContext.days,
+                                    budget: tripContext.budget,
+                                    travelers: 1,
+                                    style: tripContext.style,
+                                    dateType: travelDates.type || 'anytime',
+                                    travelStartDate: travelDates.start ? travelDates.start.toISOString() : null,
+                                    travelEndDate: travelDates.end ? travelDates.end.toISOString() : null,
+                                    travelMonth: travelDates.month ? travelDates.month.toLocaleString('default', { month: 'long', year: 'numeric' }) : null,
+                                    itinerary: itinerary,
+                                    totalCost: budget || 35000
+                                };
+                                const res = await TripAI.saveTrip(tripPayload, token); // Pass token
+                                if (res.tripId) {
+                                    alert(`Trip Saved! Share this link: ${window.location.origin}/trip/${res.tripId}`);
+                                } else {
+                                    alert("Failed to save trip. Please try again.");
+                                }
+                            }}
+                        >
+                            <Share2 size={18} style={{ display: 'inline', marginRight: '5px' }} /> Save & Share
                         </button>
-                        <div style={{ display: 'flex', gap: '1rem' }}>
-                            {/* Save & Share Button */}
-                            <button
-                                className={styles.nextBtn}
-                                style={{ background: 'white', color: '#0f172a', border: '1px solid #e2e8f0' }}
-                                onClick={async () => {
-                                    // Save Trip Logic with all preferences
-                                    const tripPayload = {
-                                        title: `Trip to ${countries.find(c => c.id === selectedCountry)?.name || 'Unknown'}`,
-                                        startCity: startLocation,
-                                        country: countries.find(c => c.id === selectedCountry)?.name || 'Unknown',
-                                        duration: travelDates.duration || tripContext.days,
-                                        budget: tripContext.budget,
-                                        travelers: 1,
-                                        style: tripContext.style,
-                                        dateType: travelDates.type || 'anytime',
-                                        travelStartDate: travelDates.start ? travelDates.start.toISOString() : null,
-                                        travelEndDate: travelDates.end ? travelDates.end.toISOString() : null,
-                                        travelMonth: travelDates.month ? travelDates.month.toLocaleString('default', { month: 'long', year: 'numeric' }) : null,
-                                        itinerary: itinerary,
-                                        totalCost: budget || 35000
-                                    };
-                                    const res = await TripAI.saveTrip(tripPayload, token); // Pass token
-                                    if (res.tripId) {
-                                        alert(`Trip Saved! Share this link: ${window.location.origin}/trip/${res.tripId}`);
-                                    } else {
-                                        alert("Failed to save trip. Please try again.");
-                                    }
-                                }}
-                            >
-                                <Share2 size={18} style={{ display: 'inline', marginRight: '5px' }} /> Save & Share
-                            </button>
-                            <button
-                                className={styles.nextBtn}
-                                onClick={() => {
-                                    const bookingSec = document.getElementById('booking-section');
-                                    if (bookingSec) bookingSec.scrollIntoView({ behavior: 'smooth' });
-                                }}
-                            >
-                                Book This Trip
-                            </button>
-                        </div>
+                        <button
+                            className={styles.nextBtn}
+                            onClick={() => {
+                                const bookingSec = document.getElementById('booking-section');
+                                if (bookingSec) bookingSec.scrollIntoView({ behavior: 'smooth' });
+                            }}
+                        >
+                            Book This Trip
+                        </button>
                     </div>
                 </div>
             </>

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Search } from 'lucide-react';
+import { Search, SearchX } from 'lucide-react';
 import styles from './DestinationsPage.module.css';
 import { API_BASE_URL } from '../../config';
 import DestinationCard from '../../components/DestinationCard/DestinationCard';
@@ -88,8 +88,24 @@ const DestinationsPage = () => {
                                 />
                             ))
                         ) : (
-                            <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '4rem', color: '#64748b' }}>
-                                <p style={{ fontSize: '1.2rem' }}>No destinations found matching "{searchTerm}"</p>
+                            <div style={{
+                                gridColumn: '1 / -1',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                padding: '6rem 2rem',
+                                backgroundColor: '#f8fafc',
+                                borderRadius: '1.5rem',
+                                border: '1px dashed #cbd5e1',
+                                textAlign: 'center',
+                                marginTop: '2rem'
+                            }}>
+                                <SearchX size={48} style={{ color: '#94a3b8', marginBottom: '1.5rem' }} />
+                                <h3 style={{ fontSize: '1.5rem', fontWeight: '600', color: '#334155', marginBottom: '0.5rem' }}>No destinations found</h3>
+                                <p style={{ fontSize: '1.1rem', color: '#64748b', maxWidth: '400px' }}>
+                                    We couldn't find any destinations matching "{searchTerm}". Try adjusting your search or explore our popular destinations.
+                                </p>
                             </div>
                         )}
                     </div>
