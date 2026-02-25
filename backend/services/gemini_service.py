@@ -1,251 +1,268 @@
 import os
-import json
-import requests
 import re
-from dotenv import load_dotenv
-from services.schemas import DestinationDetail, SmartDestinationInsight, TripPlan, DestinationRecommendationList
-
-# Configure Gemini Client
-API_KEY = os.getenv("GEMINI_API_KEY")
-if not API_KEY:
-    print("WARNING: GEMINI_API_KEY not found in .env")
-
-GEMINI_TEMPERATURE = float(os.getenv("GEMINI_TEMPERATURE", "0.3"))
-
+import json
 import time
+import logging
+import requests
+from dotenv import load_dotenv
 
-# Prioritized list of models — verified available via ListModels on this API key
+load_dotenv()
+
+from services.schemas import (
+    DestinationDetail, SmartDestinationInsight, TripPlan,
+    DestinationRecommendationList
+)
+
+logger = logging.getLogger(__name__)
+
+API_KEY            = os.getenv("GEMINI_API_KEY")
+GEMINI_TEMPERATURE = float(os.getenv("GEMINI_TEMPERATURE", "0.4"))
+
+if not API_KEY:
+    logger.warning("GEMINI_API_KEY not set — all Gemini calls will fail.")
+
 MODELS_TO_TRY = [
-    'gemini-2.5-flash',        # Latest, highest quality
-    'gemini-flash-latest',     # Alias that always points to latest stable flash
+    "gemini-2.5-flash",
+    "gemini-flash-latest",
 ]
 
+# Traveler type → behavioural prompt hint
+# FIX (LOW): Added solo_male and other missing types so every traveler type
+# gets a meaningful hint injected into the prompt, not a raw slug.
+_TRAVELER_HINTS = {
+    "solo_male":       "Solo male traveler — open to adventurous, social, and off-beat experiences.",
+    "solo_female":     "Solo female traveler — prioritise well-lit, safe, reputable venues and reliable transport.",
+    "couple":          "Romantic couple — include at least one sunset/evening experience per day; one fine-dining option.",
+    "family_toddlers": "Family with toddlers (under 5) — stroller-accessible only; max 4 activities/day; midday break mandatory.",
+    "family_kids":     "Family with school-age kids — mix educational and fun activities; no adult-only venues.",
+    "senior":          "Senior travelers — minimal walking (<1 km between stops), seated experiences preferred, no steep climbs.",
+    "friends":         "Friend group — include at least one group-friendly evening activity (rooftop bar, cooking class, live music).",
+    "business":        "Business + leisure traveler — mornings may have meetings; keep afternoon/evening itinerary flexible.",
+}
+
+
+# ── Prompt loading ─────────────────────────────────────────────────────────────
 
 def _load_prompt_template(style: str, num_cities: int) -> str:
-    """Load the appropriate prompt addendum based on style and trip type."""
     prompts_dir = os.path.join(os.path.dirname(__file__), '..', 'prompts')
-
-    # Always load base template
-    base_path = os.path.join(prompts_dir, 'base_template.txt')
     try:
-        with open(base_path, 'r', encoding='utf-8') as f:
+        with open(os.path.join(prompts_dir, 'base_template.txt'), encoding='utf-8') as f:
             base = f.read()
     except FileNotFoundError:
-        base = ""  # Graceful fallback
+        base = ""
 
-    # Load style-specific addendum
-    style_lower = (style or 'standard').lower()
-    if style_lower == 'budget':
-        style_file = 'budget_trip.txt'
-    elif style_lower == 'luxury':
-        style_file = 'luxury_trip.txt'
-    else:
-        style_file = None  # Standard has no extra rules
-
-    style_addon = ""
+    style_lower  = (style or 'standard').lower()
+    style_file   = {'budget': 'budget_trip.txt', 'luxury': 'luxury_trip.txt'}.get(style_lower)
+    style_addon  = ""
     if style_file:
-        style_path = os.path.join(prompts_dir, style_file)
         try:
-            with open(style_path, 'r', encoding='utf-8') as f:
+            with open(os.path.join(prompts_dir, style_file), encoding='utf-8') as f:
                 style_addon = "\n\n" + f.read()
         except FileNotFoundError:
             pass
 
-    # Load multi-city addendum if applicable
-    multi_city_addon = ""
+    multi_addon = ""
     if num_cities >= 3:
-        mc_path = os.path.join(prompts_dir, 'multi_city.txt')
         try:
-            with open(mc_path, 'r', encoding='utf-8') as f:
-                multi_city_addon = "\n\n" + f.read()
+            with open(os.path.join(prompts_dir, 'multi_city.txt'), encoding='utf-8') as f:
+                multi_addon = "\n\n" + f.read()
         except FileNotFoundError:
             pass
 
-    return base + style_addon + multi_city_addon
+    return base + style_addon + multi_addon
 
 
-def _format_destination_data(selected_destinations: list) -> str:
-    """Format destination DB records into a readable context block for the AI."""
-    if not selected_destinations:
-        return "No specific destinations pre-selected — suggest the best options based on user preferences."
+# ── Destination data formatter ─────────────────────────────────────────────────
 
+def _format_destination_data(destinations: list) -> str:
+    if not destinations:
+        return "No specific destinations pre-selected — suggest best options based on user preferences."
     lines = []
-    for i, d in enumerate(selected_destinations, 1):
+    for i, d in enumerate(destinations, 1):
         lines.append(f"Destination {i}: {d.get('name', 'Unknown')}")
-        if d.get('location'):
-            lines.append(f"  - Region: {d['location']}")
-        if d.get('estimatedCostPerDay'):
-            lines.append(f"  - Avg cost/day: ₹{d['estimatedCostPerDay']}")
-        if d.get('crowdLevel'):
-            lines.append(f"  - Crowd level: {d['crowdLevel']}")
-        if d.get('bestTime'):
-            lines.append(f"  - Best time to visit: {d['bestTime']}")
-        if d.get('rating'):
-            lines.append(f"  - Rating: {d['rating']}/5")
-        if d.get('tag'):
-            lines.append(f"  - Type: {d['tag']}")
-        if d.get('highlights') and isinstance(d['highlights'], list):
-            lines.append(f"  - Highlights: {', '.join(d['highlights'][:3])}")
-        if d.get('desc'):
-            lines.append(f"  - About: {d['desc']}")
-        lines.append("")  # Blank line between destinations
-
+        # FIX (LOW): Accept both camelCase (raw DB) and snake_case (Pydantic-serialized)
+        for snake, camel, label, suffix in [
+            ('location',              'location',            'Region',           ''),
+            ('estimated_cost_per_day','estimatedCostPerDay', 'Avg cost/day',    '₹'),
+            ('crowd_level',           'crowdLevel',          'Crowd level',      ''),
+            ('best_time',             'bestTime',            'Best time',        ''),
+            ('rating',                'rating',              'Rating',           '/5'),
+            ('type',                  'tag',                 'Type',             ''),
+        ]:
+            val = d.get(snake) or d.get(camel)
+            if val is not None:
+                lines.append(f"  - {label}: {suffix}{val}")
+        highlights = d.get('highlights', [])
+        if highlights:
+            lines.append(f"  - Highlights: {', '.join(highlights[:3])}")
+        desc = d.get('description') or d.get('desc')
+        if desc:
+            lines.append(f"  - About: {desc}")
+        lines.append("")
     return "\n".join(lines)
 
 
-def _extract_json_from_text(text_resp: str) -> str:
-    """Helper to safely rip JSON out of markdown or conversational filler."""
-    start_idx = text_resp.find('{')
-    end_idx = text_resp.rfind('}')
-    
-    if start_idx != -1 and end_idx != -1 and end_idx > start_idx:
-        return text_resp[start_idx : end_idx + 1].strip()
-        
-    start_idx_arr = text_resp.find('[')
-    end_idx_arr = text_resp.rfind(']')
-    if start_idx_arr != -1 and end_idx_arr != -1 and end_idx_arr > start_idx_arr:
-        return text_resp[start_idx_arr : end_idx_arr + 1].strip()
-        
-    return text_resp.strip()
+# ── Interest/traveler context builder ─────────────────────────────────────────
+
+def _build_interest_context(interests, traveler_type: str, companions: str) -> str:
+    # FIX (MEDIUM): Guard against frontend sending interests as a string
+    if isinstance(interests, str):
+        interests = [i.strip() for i in interests.split(',') if i.strip()]
+    interests = interests or []
+
+    parts = []
+    if interests:
+        parts.append(", ".join(interests))
+    hint = _TRAVELER_HINTS.get(str(traveler_type).lower(), traveler_type)
+    if hint:
+        parts.append(hint)
+    if companions:
+        parts.append(f"Traveling with: {companions}")
+    return "; ".join(parts) if parts else "General sightseeing"
 
 
-def _generate_content_http(prompt: str, model_name: str, response_schema: dict = None) -> str:
+# ── JSON extraction ────────────────────────────────────────────────────────────
+
+def _extract_json_from_text(text: str) -> str:
+    start = text.find('{')
+    end   = text.rfind('}')
+    if start != -1 and end > start:
+        return text[start:end + 1].strip()
+    start = text.find('[')
+    end   = text.rfind(']')
+    if start != -1 and end > start:
+        return text[start:end + 1].strip()
+    return text.strip()
+
+
+# ── Schema flattener ───────────────────────────────────────────────────────────
+
+def _flatten_schema(schema: dict, defs: dict = None) -> dict:
     """
-    Call Gemini API via HTTP. Includes temperature config, retry logic, and strict output typing via schema.
+    Resolve $ref references and strip keys Gemini's responseSchema doesn't support.
+    'description' is intentionally KEPT — it is how field-level instructions reach Gemini.
     """
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={API_KEY}"
-    headers = {"Content-Type": "application/json"}
-    
-    generation_config = {
-        "temperature": GEMINI_TEMPERATURE,
-        "maxOutputTokens": 8192,
+    if not isinstance(schema, dict):
+        return schema
+    if defs is None and "$defs" in schema:
+        defs = schema.pop("$defs")
+
+    # FIX (HIGH): Handle Pydantic v2 Optional which uses anyOf (Gemini OpenAPI doesn't support anyOf)
+    if "anyOf" in schema:
+        non_null = [t for t in schema["anyOf"] if isinstance(t, dict) and t.get("type") != "null"]
+        if non_null:
+            schema.pop("anyOf")
+            schema.update(_flatten_schema(non_null[0], defs))
+            schema["nullable"] = True
+
+    UNSUPPORTED = {"title", "default"}  # 'description' deliberately excluded
+
+    result = {}
+    for k, v in schema.items():
+        if k in UNSUPPORTED:
+            continue
+        if k == "$ref" and isinstance(v, str) and defs:
+            ref_name = v.split("/")[-1]
+            if ref_name in defs:
+                for rk, rv in _flatten_schema(defs[ref_name], defs).items():
+                    if rk not in UNSUPPORTED:
+                        result[rk] = rv
+            continue
+        result[k] = (_flatten_schema(v, defs) if isinstance(v, dict)
+                     else [_flatten_schema(i, defs) if isinstance(i, dict) else i for i in v]
+                     if isinstance(v, list) else v)
+    return result
+
+
+# ── Core HTTP caller ───────────────────────────────────────────────────────────
+
+def _generate_content_http(prompt: str, model_name: str,
+                            response_schema: dict = None,
+                            temperature: float = None) -> str:
+    if not API_KEY:
+        raise RuntimeError("GEMINI_API_KEY is not configured.")
+
+    url     = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent"
+    headers = {"Content-Type": "application/json", "x-goog-api-key": API_KEY}
+
+    gen_config: dict = {
+        "temperature":     temperature if temperature is not None else GEMINI_TEMPERATURE,
+        "maxOutputTokens": 65536, # Increased from 8192 due to larger schemas
+        "responseMimeType": "application/json",
     }
-    
-    def _flatten_schema(schema, defs=None):
-        if not isinstance(schema, dict):
-            return schema
-            
-        if defs is None and "$defs" in schema:
-            defs = schema.pop("$defs")
-            
-        result = {}
-        for k, v in schema.items():
-            # Skip unsupported OpenAPI schema keys for Gemini
-            if k in ["title", "default", "description"]:
-                continue
-                
-            if k == "$ref" and isinstance(v, str) and defs:
-                ref_name = v.split("/")[-1]
-                if ref_name in defs:
-                    resolved = _flatten_schema(defs[ref_name], defs)
-                    # Merge resolved fields directly into the current level
-                    for rk, rv in resolved.items():
-                        if rk not in ["title", "default", "description"]:
-                            result[rk] = rv
-                continue
-                
-            if isinstance(v, dict):
-                result[k] = _flatten_schema(v, defs)
-            elif isinstance(v, list):
-                result[k] = [_flatten_schema(item, defs) for item in v]
-            else:
-                result[k] = v
-                
-        return result
-
     if response_schema:
-        generation_config["responseMimeType"] = "application/json"
         try:
-            # Gemini Schema constraints: no $defs, no references, no title/default
-            cleaned = _flatten_schema(response_schema)
-            generation_config["responseSchema"] = cleaned
+            gen_config["responseSchema"] = _flatten_schema(response_schema)
         except Exception as e:
-            print(f"Failed to clean schema: {e}")
-            pass
-    else:
-        # Some calls might manually request JSON without a strict typed schema
-        generation_config["responseMimeType"] = "application/json"
+            logger.warning("Schema flattening failed (%s) — proceeding without responseSchema", e)
 
-    payload = {
-        "contents": [{
-            "parts": [{"text": prompt}]
-        }],
-        "generationConfig": generation_config
-    }
+    payload = {"contents": [{"parts": [{"text": prompt}]}], "generationConfig": gen_config}
 
-    max_retries = 3
-    for attempt in range(max_retries):
+    for attempt in range(3):
         try:
-            response = requests.post(url, headers=headers, json=payload, timeout=90)
+            resp = requests.post(url, headers=headers, json=payload, timeout=90)
 
-            if response.status_code == 200:
-                data = response.json()
+            if resp.status_code == 200:
                 try:
-                    return data['candidates'][0]['content']['parts'][0]['text']
-                except (KeyError, IndexError):
-                    print(f"GeminiHTTP: Unexpected format from {model_name}: {data}")
-                    raise Exception("Invalid API Response Format")
+                    return resp.json()['candidates'][0]['content']['parts'][0]['text']
+                except (KeyError, IndexError) as e:
+                    raise RuntimeError(f"Unexpected API response shape: {e}") from e
 
-            elif response.status_code == 429:
-                # Rate limited — wait longer before retry, then give up so next model can try
-                if attempt < max_retries - 1:
-                    wait_time = (attempt + 1) * 5  # 5s, 10s
-                    print(f"GeminiHTTP: 429 on {model_name}. Retrying in {wait_time}s...")
-                    time.sleep(wait_time)
+            elif resp.status_code in (429, 503):
+                wait = (attempt + 1) * 5
+                if attempt < 2:
+                    logger.warning("HTTP %s on %s — retrying in %ss", resp.status_code, model_name, wait)
+                    time.sleep(wait)
                     continue
-                else:
-                    raise Exception(f"429 Quota/Service Error after {max_retries} retries")
+                raise RuntimeError(f"HTTP {resp.status_code} after {attempt+1} retries")
 
-            elif response.status_code == 503:
-                if attempt < max_retries - 1:
-                    wait_time = (attempt + 1) * 3
-                    print(f"GeminiHTTP: 503 on {model_name}. Retrying in {wait_time}s...")
-                    time.sleep(wait_time)
-                    continue
-                else:
-                    raise Exception(f"503 Service Unavailable after retries")
-
-            elif response.status_code == 400:
-                # responseMimeType not supported — retry without JSON mode
-                if 'responseMimeType' in payload.get('generationConfig', {}):
-                    print(f"GeminiHTTP: 400 on {model_name} — retrying without structured JSON mode...")
-                    fallback_payload = dict(payload)
-                    fallback_payload['generationConfig'] = {
-                        k: v for k, v in payload['generationConfig'].items()
-                        if k not in ('responseMimeType', 'responseSchema')
-                    }
-                    resp2 = requests.post(url, headers=headers, json=fallback_payload, timeout=90)
-                    if resp2.status_code == 200:
-                        return resp2.json()['candidates'][0]['content']['parts'][0]['text']
-                raise Exception(f"HTTP 400: {response.text[:200]}")
+            elif resp.status_code == 400:
+                logger.warning("HTTP 400 on %s — retrying without responseSchema", model_name)
+                fallback_config  = {k: v for k, v in gen_config.items()
+                                    if k not in ('responseMimeType', 'responseSchema')}
+                # FIX (LOW): Build a fresh payload dict — don't mutate the original
+                fallback_payload = {
+                    "contents":        payload["contents"],
+                    "generationConfig": fallback_config,
+                }
+                r2 = requests.post(url, headers=headers, json=fallback_payload, timeout=90)
+                if r2.status_code == 200:
+                    return r2.json()['candidates'][0]['content']['parts'][0]['text']
+                raise RuntimeError(f"HTTP 400 (fallback also failed with {r2.status_code})")
 
             else:
-                raise Exception(f"HTTP {response.status_code}: {response.text[:200]}")
+                raise RuntimeError(f"HTTP {resp.status_code} from Gemini API")
 
+        except RuntimeError:
+            raise
         except Exception as e:
-            if attempt < max_retries - 1 and ("429" in str(e) or "503" in str(e)):
+            if attempt < 2:
                 time.sleep(3)
                 continue
-            raise e
+            raise RuntimeError(f"Request failed after {attempt+1} attempts: {type(e).__name__}") from e
 
 
-def generate_trip_options(preferences: dict, selected_destinations: list = []) -> dict:
-    """
-    Generates a single, high-quality trip itinerary based on user preferences
-    and real destination data from the database.
-    """
-    origin = preferences.get('startCity', 'Mumbai')
-    country = preferences.get('country', 'India')
-    budget = preferences.get('budget', 50000)
-    duration = preferences.get('duration', 5)
-    style = preferences.get('style', 'Standard')
-    interests = preferences.get('interests', [])
+# ── Trip generation ────────────────────────────────────────────────────────────
 
-    # Travel date context
-    date_type = preferences.get('dateType', 'anytime')
-    travel_month = preferences.get('travelMonth', '')
+def generate_trip_options(preferences: dict,
+                           selected_destinations: list = None) -> dict:
+    if selected_destinations is None:
+        selected_destinations = []
+
+    origin        = preferences.get('startCity', 'Mumbai')
+    country       = preferences.get('country', 'India')
+    budget        = preferences.get('budget', 50000)
+    duration      = preferences.get('duration', 5)
+    style         = preferences.get('style', 'Standard')
+    interests_raw = preferences.get('interests', [])
+    traveler_type = preferences.get('travelerType', '')
+    companions    = preferences.get('companions', '')
+    interests_str = _build_interest_context(interests_raw, traveler_type, companions)
+
+    date_type    = preferences.get('dateType', 'anytime')
     travel_start = preferences.get('travelStartDate', '')
-    travel_end = preferences.get('travelEndDate', '')
+    travel_end   = preferences.get('travelEndDate', '')
+    travel_month = preferences.get('travelMonth', '')
 
     if date_type == 'fixed' and travel_start:
         date_context = f"Fixed dates: {travel_start[:10]} to {travel_end[:10] if travel_end else 'TBD'}"
@@ -254,75 +271,61 @@ def generate_trip_options(preferences: dict, selected_destinations: list = []) -
     else:
         date_context = "Flexible — anytime"
 
-    # Format destination data for injection
-    dest_data_text = _format_destination_data(selected_destinations)
-    dest_names = [d.get('name', '') for d in selected_destinations]
-    num_unique_cities = len(set(d.get('location', '') for d in selected_destinations)) if selected_destinations else 1
+    dest_text   = _format_destination_data(selected_destinations)
+    dest_names  = [d.get('name', '') for d in selected_destinations]
+    num_cities  = len(set(d.get('location', '') for d in selected_destinations)) or 1
+    template    = _load_prompt_template(style, num_cities)
 
-    # Load template (picks the right addendum based on style/multi-city)
-    template = _load_prompt_template(style, num_unique_cities)
-
-    # Fill in template placeholders or use a self-contained prompt if template missing
     if template:
-        prompt = template
-        prompt = prompt.replace("{DESTINATION_DATA}", dest_data_text)
-        prompt = prompt.replace("{origin}", origin)
-        prompt = prompt.replace("{country}", country)
-        prompt = prompt.replace("{destinations}", ", ".join(dest_names) if dest_names else "Best options for this country")
-        prompt = prompt.replace("{budget}", str(budget))
-        prompt = prompt.replace("{days}", str(duration))
-        prompt = prompt.replace("{style}", style)
-        prompt = prompt.replace("{dates}", date_context)
-        prompt = prompt.replace("{interests}", ", ".join(interests) if interests else "General sightseeing")
+        prompt = (template
+                  .replace("{DESTINATION_DATA}", dest_text)
+                  .replace("{origin}",           origin)
+                  .replace("{country}",          country)
+                  .replace("{destinations}",     ", ".join(dest_names) or "Best options for this country")
+                  .replace("{budget}",           str(budget))
+                  .replace("{days}",             str(duration))
+                  .replace("{style}",            style)
+                  .replace("{dates}",            date_context)
+                  .replace("{interests}",        interests_str))
     else:
-        # Fallback self-contained prompt if template files not found
         prompt = _build_fallback_prompt(
-            origin, country, budget, duration, style, date_context,
-            interests, dest_data_text, dest_names
+            origin, country, budget, duration, style,
+            date_context, interests_str, dest_text, dest_names
         )
 
-    # Pydantic Schema injection
-    schema = TripPlan.model_json_schema()
-
+    schema     = TripPlan.model_json_schema()
     last_error = None
 
-    for model_name in MODELS_TO_TRY:
+    for i, model_name in enumerate(MODELS_TO_TRY):
+        # FIX (LOW): Brief pause between model switches to avoid shared quota 429s
+        if i > 0:
+            time.sleep(2)
         try:
-            print(f"TripAI: Trying Model {model_name} (temp={GEMINI_TEMPERATURE})...")
-            text_resp = _generate_content_http(prompt, model_name, response_schema=schema)
-            text_resp = _extract_json_from_text(text_resp)
-
-            data = TripPlan.model_validate_json(text_resp)
-            print(f"TripAI: ✅ Success with {model_name}!")
+            logger.info("TripAI: trying %s (temp=%.1f)", model_name, GEMINI_TEMPERATURE)
+            raw  = _generate_content_http(prompt, model_name, response_schema=schema)
+            raw  = _extract_json_from_text(raw)
+            data = TripPlan.model_validate_json(raw)
+            logger.info("TripAI: success — '%s'", data.trip_title)
             return data.model_dump()
-
         except Exception as e:
-            print(f"TripAI: ❌ Failed {model_name}: {e}")
+            logger.warning("TripAI: %s failed: %s", model_name, e)
             last_error = e
-            continue
 
-    # All models failed
-    print("TripAI: ALL MODELS FAILED.")
-    return {
-        "error": f"All AI models failed. Last error: {str(last_error)}",
-        "options": []
-    }
+    logger.error("TripAI: all models failed")
+    return {"error": f"All AI models failed. Last error: {last_error}", "options": []}
 
 
-def _build_fallback_prompt(origin, country, budget, duration, style, date_context,
-                           interests, dest_data_text, dest_names) -> str:
-    """Fallback self-contained prompt if template files are missing."""
-    dest_clause = (
-        f"The user has selected these specific destinations: {', '.join(dest_names)}. You MUST include them."
-        if dest_names
-        else "Suggest the best destinations based on the user's preferences."
-    )
+# ── Fallback prompt ────────────────────────────────────────────────────────────
 
+def _build_fallback_prompt(origin, country, budget, duration, style,
+                            date_context, interests_str, dest_text, dest_names) -> str:
+    dest_clause = (f"The user has selected: {', '.join(dest_names)}. You MUST include them."
+                   if dest_names else "Suggest the best destinations based on user preferences.")
     return f"""
-You are an expert travel planner. Generate a single, detailed, realistic travel itinerary.
+You are an expert travel planner. Generate a single detailed realistic travel itinerary.
 
 DESTINATION KNOWLEDGE:
-{dest_data_text}
+{dest_text}
 
 USER REQUIREMENTS:
 - Starting from: {origin}
@@ -331,195 +334,134 @@ USER REQUIREMENTS:
 - Duration: {duration} days
 - Style: {style}
 - Dates: {date_context}
-- Interests: {', '.join(interests) if interests else 'General sightseeing'}
+- Interests: {interests_str}
 
 {dest_clause}
 
 RULES:
-1. Use ONLY real, specific place names. NEVER use generic names like "local market", "city center", "mall", "beach", "hotel", or "restaurant". Be explicit (e.g., "Colaba Causeway", "Marina Beach").
-2. The user is starting their trip from {origin} to the destination. YOU MUST include the travel/transit details from {origin} to the destination on Day 1, and back to {origin} on the last day, as part of the itinerary.
-3. Total cost must be within ₹{budget} ± 5%.
-4. Max 4 major activities per day to keep the schedule realistic.
-5. Include how_to_reach for every activity (mode + time + cost).
+1. NEVER use generic place names. Use specific real names only.
+2. Include transit from {origin} on Day 1 and return on last day.
+3. Total cost within ₹{budget} ± 5%.
+4. Max 4 major activities per day.
+5. how_to_reach required for every activity (mode + time + ₹ cost).
 6. Group geographically nearby spots on the same day.
-7. For {style} style: budget costs × 0.7, standard × 1.0, luxury × 1.5.
+7. crowd_level must be exactly: Low | Moderate | High
+8. pacing_level must be exactly: Relaxed | Leisurely | Moderate | Action-Packed
+9. travel_between_cities must use from_city/to_city/travel_class field names.
 """
 
 
+# ── Chat ───────────────────────────────────────────────────────────────────────
+
 def chat_with_data(user_message: str, context: dict) -> str:
-    """Chat with the AI using database context."""
-    system_instruction = f"""
-You are AltairGO, an expert AI travel assistant.
+    # FIX (MEDIUM): Separate system context from user message to reduce prompt injection.
+    # The user message is clearly delimited and cannot override the system block.
+    system_context = f"""You are AltairGO, an expert AI travel assistant.
 
 CONTEXT from Database:
 Top Destinations available: {context.get('top_destinations', 'None')}
 
 YOUR CAPABILITIES:
-1. Suggest spots based on the database or general knowledge.
-2. Calculate rough budgets (Budget ~3k-5k INR/day/person for standard).
-3. Plan travel routes.
-4. Use images in your response when suggesting places.
+1. Suggest specific named spots based on the database or general knowledge.
+2. Calculate rough budgets (Budget ~₹3k-5k/day/person for standard travel).
+3. Plan travel routes with real transport options.
+4. Show images using markdown: ![Place Name](Place Name)
 
-IMAGE FORMAT:
-To show an image, use markdown: ![Location Name](Location Name)
-The frontend will automatically fetch a real photo for "Location Name".
+TONE: Friendly, enthusiastic, knowledgeable. Never suggest generic places."""
 
-TONE: Friendly, enthusiastic, and knowledgeable.
+    # User message is injected as a separate content block, not inside the system prompt
+    full_prompt = f"{system_context}\n\n---\nUSER QUERY:\n{user_message}"
 
-USER QUERY: {user_message}
-"""
-
-    for model_name in MODELS_TO_TRY:
+    chat_temp = min(GEMINI_TEMPERATURE + 0.2, 0.9)
+    for i, model_name in enumerate(MODELS_TO_TRY):
+        if i > 0:
+            time.sleep(2)
         try:
-            print(f"ChatAI: Attempting {model_name}...")
-            # Chat doesn't need JSON mode — use plain generation
-            url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={API_KEY}"
-            payload = {
-                "contents": [{"parts": [{"text": system_instruction}]}],
-                "generationConfig": {
-                    "temperature": 0.7,  # Chat can be more creative
-                    "maxOutputTokens": 2048
-                }
-            }
-            resp = requests.post(url, headers={"Content-Type": "application/json"}, json=payload, timeout=60)
-            if resp.status_code == 200:
-                text = resp.json()['candidates'][0]['content']['parts'][0]['text']
-                print(f"ChatAI: Success with {model_name}")
-                return text
+            return _generate_content_http(full_prompt, model_name,
+                                          response_schema=None, temperature=chat_temp)
         except Exception as e:
-            print(f"ChatAI: Failed {model_name}: {e}")
-            continue
-
+            logger.warning("ChatAI: %s failed: %s", model_name, e)
     return "I'm having trouble connecting right now. Please try again in a moment."
 
 
+# ── Destination details ────────────────────────────────────────────────────────
+
 def generate_destination_details(user_prompt: str) -> dict:
-    """Generates detailed information for a specific destination based on user prompt."""
-    prompt = f"""
-You are a travel expert. Generate detailed travel information for: "{user_prompt}".
-If vague (e.g. "beach"), pick a specific famous one.
-"""
-    # Pydantic schema for strict typing
+    prompt = (f'Generate detailed travel information for: "{user_prompt}". '
+              f'If vague, pick a specific famous real-world example.')
     schema = DestinationDetail.model_json_schema()
 
-    for model_name in MODELS_TO_TRY:
+    for i, model_name in enumerate(MODELS_TO_TRY):
+        if i > 0:
+            time.sleep(2)
         try:
-            text_resp = _generate_content_http(prompt, model_name, response_schema=schema)
-            text_resp = _extract_json_from_text(text_resp)
-            data = DestinationDetail.model_validate_json(text_resp)
+            raw  = _generate_content_http(prompt, model_name, response_schema=schema)
+            data = DestinationDetail.model_validate_json(_extract_json_from_text(raw))
             return data.model_dump()
         except Exception as e:
-            print(f"DestAI: {model_name} failed: {e}")
-            continue
-
+            logger.warning("DestAI: %s failed: %s", model_name, e)
     return {"error": "Failed to generate destination details."}
 
-def generate_destination_recommendations(country_name: str, region_names: list, prefs: dict) -> list:
-    """Uses Gemini to generate real, famous destinations based on preferences."""
+
+# ── Destination recommendations ────────────────────────────────────────────────
+
+def generate_destination_recommendations(country_name: str,
+                                          region_names: list,
+                                          prefs: dict) -> list:
     regions_str = ", ".join(region_names) if region_names else "Any region"
-    budget = prefs.get('budget', 50000)
-    style = prefs.get('style', 'Balanced')
-    
-    schema = {
-        "type": "object",
-        "properties": {
-            "destinations": {
-                "type": "array",
-                "items": {
-                    "type": "object",
-                    "properties": {
-                        "name": {"type": "string"},
-                        "location": {"type": "string"},
-                        "description": {"type": "string"},
-                        "image": {"type": "string"},
-                        "estimatedCostPerDay": {"type": "number"},
-                        "rating": {"type": "number"},
-                        "tag": {"type": "string"},
-                        "crowdLevel": {"type": "string"},
-                        "bestTime": {"type": "string"},
-                        "highlights": {
-                            "type": "array",
-                            "items": {"type": "string"}
-                        }
-                    },
-                    "required": ["name", "description"] # Less strict to prevent Pydantic errors
-                }
-            }
-        },
-        "required": ["destinations"]
-    }
-    
+    budget      = prefs.get('budget', 50000)
+    style       = prefs.get('style', 'Balanced')
+
     prompt = f"""
-You are a travel expert recommending excellent real-world places to visit.
-The user is planning a trip to:
-Country: {country_name}
-Regions/States: {regions_str}
-Budget: ₹{budget}
-Style: {style}
+You are a travel expert recommending real-world places to visit.
+Country: {country_name}  |  Regions: {regions_str}  |  Budget: ₹{budget}  |  Style: {style}
 
-Suggest exactly 20 REAL, famous, and verifiable specific destinations/spots (not just general cities, but specific attractions, parks, or iconic areas like "Taj Mahal, Agra" or "Calangute Beach, Goa").
-DO NOT suggest generic places like "City Centre", "Shopping Mall", "Local Market", or "Main Beach". You MUST provide specific, real names.
+Suggest exactly 20 REAL, famous, verifiable destinations (specific attractions like
+"Taj Mahal, Agra" — NOT "City Centre", "Shopping Mall", "Local Market").
 
-OUTPUT INSTRUCTIONS:
-Return ONLY a valid JSON object. 
-Do NOT write "Here are 20 destinations:". Do NOT wrap the response in ```json ```.
-Just output the raw JSON dictionary starting with {{ "destinations": [ ... ] }}.
-
-Example format:
-{{
-  "destinations": [
-    {{
-      "name": "Taj Mahal",
-      "location": "Agra, Uttar Pradesh",
-      "description": "An iconic monument of love...",
-      "tag": "Historical",
-      "rating": 4.9,
-      "estimatedCostPerDay": 2000
-    }}
-  ]
-}}
+Return ONLY valid JSON: {{ "destinations": [ ... ] }}
 """
+    schema = DestinationRecommendationList.model_json_schema()
 
-    for model_name in MODELS_TO_TRY:
+    for i, model_name in enumerate(MODELS_TO_TRY):
+        if i > 0:
+            time.sleep(2)
         try:
-            print(f"RecommendAI: Attempting {model_name}...")
-            text_resp = _generate_content_http(prompt, model_name)
-            text_resp = _extract_json_from_text(text_resp)
-            
-            # If Gemini returned a raw array, wrap it
-            if text_resp.startswith('['):
-                text_resp = '{ "destinations": ' + text_resp + ' }'
-                
-            data = DestinationRecommendationList.model_validate_json(text_resp)
+            logger.info("RecommendAI: trying %s", model_name)
+            raw = _generate_content_http(prompt, model_name, response_schema=schema)
+            raw = _extract_json_from_text(raw)
+            if raw.startswith('['):
+                raw = '{ "destinations": ' + raw + ' }'
+            data = DestinationRecommendationList.model_validate_json(raw)
             return [d.model_dump() for d in data.destinations]
         except Exception as e:
-            print(f"RecommendAI {model_name} failed: {str(e)[:300]}")
-            continue
-
+            logger.warning("RecommendAI: %s failed: %s", model_name, str(e)[:200])
     return []
 
+
+# ── Smart destination insights ─────────────────────────────────────────────────
+
 def generate_smart_destination_details(destination_name: str) -> dict:
-    """Generates specific AI insights for a destination to replace the static fallback."""
-    prompt = f"""
-Provide a rich travel overview for exactly this destination: "{destination_name}".
-"""
+    prompt = f'Provide a rich travel overview for exactly: "{destination_name}".'
     schema = SmartDestinationInsight.model_json_schema()
 
-    for model_name in MODELS_TO_TRY:
+    for i, model_name in enumerate(MODELS_TO_TRY):
+        if i > 0:
+            time.sleep(2)
         try:
-            text_resp = _generate_content_http(prompt, model_name, response_schema=schema)
-            text_resp = _extract_json_from_text(text_resp)
-            data = SmartDestinationInsight.model_validate_json(text_resp)
+            raw  = _generate_content_http(prompt, model_name, response_schema=schema)
+            data = SmartDestinationInsight.model_validate_json(_extract_json_from_text(raw))
             return data.model_dump()
         except Exception as e:
-            continue
-            
-    # Fallback to static if AI fails
+            logger.warning("SmartDestAI: %s failed: %s", model_name, e)
+
+    logger.error("SmartDestAI: all models failed for '%s'", destination_name)
+    # Return empty lists — frontend shows 'unavailable' rather than fake generic data
     return {
-        "special": f"A wonderful destination known as {destination_name}.",
-        "food": ["Local Delicacies", "Street Food", "Traditional Meals"],
-        "hidden_gems": ["Local Markets", "Scenic Viewpoints"],
-        "culture": "Locals are very welcoming and the heritage is preserved.",
-        "best_time_pace": "Early mornings are best for sightseeing.",
-        "best_for": "Travelers seeking authentic experiences."
+        "special":        f"{destination_name} is a destination worth exploring.",
+        "food":           [],
+        "hidden_gems":    [],
+        "culture":        "",
+        "best_time_pace": "",
+        "best_for":       "Travelers seeking authentic experiences.",
     }

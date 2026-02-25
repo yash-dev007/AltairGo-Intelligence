@@ -1,9 +1,10 @@
 import React, { useMemo } from 'react';
 import styles from './ModernItineraryView.module.css';
+import TripMap from './TripMap';
 import {
     Calendar, MapPin, Search, Sparkles, Navigation, Droplets,
-    Mountain, Umbrella, Palmtree, Utensils, ArrowRight,
-    CheckCircle2, Map
+    Mountain, Palmtree, Utensils, ArrowRight,
+    CheckCircle2
 } from 'lucide-react';
 
 const getIntensityColor = (val) => {
@@ -246,18 +247,7 @@ const ModernItineraryView = ({ itinerary, tripContext, insight }) => {
                         </button>
                     </div>
 
-                    <div className={styles.mapPlaceholder}>
-                        <svg className={styles.mapLines} width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M50,150 Q150,50 300,100 T550,200 T800,100" fill="none" stroke="#cbd5e1" strokeWidth="4" strokeDasharray="10, 10" />
-                            <circle cx="50" cy="150" r="8" fill="#94a3b8" />
-                            <circle cx="300" cy="100" r="8" fill="#94a3b8" />
-                            <circle cx="550" cy="200" r="8" fill="#94a3b8" />
-                            <circle cx="800" cy="100" r="8" fill="#94a3b8" />
-                        </svg>
-                        <button className={styles.viewMapBtn}>
-                            <Map size={18} color="#3b82f6" /> View Interactive Map
-                        </button>
-                    </div>
+                    <TripMap itinerary={itinerary} />
                 </div>
 
                 {/* RIGHT COLUMN: SIDEBAR */}
@@ -343,9 +333,7 @@ const ModernItineraryView = ({ itinerary, tripContext, insight }) => {
                 </div>
             </div>
 
-            <button className={styles.exportBtn} onClick={() => window.print()}>
-                <Navigation size={18} /> EXPORT PDF
-            </button>
+
         </div>
     );
 };

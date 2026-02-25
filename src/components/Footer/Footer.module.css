@@ -15,29 +15,31 @@
 
 .topSection {
     display: grid;
-    grid-template-columns: 2fr 1fr 1fr;
+    grid-template-columns: 1.2fr 1fr;
     gap: 4rem;
-    padding-bottom: 4rem;
+    padding-bottom: 3rem;
 }
 
 .brandCol {
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
-    max-width: 450px;
+    max-width: 460px;
 }
 
 .brandLogo {
-    height: 24px;
+    height: 40px;
     width: auto;
     object-fit: contain;
+    filter: brightness(0) invert(1);
+    /* Ensure it's white */
     align-self: flex-start;
 }
 
 .brandDesc {
     color: #94a3b8;
     font-size: 0.95rem;
-    line-height: 1.7;
+    line-height: 1.6;
     font-weight: 300;
 }
 
@@ -49,32 +51,39 @@
 
 .socialLink {
     background: transparent;
-    color: #e2e8f0;
+    color: #cbd5e1;
     width: 36px;
     height: 36px;
     display: flex;
     align-items: center;
     justify-content: center;
     border-radius: 50%;
-    transition: all 0.3s ease;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid rgba(255, 255, 255, 0.15);
 }
 
 .socialLink:hover {
-    background: rgba(255, 255, 255, 0.1);
+    background: #cbd5e1;
+    color: #0f172a;
     transform: translateY(-2px);
+}
+
+.linksGroup {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 4rem;
 }
 
 .linksCol {
     display: flex;
     flex-direction: column;
-    gap: 1.25rem;
+    gap: 1rem;
 }
 
 .colTitle {
-    font-size: 1.1rem;
+    font-size: 1.05rem;
     font-weight: 600;
-    color: #ffffff;
+    color: white;
     margin-bottom: 0.5rem;
 }
 
@@ -92,23 +101,24 @@
 
 /* Newsletter Section */
 .newsletterSection {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background: #171f30;
-    padding: 2.5rem 3rem;
-    border-radius: 1rem;
+    background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 1rem;
+    padding: 2.5rem 3rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 2rem;
     margin-bottom: 3rem;
 }
 
 .newsletterContent {
-    max-width: 500px;
+    flex: 1;
 }
 
 .newsletterTitle {
     font-size: 1.5rem;
-    font-weight: 700;
+    font-weight: 600;
     color: white;
     margin-bottom: 0.5rem;
 }
@@ -116,30 +126,30 @@
 .newsletterDesc {
     color: #94a3b8;
     font-size: 0.95rem;
-    margin: 0;
 }
 
 .form {
-    flex: 0 0 450px;
+    flex: 1;
+    max-width: 480px;
 }
 
 .inputGroup {
     display: flex;
-    position: relative;
-    gap: 1rem;
     align-items: center;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 50px;
+    padding: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .input {
     flex: 1;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    padding: 0.9rem 1.5rem;
-    border-radius: 2rem;
+    background: transparent;
+    border: none;
+    padding: 0.75rem 1.5rem;
     color: white;
-    font-family: inherit;
     font-size: 0.95rem;
-    transition: all 0.3s;
+    outline: none;
 }
 
 .input::placeholder {
@@ -148,16 +158,14 @@
 
 .input:focus {
     outline: none;
-    border-color: rgba(255, 255, 255, 0.2);
-    background: rgba(255, 255, 255, 0.08);
 }
 
 .submitBtn {
     background: #10b981;
-    color: #ffffff;
+    color: white;
     border: none;
-    padding: 0.9rem 2rem;
-    border-radius: 2rem;
+    padding: 0.75rem 2rem;
+    border-radius: 50px;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s;
@@ -171,14 +179,13 @@
 
 /* Bottom Section */
 .bottomSection {
-    padding-top: 2rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.05);
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 1.5rem;
-    color: #475569;
-    font-size: 0.85rem;
+    color: #64748b;
+    font-size: 0.9rem;
+    padding-bottom: 1rem;
 }
 
 .legalLinks {

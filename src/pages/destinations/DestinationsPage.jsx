@@ -98,13 +98,16 @@ const DestinationsPage = () => {
                                 backgroundColor: '#f8fafc',
                                 borderRadius: '1.5rem',
                                 border: '1px dashed #cbd5e1',
+                                gap: '1rem',
                                 textAlign: 'center',
                                 marginTop: '2rem'
                             }}>
-                                <SearchX size={48} style={{ color: '#94a3b8', marginBottom: '1.5rem' }} />
-                                <h3 style={{ fontSize: '1.5rem', fontWeight: '600', color: '#334155', marginBottom: '0.5rem' }}>No destinations found</h3>
-                                <p style={{ fontSize: '1.1rem', color: '#64748b', maxWidth: '400px' }}>
-                                    We couldn't find any destinations matching "{searchTerm}". Try adjusting your search or explore our popular destinations.
+                                <SearchX size={48} color="#94a3b8" style={{ margin: '0 auto 1rem auto' }} />
+                                <h3 style={{ fontSize: '1.5rem', fontWeight: '600', color: '#334155', margin: 0 }}>
+                                    No destinations found
+                                </h3>
+                                <p style={{ fontSize: '1.1rem', color: '#64748b', textAlign: 'center', maxWidth: '400px', margin: '0 auto' }}>
+                                    We couldn't find any matches for "{searchTerm}". Try adjusting your search term.
                                 </p>
                             </div>
                         )}

@@ -33,7 +33,7 @@ from dotenv import load_dotenv
 
 # ── Import image service (same directory) ─────────────────────────────────────
 try:
-    from image_service import get_image
+    from services.image_service import get_image
     IMAGE_SERVICE_AVAILABLE = True
 except ImportError:
     IMAGE_SERVICE_AVAILABLE = False

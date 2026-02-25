@@ -16,39 +16,63 @@ def recommend_destinations():
     prefs = data.get('prefs', {})
 
     try:
-        # Call Gemini to suggest 6 real spots
         ai_spots = generate_destination_recommendations(country_name, region_names, prefs)
-        
-        # Format for frontend (convert to Destination-like dictionaries with temp IDs)
+
         cards = []
         for spot in ai_spots:
-            # Try fetching a high quality image using the smart query generator 
-            img_url = get_image_for_destination(
-                name=spot.get("name", "Unknown Spot"),
-                location_context={"city": spot.get('location', country_name), "country": country_name}
-            )
+            name = spot.get("name", "Unknown Spot")
+            location_str = f"{spot.get('location', country_name)}, {region_names[0] if region_names else country_name}"
+
+            # ── Persist to DB (deduplicate by name) ──
+            existing = db_session.query(Destination).filter_by(name=name).first()
+            if existing:
+                db_dest = existing
+            else:
+                img_url = get_image_for_destination(
+                    name=name,
+                    location_context={"city": spot.get('location', country_name), "country": country_name}
+                )
+                db_dest = Destination(
+                    name=name,
+                    desc=(spot.get("description") or "")[:190] or "AI-recommended destination.",
+                    description=spot.get("description", "A beautiful destination waiting to be explored."),
+                    image=img_url,
+                    location=location_str,
+                    estimated_cost_per_day=int(spot.get("estimated_cost_per_day", 3000)),
+                    price_str=f"₹{int(spot.get('estimated_cost_per_day', 3000)):,}",
+                    rating=float(spot.get("rating", 4.5)),
+                    reviews_count_str=f"{random.randint(50, 1200)}",
+                    best_time=spot.get("best_time", "Anytime"),
+                    crowd_level=spot.get("crowd_level", "Moderate"),
+                    tag=spot.get("type", "Attraction"),
+                    highlights=spot.get("highlights", []),
+                    vibe_tags=[spot.get("type", "Culture"), "AI Recommended"],
+                )
+                db_session.add(db_dest)
+                db_session.flush()  # get the auto-incremented id before commit
 
             cards.append({
-                "id": str(uuid.uuid4()),  # Temporary ID so frontend can select them
-                "name": spot.get("name", "Unknown Spot"),
-                "location": f"{spot.get('location', country_name)}, {region_names[0] if region_names else country_name}",
+                "id": db_dest.id,  # real DB id — frontend can now route to /destinations/:id
+                "name": name,
+                "location": location_str,
                 "state_id": region_names[0] if region_names else None,
                 "tag": spot.get("type", "Attraction"),
-                "desc": spot.get("description", ""),
+                "desc": spot.get("description", "")[:190] or "AI-recommended destination.",
                 "bestTime": spot.get("best_time", "Anytime"),
                 "crowdLevel": spot.get("crowd_level", "Moderate"),
                 "rating": float(spot.get("rating", 4.5)),
                 "estimatedCostPerDay": int(spot.get("estimated_cost_per_day", 3000)),
                 "highlights": spot.get("highlights", []),
-                "image": img_url,
-                "image_keyword": spot.get("image_keyword", spot.get("name")),
-                "isAiGenerated": True 
+                "image": db_dest.image,
+                "image_keyword": spot.get("image_keyword", name),
+                "isAiGenerated": True
             })
-            
-        return jsonify({
-            "destinations": cards
-        })
+
+        db_session.commit()
+        return jsonify({"destinations": cards})
+
     except Exception as e:
+        db_session.rollback()
         print(f"Recommend Error: {e}")
         return jsonify({"error": str(e)}), 500
 

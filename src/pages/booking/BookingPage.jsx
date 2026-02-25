@@ -372,8 +372,25 @@ const BookingPage = () => {
                                     <DestinationCard key={dest.id} dest={dest} />
                                 ))
                             ) : (
-                                <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '2rem', color: '#64748b' }}>
-                                    No destinations found matching your filters.
+                                <div style={{
+                                    gridColumn: '1 / -1',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    padding: '5rem 2rem',
+                                    backgroundColor: '#f8fafc',
+                                    borderRadius: '1.5rem',
+                                    border: '1px dashed #cbd5e1',
+                                    gap: '1rem'
+                                }}>
+                                    <Search size={48} color="#94a3b8" style={{ marginBottom: '1rem' }} />
+                                    <h3 style={{ fontSize: '1.5rem', fontWeight: '600', color: '#334155', margin: 0 }}>
+                                        No matches found
+                                    </h3>
+                                    <p style={{ fontSize: '1rem', color: '#64748b', textAlign: 'center', maxWidth: '400px' }}>
+                                        We couldn't find any destinations matching your current filters. Try changing your selected category.
+                                    </p>
                                 </div>
                             )}
                         </>

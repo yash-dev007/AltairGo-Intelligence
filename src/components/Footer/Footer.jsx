@@ -1,7 +1,7 @@
 import React from 'react';
 import styles from './Footer.module.css';
-import logo from '../../assets/logo_corrected.png';
-import { Instagram, Twitter, Facebook, Youtube, Mail, Globe, MapPin } from 'lucide-react';
+import logo from '../../assets/logo_corrected.png'; // Import Corrected Logo
+import { Globe, Instagram, Mail } from 'lucide-react';
 
 const Footer = () => {
     return (
@@ -9,33 +9,35 @@ const Footer = () => {
             <div className={styles.container}>
                 <div className={styles.topSection}>
                     <div className={styles.brandCol}>
-                        <img src={logo} alt="ALTAIRGO" className={styles.brandLogo} />
+                        <img src={logo} alt="ALTAIRGO INTELLIGENCE" className={styles.brandLogo} />
                         <p className={styles.brandDesc}>
-                            Curating the world's most extraordinary journeys. Join our
-                            community of explorers and discover the unseen. Your next
+                            Curating the world's most extraordinary journeys. Join our<br />
+                            community of explorers and discover the unseen. Your next<br />
                             story starts here.
                         </p>
                         <div className={styles.socials}>
                             <a href="#" className={styles.socialLink} aria-label="Website"><Globe size={16} /></a>
                             <a href="#" className={styles.socialLink} aria-label="Instagram"><Instagram size={16} /></a>
-                            <a href="#" className={styles.socialLink} aria-label="Email"><Mail size={16} /></a>
+                            <a href="#" className={styles.socialLink} aria-label="Mail"><Mail size={16} /></a>
                         </div>
                     </div>
 
-                    <div className={styles.linksCol}>
-                        <h3 className={styles.colTitle}>Company</h3>
-                        <a href="#">About Us</a>
-                        <a href="#">Careers</a>
-                        <a href="#">Press</a>
-                        <a href="#">Partners</a>
-                    </div>
+                    <div className={styles.linksGroup}>
+                        <div className={styles.linksCol}>
+                            <h3 className={styles.colTitle}>Company</h3>
+                            <a href="#">About Us</a>
+                            <a href="#">Careers</a>
+                            <a href="#">Press</a>
+                            <a href="#">Partners</a>
+                        </div>
 
-                    <div className={styles.linksCol}>
-                        <h3 className={styles.colTitle}>Support</h3>
-                        <a href="#">Help Center</a>
-                        <a href="#">Safety</a>
-                        <a href="#">Cancellation</a>
-                        <a href="#">Privacy</a>
+                        <div className={styles.linksCol}>
+                            <h3 className={styles.colTitle}>Support</h3>
+                            <a href="#">Help Center</a>
+                            <a href="#">Safety</a>
+                            <a href="#">Cancellation</a>
+                            <a href="#">Privacy</a>
+                        </div>
                     </div>
                 </div>
 

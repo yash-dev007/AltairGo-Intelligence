@@ -4,7 +4,7 @@ import { useAuth } from '../../context/AuthContext.jsx';
 import { ChevronLeft, ChevronRight, Check, MapPin, Star, Sparkles, ExternalLink, Calendar, Users, Search, ArrowUp, ArrowDown, X, Plus, Share2 } from 'lucide-react';
 import { TripAI } from '../../services/TripAI';
 import { API_BASE_URL } from '../../config';
-import AddDestinationModal from '../../components/AddDestinationModal';
+import AddDestinationModal from '../../components/AddDestinationModal/AddDestinationModal';
 import DateSelectionModal from '../../components/TripPlanner/DateSelectionModal';
 import DestinationCard from '../../components/TripPlanner/DestinationCard';
 import ModernItineraryView from '../../components/TripPlanner/ModernItineraryView';
@@ -12,7 +12,7 @@ import BudgetSelectionModal from '../../components/TripPlanner/BudgetSelectionMo
 import ChatWidget from '../../components/ChatWidget/ChatWidget';
 import TripOptions from '../../components/TripPlanner/TripOptions';
 import AIDestinationDetailsModal from '../../components/TripPlanner/AIDestinationDetailsModal';
-import LoadingOverlay from '../../components/LoadingOverlay';
+import { Skeleton, DestinationCardSkeleton } from '../../components/Skeleton/Skeleton';
 import styles from './TripPlanner.module.css';
 
 
@@ -535,34 +535,44 @@ const TripPlannerPage = () => {
                 </div>
 
                 <div className={styles.grid} style={{ marginTop: '1rem' }}>
-                    {filteredCountries.map(country => (
-                        <div
-                            key={country.id}
-                            className={`${styles.card} ${selectedCountry === country.id ? styles.selected : ''}`}
-                            onClick={() => setSelectedCountry(country.id)}
-                            style={{ opacity: country.available ? 1 : 0.6 }}
-                        >
-                            <div style={{ position: 'relative' }}>
-                                <img
-                                    src={country.image || 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&q=80&w=800'}
-                                    alt={country.name}
-                                    className={styles.cardImage}
-                                />
-                                {selectedCountry === country.id && <div className={styles.checkIcon}><Check size={16} /></div>}
-                                {!country.available && (
-                                    <div style={{
-                                        position: 'absolute', inset: 0, background: 'rgba(255,255,255,0.7)',
-                                        display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold'
-                                    }}>
-                                        Coming Soon
-                                    </div>
-                                )}
+                    {countries.length === 0 ? (
+                        Array.from({ length: 8 }).map((_, i) => (
+                            <div key={`sk-country-${i}`} className={styles.card} style={{ height: '300px', padding: 0 }}>
+                                <Skeleton height="220px" style={{ borderBottomLeftRadius: 0, borderBottomRightRadius: 0 }} />
+                                <div className={styles.cardContent}>
+                                    <Skeleton width="60%" height="24px" />
+                                </div>
                             </div>
-                            <div className={styles.cardContent}>
-                                <div className={styles.cardTitle}>{country.name}</div>
+                        ))
+                    ) : (
+                        filteredCountries.map(country => (
+                            <div
+                                key={country.id}
+                                className={`${styles.card} ${selectedCountry === country.id ? styles.selected : ''}`}
+                                onClick={() => setSelectedCountry(country.id)}
+                                style={{ opacity: country.available ? 1 : 0.6 }}
+                            >
+                                <div style={{ position: 'relative' }}>
+                                    <img
+                                        src={country.image || 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&q=80&w=800'}
+                                        alt={country.name}
+                                        className={styles.cardImage}
+                                    />
+                                    {selectedCountry === country.id && <div className={styles.checkIcon}><Check size={16} /></div>}
+                                    {!country.available && (
+                                        <div style={{
+                                            position: 'absolute', inset: 0, background: 'rgba(255,255,255,0.7)',
+                                            display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold'
+                                        }}>
+                                            Coming Soon
+                                        </div>
+                                    )}
+                                </div>
+                                <div className={styles.cardContent}>
+                                    <div className={styles.cardTitle}>{country.name}</div>
+                                </div>
                             </div>
-                        </div>
-                    ))}
+                        )))}
                 </div>
 
                 <div className={styles.actions} style={{ justifyContent: 'flex-end' }}>
@@ -1055,8 +1065,11 @@ const TripPlannerPage = () => {
                                 /* GLOBAL FALLBACK or LOADING */
                                 <div className={styles.emptyState}>
                                     {fetchingRegion ? (
-                                        /* Hidden or minimal loader if needed, but for now we remove it as per user request */
-                                        null
+                                        <div className={styles.grid} style={{ width: '100%', textAlign: 'left', marginTop: '1rem' }}>
+                                            {Array.from({ length: 6 }).map((_, i) => (
+                                                <DestinationCardSkeleton key={`sk-dest-${i}`} />
+                                            ))}
+                                        </div>
                                     ) : (
                                         <>
                                             <Sparkles size={48} strokeWidth={1} style={{ color: '#fbbf24' }} />
