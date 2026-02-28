@@ -42,6 +42,8 @@
     position: absolute;
     top: 2.5rem;
     left: 3.5rem;
+    filter: invert(1) contrast(1.2);
+    mix-blend-mode: screen;
 }
 
 .heroBrandAccent {

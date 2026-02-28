@@ -1,19 +1,24 @@
 import os
 import sys
+import pytest
 from dotenv import load_dotenv
 
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+backend_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, backend_dir)
 load_dotenv()
 
-from services.image_service import get_image_for_destination, get_curated_fallback
+from services.image_service import get_image_for_destination
 
-print(f"Pexels Key Present:   {bool(os.getenv('PEXELS_API_KEY'))}")
-print(f"Pixabay Key Present:  {bool(os.getenv('PIXABAY_API_KEY'))}")
-print(f"Unsplash Key Present: {bool(os.getenv('UNSPLASH_ACCESS_KEY'))}")
-
-queries = ["Garden", "City Center", "Market", "Garden", "Market"]
-
-print("\n--- Testing Repetition ---")
-for q in queries:
-    url = get_image_for_destination(q, {})
-    print(f"Query: '{q}' -> URL: {url}")
+def test_image_service_queries():
+    print(f"Pexels Key Present:   {bool(os.getenv('PEXELS_API_KEY'))}")
+    
+    queries = ["Garden", "City Center", "Market", "Garden", "Market"]
+    
+    print("\n--- Testing Repetition ---")
+    results = []
+    for q in queries:
+        url = get_image_for_destination(q, {})
+        results.append(url)
+        print(f"Query: '{q}' -> URL: {url}")
+        
+    assert len(results) == len(queries)

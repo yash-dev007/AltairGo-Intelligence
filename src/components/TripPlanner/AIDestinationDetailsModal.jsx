@@ -9,6 +9,25 @@ const AIDestinationDetailsModal = ({ isOpen, onClose, destination, onAddToTrip }
     const [error, setError] = useState(null);
 
     useEffect(() => {
+        const fetchDetails = async () => {
+            setLoading(true);
+            setError(null);
+            try {
+                // Fetch updated details which now include attractions, tips etc.
+                const data = await TripAI.getDestinationDetails(destination.name);
+                if (data && !data.error) {
+                    setDetails(data);
+                } else {
+                    setError("Could not fetch full details.");
+                }
+            } catch (err) {
+                console.error(err);
+                setError("Connection failed.");
+            } finally {
+                setLoading(false);
+            }
+        };
+
         if (isOpen && destination) {
             fetchDetails();
         } else {
@@ -16,24 +35,6 @@ const AIDestinationDetailsModal = ({ isOpen, onClose, destination, onAddToTrip }
             setError(null);
         }
     }, [isOpen, destination]);
-
-    const fetchDetails = async () => {
-        setLoading(true);
-        setError(null);
-        try {
-            // Fetch updated details which now include attractions, tips etc.
-            const data = await TripAI.getDestinationDetails(destination.name);
-            if (data && !data.error) {
-                setDetails(data);
-            } else {
-                setError("Could not fetch full details.");
-            }
-        } catch (err) {
-            setError("Connection failed.");
-        } finally {
-            setLoading(false);
-        }
-    };
 
     if (!isOpen || !destination) return null;
 
@@ -66,6 +67,13 @@ const AIDestinationDetailsModal = ({ isOpen, onClose, destination, onAddToTrip }
                             <p>Curating insider tips...</p>
                         </div>
                     </div>
+                ) : error ? (
+                    <div className={styles.content} style={{ display: 'flex', justifyContent: 'center', padding: '4rem' }}>
+                        <div style={{ textAlign: 'center', color: '#ef4444' }}>
+                            <Info size={32} style={{ marginBottom: '1rem' }} />
+                            <p>{error}</p>
+                        </div>
+                    </div>
                 ) : (
                     <>
                         <div className={styles.content}>
@@ -85,7 +93,7 @@ const AIDestinationDetailsModal = ({ isOpen, onClose, destination, onAddToTrip }
                                     <div className={styles.attractionsList}>
                                         {/* Fallback attractions logic if array is empty */}
                                         {(details?.attractions && details.attractions.length > 0 ? details.attractions :
-                                            ['Main City Center', 'Historic Old Town', 'Scenic Viewpoint', 'Local Market'].map((n, i) => ({ name: n, type: 'Sightseeing' }))
+                                            ['Main City Center', 'Historic Old Town', 'Scenic Viewpoint', 'Local Market'].map((n) => ({ name: n, type: 'Sightseeing' }))
                                         ).slice(0, 4).map((att, idx) => (
                                             <div key={idx} className={styles.attractionItem}>
                                                 <div className={styles.attractionImage}></div> {/* Placeholder for attraction image */}

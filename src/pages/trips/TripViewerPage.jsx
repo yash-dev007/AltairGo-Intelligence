@@ -12,21 +12,21 @@ const TripViewerPage = () => {
     const [error, setError] = useState(null);
 
     useEffect(() => {
+        const fetchTrip = async () => {
+            try {
+                const response = await fetch(`${API_BASE_URL}/get-trip/${tripId}`);
+                if (!response.ok) throw new Error("Trip not found");
+                const data = await response.json();
+                setTrip(data);
+            } catch (err) {
+                setError(err.message);
+            } finally {
+                setLoading(false);
+            }
+        };
+
         fetchTrip();
     }, [tripId]);
-
-    const fetchTrip = async () => {
-        try {
-            const response = await fetch(`${API_BASE_URL}/get-trip/${tripId}`);
-            if (!response.ok) throw new Error("Trip not found");
-            const data = await response.json();
-            setTrip(data);
-        } catch (err) {
-            setError(err.message);
-        } finally {
-            setLoading(false);
-        }
-    };
 
     if (loading) return (
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: '#f8fafc' }}>

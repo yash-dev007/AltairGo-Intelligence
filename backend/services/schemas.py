@@ -138,7 +138,7 @@ class ItineraryDay(BaseModel):
     afternoon_summary: str            = Field(description="One sentence preview of the afternoon plan")
     evening_summary: str              = Field(description="One sentence preview of the evening plan")
     activities: List[ActivityList]
-    accommodation: AccommodationConfig
+    accommodation: Optional[AccommodationConfig] = None
     day_total: int                    = Field(ge=0, description="Total estimated spend for this day in local currency")
     transport_within_city: int        = Field(ge=0)
     notes: str
@@ -154,7 +154,8 @@ class ItineraryDay(BaseModel):
     @model_validator(mode="after")
     def check_day_total_consistency(self) -> "ItineraryDay":
         activity_cost_sum = sum(a.cost for a in self.activities)
-        expected = activity_cost_sum + self.transport_within_city + self.accommodation.cost_per_night
+        acc_cost = self.accommodation.cost_per_night if self.accommodation else 0
+        expected = activity_cost_sum + self.transport_within_city + acc_cost
         # Allow ±15% tolerance — Gemini rounds and may include minor unlisted costs
         tolerance = expected * 0.15
         if abs(self.day_total - expected) > max(tolerance, 300):  # min ₹300 absolute tolerance

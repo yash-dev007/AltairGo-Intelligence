@@ -12,7 +12,6 @@ const BookingPage = () => {
     const [priceRange, setPriceRange] = useState(1000);
     const [selectedTypes, setSelectedTypes] = useState([]);
     const [visibleCount, setVisibleCount] = useState(6);
-    const [isPlaying, setIsPlaying] = useState(false);
     const [destinations, setDestinations] = useState([]);
     const [loading, setLoading] = useState(true);
     const videoRef = useRef(null);
@@ -71,19 +70,6 @@ const BookingPage = () => {
 
     const scrollToWidget = () => {
         widgetRef.current?.scrollIntoView({ behavior: 'smooth' });
-    };
-
-    // ... existing handlePlayVideo ...
-
-    const handlePlayVideo = () => {
-        if (videoRef.current) {
-            if (isPlaying) {
-                videoRef.current.pause();
-            } else {
-                videoRef.current.play();
-            }
-            setIsPlaying(!isPlaying);
-        }
     };
 
     // ... render ...

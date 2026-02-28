@@ -243,3 +243,10 @@ class BookingClick(Base):
             "estimated_revenue": self.estimated_revenue,
             "is_converted": self.is_converted
         }
+
+class Subscriber(Base):
+    __tablename__ = 'subscribers'
+    id = Column(Integer, primary_key=True)
+    email = Column(String(120), unique=True, nullable=False)
+    subscribed_at = Column(DateTime, default=func.now())
+    is_active = Column(Boolean, default=True)

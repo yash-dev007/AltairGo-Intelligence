@@ -1,8 +1,7 @@
 import React from 'react';
 import { Plane, Building, Ticket, ArrowRight, ExternalLink } from 'lucide-react';
-import styles from './AIDestinationDetailsModal.module.css'; // Reusing glassmorphism styles
 
-const BookingSection = ({ startLocation, destinations, travelDate }) => {
+const BookingSection = ({ startLocation, destinations }) => {
     // Helper to generate search links using our backend Affiliate Tracker
     const getFlightLink = (dest) => {
         return `/api/book/flight?destination=${encodeURIComponent(dest)}&partner=makemytrip`;

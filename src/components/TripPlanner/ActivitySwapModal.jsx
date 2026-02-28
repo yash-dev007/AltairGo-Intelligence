@@ -19,34 +19,34 @@ const ActivitySwapModal = ({ isOpen, onClose, originalActivity, onSwap }) => {
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
+        const fetchAlternatives = async () => {
+            setLoading(true);
+            try {
+                // Check if we have a real DB-backed activity or a generic text one
+                // We'll try to extract location/type from the text or passed props
+                const payload = {
+                    location: originalActivity.location || "Jaipur", // Fallback for prototype
+                    type: "Historic" // Fallback
+                };
+
+                const res = await fetch(`${API_BASE_URL}/api/activities/alternatives`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                setAlternatives(data);
+            } catch (e) {
+                console.error("Failed to swap", e);
+            } finally {
+                setLoading(false);
+            }
+        };
+
         if (isOpen && originalActivity) {
             fetchAlternatives();
         }
     }, [isOpen, originalActivity]);
-
-    const fetchAlternatives = async () => {
-        setLoading(true);
-        try {
-            // Check if we have a real DB-backed activity or a generic text one
-            // We'll try to extract location/type from the text or passed props
-            const payload = {
-                location: originalActivity.location || "Jaipur", // Fallback for prototype
-                type: "Historic" // Fallback
-            };
-
-            const res = await fetch(`${API_BASE_URL}/api/activities/alternatives`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
-            const data = await res.json();
-            setAlternatives(data);
-        } catch (e) {
-            console.error("Failed to swap", e);
-        } finally {
-            setLoading(false);
-        }
-    };
 
     if (!isOpen) return null;
 

@@ -22,7 +22,6 @@ const DestinationContent = ({ destination, reviews = [], averageRating = 0, tota
     // Fallback if destination is null
     if (!destination) return null;
 
-    const backPath = location.state?.from || '/destinations';
     const backLabel = location.state?.from ? 'Back to Planner' : 'Back to all destinations';
 
     // Helper for navigation

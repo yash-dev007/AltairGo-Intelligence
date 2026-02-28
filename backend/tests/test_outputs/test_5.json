@@ -1,0 +1,227 @@
+{
+  "ai_perfect_reasons": [],
+  "budget_status": "within_budget",
+  "cost_breakdown": {
+    "accommodation": 7000,
+    "activities": 3000,
+    "food": 5000,
+    "miscellaneous": 1000,
+    "transport": 4000
+  },
+  "cultural_etiquette": [
+    "Dress modestly when visiting Revdanda village areas.",
+    "Ask for 'Tikhat' (spicy) levels at local eateries; Konkani food is naturally fiery."
+  ],
+  "currency": "INR",
+  "image": "https://upload.wikimedia.org/wikipedia/commons/1/1d/Alibag_Sea_beach_3%2C_Maharashtra.JPG",
+  "image_keyword": "Alibaug Beach",
+  "important_tips": [
+    "Carry cash as network issues can make UPI payments slow at remote beaches.",
+    "Pre-book your return ferry to avoid getting stranded on Sunday evenings."
+  ],
+  "itinerary": [
+    {
+      "accommodation": {
+        "booking_tip": "Request a room on the first floor for better forest views.",
+        "cost_per_night": 7000,
+        "location": "Revdanda, Alibaug",
+        "name": "Silvanus Forest Retreat",
+        "type": "Resort",
+        "why_this": "Offers a boutique experience nestled in greenery, close to the cleaner southern beaches."
+      },
+      "activities": [
+        {
+          "activity": "M2M Ferries Ro-Ro Service",
+          "booking_required": true,
+          "cost": 800,
+          "crowd_level": "Moderate",
+          "description": "Experience a world-class ferry ride from Mumbai to Mandwa. Enjoy the open deck views of the Mumbai skyline and the Arabian Sea.",
+          "duration": "1 hour",
+          "google_maps_search_query": "M2M Ferries, Ferry Wharf, Mazgaon, Mumbai, Maharashtra",
+          "how_to_reach": "Taxi to Ferry Wharf — ₹200, 20 min",
+          "local_secret": "The upper deck (Starboard side) offers the best views of the Taj Mahal Palace hotel as you depart.",
+          "meal_type": null,
+          "time": "Morning",
+          "time_range": "9:00 AM - 11:30 AM",
+          "tips": "Arrive 30 minutes early for boarding.",
+          "why_this_fits": "It's the most scenic way to start a beach trip, bypassing 3 hours of road traffic."
+        },
+        {
+          "activity": "Sanman Restaurant",
+          "booking_required": false,
+          "cost": 1200,
+          "crowd_level": "High",
+          "description": "A legendary spot for authentic Gomantak-style seafood. Their fish thali and Sol Kadhi are local staples.",
+          "duration": "1.5 hours",
+          "google_maps_search_query": "Sanman Restaurant, Israel Lane, Alibaug, Maharashtra",
+          "how_to_reach": "Auto-rickshaw from Mandwa — ₹400, 30 min",
+          "local_secret": "Order the 'Surmai Thali' — it's their freshest catch and sells out by 1:30 PM.",
+          "meal_type": "Lunch",
+          "time": "Lunch",
+          "time_range": "12:30 PM - 2:00 PM",
+          "tips": "Expect a 15-minute wait during peak lunch hours.",
+          "why_this_fits": "Essential for experiencing the coastal culinary culture of the region."
+        },
+        {
+          "activity": "Varsoli Beach Water Sports",
+          "booking_required": false,
+          "cost": 2000,
+          "crowd_level": "Moderate",
+          "description": "A white sand beach known for its rocky coastline and thrilling water sports like parasailing and banana boat rides.",
+          "duration": "3 hours",
+          "google_maps_search_query": "Varsoli Beach, Alibaug, Maharashtra",
+          "how_to_reach": "Auto-rickshaw — ₹150, 10 min",
+          "local_secret": "The northern end of the beach is much quieter and better for photography.",
+          "meal_type": null,
+          "time": "Afternoon",
+          "time_range": "2:30 PM - 5:30 PM",
+          "tips": "Negotiate a package price if doing more than two activities.",
+          "why_this_fits": "Perfect for beach lovers seeking an adrenaline rush on the shore."
+        }
+      ],
+      "afternoon_summary": "Jet skiing and parasailing at the white sands of Varsoli Beach.",
+      "base_location": "",
+      "daily_weather_tip": "Humidity is high; wear breathable linen and a wide-brimmed hat.",
+      "date": null,
+      "day": 1,
+      "day_total": 12550,
+      "evening_summary": "Quiet sunset walk at Kihim Beach followed by a resort dinner.",
+      "intensity_score": 5,
+      "location": "Alibaug",
+      "morning_summary": "Sail across the harbor and enjoy a traditional seafood thali.",
+      "notes": "Day 1 focuses on the central and northern beach hubs.",
+      "pacing_level": "Moderate",
+      "purpose": "",
+      "risk": "Low",
+      "stay_logic": "",
+      "theme": "Waves & Water Sports",
+      "transport_within_city": 1550,
+      "travel_hours": "2 hrs",
+      "weather_sensitivity": "Low"
+    },
+    {
+      "accommodation": null,
+      "activities": [
+        {
+          "activity": "Revdanda Fort",
+          "booking_required": false,
+          "cost": 500,
+          "crowd_level": "Low",
+          "description": "Historic Portuguese ruins where the walls meet the sea. Walk through ancient archways covered in vines.",
+          "duration": "2 hours",
+          "google_maps_search_query": "Revdanda Fort, Revdanda, Maharashtra",
+          "how_to_reach": "Walk from resort — 10 min",
+          "local_secret": "There is a hidden entrance near the high school that leads directly to a secluded beach patch.",
+          "meal_type": null,
+          "time": "Morning",
+          "time_range": "9:30 AM - 11:30 AM",
+          "tips": "Wear sturdy sandals as the terrain inside the ruins is uneven.",
+          "why_this_fits": "Combines your love for the beach with a touch of coastal history."
+        },
+        {
+          "activity": "Bohemyan Blue",
+          "booking_required": false,
+          "cost": 1500,
+          "crowd_level": "Moderate",
+          "description": "A garden cafe serving a mix of Mediterranean and Konkani fusion food in a bohemian, artistic setting.",
+          "duration": "2 hours",
+          "google_maps_search_query": "Bohemyan Blue, Agarsure, Alibaug-Revdanda Road, Maharashtra",
+          "how_to_reach": "Auto-rickshaw — ₹250, 15 min",
+          "local_secret": "Try the Prawns in Coconut Milk; it's a refined take on a local classic.",
+          "meal_type": "Lunch",
+          "time": "Lunch",
+          "time_range": "12:30 PM - 2:30 PM",
+          "tips": "Browse their small boutique for unique local handicrafts.",
+          "why_this_fits": "A 'Standard' style traveler's favorite for its aesthetic and high-quality ingredients."
+        },
+        {
+          "activity": "Nagaon Beach",
+          "booking_required": false,
+          "cost": 500,
+          "crowd_level": "Moderate",
+          "description": "Famous for its clean sands and dense groves of Suru (Cypress) trees. Ideal for a peaceful walk.",
+          "duration": "2.5 hours",
+          "google_maps_search_query": "Nagaon Beach, Alibaug, Maharashtra",
+          "how_to_reach": "Auto-rickshaw — ₹200, 15 min",
+          "local_secret": "Rent a hammock from a local vendor for ₹100 and nap under the cypress canopy.",
+          "meal_type": null,
+          "time": "Afternoon",
+          "time_range": "3:00 PM - 5:30 PM",
+          "tips": "Avoid the main entrance; walk 200m left for a private feel.",
+          "why_this_fits": "The cleanest beach in the area, perfect for a relaxing end to the trip."
+        }
+      ],
+      "afternoon_summary": "Chilled cafe lunch followed by relaxation under cypress trees.",
+      "base_location": "",
+      "daily_weather_tip": "Afternoon sun is intense; stay hydrated and use SPF 50.",
+      "date": null,
+      "day": 2,
+      "day_total": 3750,
+      "evening_summary": "Final beach stroll at Nagaon before catching the return ferry.",
+      "intensity_score": 5,
+      "location": "Revdanda & Nagaon",
+      "morning_summary": "Explore the ruins of a Portuguese fort right on the beach.",
+      "notes": "Day 2 explores the quieter, more scenic southern coast.",
+      "pacing_level": "Leisurely",
+      "purpose": "",
+      "risk": "Low",
+      "stay_logic": "",
+      "theme": "History & Hammocks",
+      "transport_within_city": 1250,
+      "travel_hours": "2 hrs",
+      "weather_sensitivity": "Low"
+    }
+  ],
+  "money_saving_hacks": [
+    "Use the 'Ro-Ro' passenger ferry (₹400) instead of the 'Starboard' class (₹800-1200).",
+    "Eat at 'Khanavals' (local home-run eateries) for dinner to save on food costs."
+  ],
+  "overall_vibe": "You will trade Mumbai's skyline for swaying cypress trees and salty sea breezes. This trip balances adrenaline-pumping water sports with serene sunsets and authentic Malvani seafood in a premium boutique setting.",
+  "packing_tips": [
+    "Quick-dry towels for beach hops.",
+    "Power bank for long days outdoors.",
+    "Waterproof phone pouch for water sports."
+  ],
+  "smart_insights": [
+    "Book the M2M Ferries online to secure your preferred time slot, especially on weekends.",
+    "Hire a dedicated auto-rickshaw for the full day to save 30% compared to individual rides."
+  ],
+  "total_cost": 20000,
+  "travel_between_cities": [
+    {
+      "alternative": "Speedboat from Gateway of India (₹2500, 20 min)",
+      "arrival": "10:00 AM",
+      "booking": "Book via m2mferries.com",
+      "cost": 800,
+      "day": 1,
+      "departure": "09:00 AM",
+      "duration": "1h",
+      "from_city": "Mumbai",
+      "method": "Ferry",
+      "tips": "Check for seasonal cancellations during monsoon (June-Sept).",
+      "to_city": "Alibaug",
+      "train_name": "M2M Ferries",
+      "travel_class": "Starboard (AC)"
+    },
+    {
+      "alternative": "State Transport Bus (₹150, 4 hours)",
+      "arrival": "07:30 PM",
+      "booking": "Book via m2mferries.com",
+      "cost": 800,
+      "day": 2,
+      "departure": "06:30 PM",
+      "duration": "1h",
+      "from_city": "Alibaug",
+      "method": "Ferry",
+      "tips": "The evening ferry offers a great view of the sunset over the ocean.",
+      "to_city": "Mumbai",
+      "train_name": "M2M Ferries",
+      "travel_class": "Starboard (AC)"
+    }
+  ],
+  "trip_title": "Alibaug Coastal Escape: Beaches, Forts & Konkani Flavors",
+  "validation_warnings": [
+    "Some activities may have generic names (e.g.: Sanman Restaurant, Revdanda Fort, Nagaon Beach). For more specific recommendations, try providing more detailed preferences.",
+    "Note: Individual day costs sum to ₹16,300, which differs from the stated total of ₹20,000. Transport between cities may account for this difference."
+  ]
+}

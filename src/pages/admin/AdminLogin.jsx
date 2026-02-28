@@ -37,7 +37,7 @@ const AdminLogin = () => {
             } else {
                 setError(data.error || 'Invalid access key');
             }
-        } catch (err) {
+        } catch (err) { // eslint-disable-line no-unused-vars
             setError('Connection failed. Is the backend running?');
         } finally {
             setLoading(false);

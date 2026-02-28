@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence } from 'framer-motion';
 import { Compass, Map, Plane, Sun, Palmtree, Sparkles } from 'lucide-react';
 import styles from './LoadingOverlay.module.css';
 
@@ -27,14 +27,11 @@ const LoadingOverlay = ({ isVisible, currentPhaseIndex = 0 }) => {
         return () => clearInterval(interval);
     }, [isVisible]);
 
-    // Sync with parent overrides
-    useEffect(() => {
-        if (currentPhaseIndex > 0 && currentPhaseIndex < LOADING_PHASES.length) {
-            setActivePhase(currentPhaseIndex);
-        }
-    }, [currentPhaseIndex]);
+    const displayPhase = (currentPhaseIndex > 0 && currentPhaseIndex < LOADING_PHASES.length)
+        ? currentPhaseIndex
+        : activePhase;
 
-    const CurrentIcon = LOADING_PHASES[activePhase].icon;
+    const CurrentIcon = LOADING_PHASES[displayPhase].icon;
 
     return (
         <AnimatePresence>
@@ -82,7 +79,7 @@ const LoadingOverlay = ({ isVisible, currentPhaseIndex = 0 }) => {
 
                         <motion.h2
                             className={styles.title}
-                            key={activePhase}
+                            key={displayPhase}
                             initial={{ y: 20, opacity: 0 }}
                             animate={{ y: 0, opacity: 1 }}
                             exit={{ y: -20, opacity: 0 }}
@@ -93,13 +90,13 @@ const LoadingOverlay = ({ isVisible, currentPhaseIndex = 0 }) => {
 
                         <motion.div
                             className={styles.statusBox}
-                            key={`status-${activePhase}`}
+                            key={`status-${displayPhase}`}
                             initial={{ scale: 0.9, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
                             transition={{ duration: 0.4 }}
                         >
                             <CurrentIcon className={styles.statusIcon} size={24} />
-                            <p className={styles.statusText}>{LOADING_PHASES[activePhase].text}</p>
+                            <p className={styles.statusText}>{LOADING_PHASES[displayPhase].text}</p>
                         </motion.div>
 
                     </div>

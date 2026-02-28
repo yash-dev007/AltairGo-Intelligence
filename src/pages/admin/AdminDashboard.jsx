@@ -28,7 +28,7 @@ const VisitorChart = ({ data }) => {
 
     // Show every 3rd label
     const labels = data.filter((_, i) => i % 3 === 0);
-    const labelPositions = labels.map((d, i) => ({
+    const labelPositions = labels.map((d) => ({
         x: PAD + (data.indexOf(d)) * stepX,
         label: d.time
     }));
@@ -81,7 +81,6 @@ const AdminDashboard = () => {
     const [blogs, setBlogs] = useState([]);
     const [packages, setPackages] = useState([]);
     const [users, setUsers] = useState([]);
-    const [trips, setTrips] = useState([]);
     const [destRequests, setDestRequests] = useState([]);
     const [affiliateStats, setAffiliateStats] = useState(null);
 
@@ -119,7 +118,7 @@ const AdminDashboard = () => {
             if (res.status === 401) { sessionStorage.removeItem('adminToken'); navigate('/admin/login'); return; }
             setStats(await res.json());
         } catch (e) { console.error(e); }
-    }, [token, getHeaders]);
+    }, [token, getHeaders, navigate]);
 
     const fetchVisitors = useCallback(async () => {
         if (!token) return;
@@ -165,14 +164,6 @@ const AdminDashboard = () => {
         } catch (e) { console.error(e); }
     }, [token, getHeaders]);
 
-    const fetchTrips = useCallback(async () => {
-        if (!token) return;
-        try {
-            const res = await fetch(`${API_BASE_URL}/api/admin/trips`, { headers: getHeaders() });
-            if (res.ok) setTrips(await res.json());
-        } catch (e) { console.error(e); }
-    }, [token, getHeaders]);
-
     const fetchDestRequests = useCallback(async () => {
         if (!token) return;
         try {
@@ -189,7 +180,7 @@ const AdminDashboard = () => {
         } catch (e) { console.error(e); }
     }, [token, getHeaders]);
 
-    useEffect(() => { fetchStats(); fetchVisitors(); fetchTrips(); }, [fetchStats, fetchVisitors, fetchTrips]);
+    useEffect(() => { fetchStats(); fetchVisitors(); }, [fetchStats, fetchVisitors]);
 
     // Auto-refresh visitors every 30 seconds
     useEffect(() => {
@@ -201,10 +192,10 @@ const AdminDashboard = () => {
     useEffect(() => {
         if (tab === 'destinations') fetchDestinations();
         if (tab === 'blogs') { fetchBlogs(); fetchPackages(); }
-        if (tab === 'users') { fetchUsers(); fetchTrips(); }
+        if (tab === 'users') { fetchUsers(); }
         if (tab === 'requests') fetchDestRequests();
         if (tab === 'affiliates') fetchAffiliateStats();
-    }, [tab, fetchDestinations, fetchBlogs, fetchPackages, fetchUsers, fetchTrips, fetchDestRequests, fetchAffiliateStats]);
+    }, [tab, fetchDestinations, fetchBlogs, fetchPackages, fetchUsers, fetchDestRequests, fetchAffiliateStats]);
 
     // ── Destination CRUD ──
     const handleDelete = async (id) => {

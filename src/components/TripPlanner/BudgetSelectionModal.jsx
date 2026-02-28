@@ -3,10 +3,10 @@ import { X, DollarSign, Clock, Compass, Check, ArrowRight } from 'lucide-react';
 import styles from './BudgetSelectionModal.module.css';
 
 const BudgetSelectionModal = ({ isOpen, onClose, onApply }) => {
-    if (!isOpen) return null;
-
     const [budget, setBudget] = useState(50000);
     const [style, setStyle] = useState('Standard'); // Budget, Standard, Luxury
+
+    if (!isOpen) return null;
 
     const TRAVEL_STYLES = [
         { id: 'Budget', label: 'Budget-Friendly', desc: 'Hostels, street food, public transit', icon: '🎒' },

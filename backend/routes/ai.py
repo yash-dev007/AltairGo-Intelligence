@@ -17,7 +17,7 @@ def recommend_destinations():
 
     try:
         ai_spots = generate_destination_recommendations(country_name, region_names, prefs)
-
+        print(f"🔍 AI returned {len(ai_spots)} spots for {region_names}")
         cards = []
         for spot in ai_spots:
             name = spot.get("name", "Unknown Spot")
@@ -67,6 +67,41 @@ def recommend_destinations():
                 "image_keyword": spot.get("image_keyword", name),
                 "isAiGenerated": True
             })
+
+        # ── DB Fallback: If AI returned nothing, serve existing DB destinations ──
+        if not cards and region_names:
+            print(f"⚠️ AI returned 0 destinations — falling back to DB for regions: {region_names}")
+            db_fallback = []
+            for rn in region_names:
+                state_obj = db_session.query(State).filter(State.name.ilike(f"%{rn}%")).first()
+                if state_obj:
+                    dests = db_session.query(Destination).filter_by(state_id=state_obj.id).limit(10).all()
+                    db_fallback.extend(dests)
+                else:
+                    # Try matching by location field
+                    dests = db_session.query(Destination).filter(
+                        Destination.location.ilike(f"%{rn}%")
+                    ).limit(10).all()
+                    db_fallback.extend(dests)
+
+            for d in db_fallback:
+                dd = d.to_dict()
+                cards.append({
+                    "id": dd.get("id"),
+                    "name": dd.get("name", "Unknown"),
+                    "location": dd.get("location", country_name),
+                    "state_id": dd.get("state_id"),
+                    "tag": dd.get("tag", "Attraction"),
+                    "desc": dd.get("desc", "A beautiful destination."),
+                    "bestTime": dd.get("best_time", "Anytime"),
+                    "crowdLevel": dd.get("crowd_level", "Moderate"),
+                    "rating": float(dd.get("rating", 4.5)),
+                    "estimatedCostPerDay": int(dd.get("estimated_cost_per_day", 3000)),
+                    "highlights": dd.get("highlights", []),
+                    "image": dd.get("image"),
+                    "image_keyword": dd.get("name", "travel"),
+                    "isAiGenerated": False
+                })
 
         db_session.commit()
         return jsonify({"destinations": cards})

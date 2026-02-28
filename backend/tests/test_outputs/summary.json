@@ -1,0 +1,14 @@
+[
+  {
+    "name": "Budget Trip — Goa 3 days",
+    "status": "PASS",
+    "trip_title": "Goa Budget Blast: Sun, Sand & Neon Nights",
+    "total_cost": 15000,
+    "target_budget": 15000,
+    "days_count": 3,
+    "elapsed_seconds": 59.2,
+    "errors": [],
+    "warnings": [],
+    "output_file": "D:\\AltairLabs\\backend\\tests\\test_outputs\\test_1.json",
+    "validation_warnings_from_backend": [
+      "Some activities may have generic names (e.g.: Chapora Fort, Vinayak Family Restaurant, Tibetan Market, Baga). For more specific recommendations, try providing more detailed preferences."

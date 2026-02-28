@@ -1,9 +1,44 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import styles from './Footer.module.css';
 import logo from '../../assets/logo_corrected.png'; // Import Corrected Logo
 import { Globe, Instagram, Mail } from 'lucide-react';
 
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
 const Footer = () => {
+    const [email, setEmail] = useState('');
+    const [status, setStatus] = useState({ type: '', message: '' });
+    const [loading, setLoading] = useState(false);
+
+    const handleSubscribe = async (e) => {
+        e.preventDefault();
+        if (!email.trim()) {
+            setStatus({ type: 'error', message: 'Please enter your email.' });
+            return;
+        }
+        setLoading(true);
+        setStatus({ type: '', message: '' });
+        try {
+            const res = await fetch(`${API_BASE}/api/subscribe`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email }),
+            });
+            const data = await res.json();
+            if (res.ok) {
+                setStatus({ type: 'success', message: data.message });
+                setEmail('');
+            } else {
+                setStatus({ type: 'error', message: data.error || 'Something went wrong.' });
+            }
+        } catch (err) {
+            setStatus({ type: 'error', message: 'Network error. Please try again.' });
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <footer className={styles.footer}>
             <div className={styles.container}>
@@ -16,27 +51,27 @@ const Footer = () => {
                             story starts here.
                         </p>
                         <div className={styles.socials}>
-                            <a href="#" className={styles.socialLink} aria-label="Website"><Globe size={16} /></a>
-                            <a href="#" className={styles.socialLink} aria-label="Instagram"><Instagram size={16} /></a>
-                            <a href="#" className={styles.socialLink} aria-label="Mail"><Mail size={16} /></a>
+                            <a href="https://altairgo.com" className={styles.socialLink} aria-label="Website" target="_blank" rel="noopener noreferrer"><Globe size={16} /></a>
+                            <a href="https://instagram.com/altairgo" className={styles.socialLink} aria-label="Instagram" target="_blank" rel="noopener noreferrer"><Instagram size={16} /></a>
+                            <a href="mailto:contact@altairgo.com" className={styles.socialLink} aria-label="Mail"><Mail size={16} /></a>
                         </div>
                     </div>
 
                     <div className={styles.linksGroup}>
                         <div className={styles.linksCol}>
                             <h3 className={styles.colTitle}>Company</h3>
-                            <a href="#">About Us</a>
-                            <a href="#">Careers</a>
-                            <a href="#">Press</a>
-                            <a href="#">Partners</a>
+                            <Link to="/about" className={styles.footerLink}>About Us</Link>
+                            <Link to="/careers" className={styles.footerLink}>Careers</Link>
+                            <Link to="/press" className={styles.footerLink}>Press</Link>
+                            <Link to="/partners" className={styles.footerLink}>Partners</Link>
                         </div>
 
                         <div className={styles.linksCol}>
                             <h3 className={styles.colTitle}>Support</h3>
-                            <a href="#">Help Center</a>
-                            <a href="#">Safety</a>
-                            <a href="#">Cancellation</a>
-                            <a href="#">Privacy</a>
+                            <Link to="/help" className={styles.footerLink}>Help Center</Link>
+                            <Link to="/safety" className={styles.footerLink}>Safety</Link>
+                            <Link to="/cancellation" className={styles.footerLink}>Cancellation</Link>
+                            <Link to="/privacy" className={styles.footerLink}>Privacy</Link>
                         </div>
                     </div>
                 </div>
@@ -46,22 +81,34 @@ const Footer = () => {
                         <h3 className={styles.newsletterTitle}>Unlock the World</h3>
                         <p className={styles.newsletterDesc}>Get curated itineraries and travel secrets delivered to your inbox.</p>
                     </div>
-                    <form className={styles.form} onSubmit={(e) => e.preventDefault()}>
+                    <form className={styles.form} onSubmit={handleSubscribe}>
                         <div className={styles.inputGroup}>
-                            <input type="email" placeholder="Enter your email" className={styles.input} />
-                            <button type="submit" className={styles.submitBtn}>
-                                Subscribe
+                            <input
+                                type="email"
+                                placeholder="Enter your email"
+                                className={styles.input}
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                disabled={loading}
+                            />
+                            <button type="submit" className={styles.submitBtn} disabled={loading}>
+                                {loading ? 'Subscribing...' : 'Subscribe'}
                             </button>
                         </div>
+                        {status.message && (
+                            <p className={status.type === 'success' ? styles.successMsg : styles.errorMsg}>
+                                {status.message}
+                            </p>
+                        )}
                     </form>
                 </div>
 
                 <div className={styles.bottomSection}>
                     <p>© 2025 ALTAIRGO INTELLIGENCE. All rights reserved.</p>
                     <div className={styles.legalLinks}>
-                        <a href="#">Terms of Service</a>
-                        <a href="#">Privacy Policy</a>
-                        <a href="#">Cookie Policy</a>
+                        <Link to="/terms" className={styles.legalLink}>Terms of Service</Link>
+                        <Link to="/privacy" className={styles.legalLink}>Privacy Policy</Link>
+                        <Link to="/cookies" className={styles.legalLink}>Cookie Policy</Link>
                     </div>
                 </div>
             </div>
@@ -70,3 +117,4 @@ const Footer = () => {
 };
 
 export default Footer;
+

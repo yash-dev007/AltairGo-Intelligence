@@ -52,7 +52,7 @@ const ChatWidget = () => {
                 role: 'ai',
                 content: aiResponseText
             }]);
-        } catch (err) {
+        } catch (err) { // eslint-disable-line no-unused-vars
             setMessages(prev => [...prev, {
                 role: 'ai',
                 content: "Sorry, I couldn't reach the server."

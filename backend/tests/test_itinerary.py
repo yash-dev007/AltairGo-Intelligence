@@ -229,7 +229,7 @@ def run_test(idx: int, case: dict) -> dict:
 
     start = time.time()
     try:
-        resp = requests.post(f"{BASE_URL}/generate-itinerary", json=payload, timeout=120)
+        resp = requests.post(f"{BASE_URL}/generate-itinerary", json=payload, timeout=300)
         elapsed = round(time.time() - start, 1)
 
         if resp.status_code != 200:

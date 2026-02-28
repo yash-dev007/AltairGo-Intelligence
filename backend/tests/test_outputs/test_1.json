@@ -1,0 +1,313 @@
+{
+  "ai_perfect_reasons": [],
+  "budget_status": "within_budget",
+  "cost_breakdown": {
+    "accommodation": 5250,
+    "activities": 2250,
+    "food": 3750,
+    "miscellaneous": 750,
+    "transport": 3000
+  },
+  "cultural_etiquette": [
+    "Dress modestly when visiting temples like Mangueshi.",
+    "Always ask for permission before taking photos of locals on the beach."
+  ],
+  "currency": "INR",
+  "image": "https://upload.wikimedia.org/wikipedia/commons/6/61/Woodstock-kids.jpg",
+  "image_keyword": "Anjuna Beach Sunset",
+  "important_tips": [
+    "Keep a digital copy of your driving license for scooter rentals.",
+    "Avoid swimming at Anjuna Beach near the rocks; currents are strong."
+  ],
+  "itinerary": [
+    {
+      "accommodation": {
+        "booking_tip": "Book a 'Superior Dorm' for extra locker space.",
+        "cost_per_night": 1750,
+        "location": "Anjuna, Goa",
+        "name": "The Hosteller Goa, Anjuna",
+        "type": "Hostel",
+        "why_this": "Social atmosphere, budget-friendly dorms, and walking distance to the beach."
+      },
+      "activities": [
+        {
+          "activity": "Anjuna Flea Market Area",
+          "booking_required": false,
+          "cost": 0,
+          "crowd_level": "Moderate",
+          "description": "Walk through the lanes of the iconic hippie market area. Even on non-market days, the shops sell bohemian jewelry, tapestries, and leather goods.",
+          "duration": "2 hours",
+          "google_maps_search_query": "Anjuna Flea Market, Anjuna, Goa, India",
+          "how_to_reach": "Walk 10 min from hostel (0.8 km)",
+          "local_secret": "Check out the small silver jewelry stalls in the back lanes for 30% cheaper prices than the main road.",
+          "meal_type": null,
+          "time": "Morning",
+          "time_range": "10:00 AM - 12:00 PM",
+          "tips": "Haggle hard; start at 50% of the quoted price.",
+          "why_this_fits": "Since you love the beach vibe, this area captures the authentic 70s hippie soul of Goa."
+        },
+        {
+          "activity": "Artjuna Garden Café",
+          "booking_required": false,
+          "cost": 550,
+          "crowd_level": "High",
+          "description": "A Mediterranean-style cafe set in an old Portuguese house. Famous for its hummus platters and vibrant garden seating.",
+          "duration": "1.5 hours",
+          "google_maps_search_query": "Artjuna Garden Café, Anjuna, Goa, India",
+          "how_to_reach": "Walk 5 min from market area (0.4 km)",
+          "local_secret": "Try the 'Artjuna Thali'—it's the most filling meal for the price.",
+          "meal_type": "Lunch",
+          "time": "Lunch",
+          "time_range": "12:30 PM - 2:00 PM",
+          "tips": "The ginger-lemon-honey tea is great for hydration.",
+          "why_this_fits": "Perfect budget-friendly spot for a healthy lunch before a long day of exploring."
+        },
+        {
+          "activity": "Shiva Valley",
+          "booking_required": false,
+          "cost": 1000,
+          "crowd_level": "High",
+          "description": "Known as the 'Temple of Trance,' this beach shack transforms into a neon-lit party hub as the sun sets.",
+          "duration": "3 hours",
+          "google_maps_search_query": "Shiva Valley, Anjuna Beach, Goa, India",
+          "how_to_reach": "Scooter — ₹0 (parked nearby), 5 min",
+          "local_secret": "The chai shop right outside the entrance serves the best late-night snacks for under ₹100.",
+          "meal_type": "Dinner",
+          "time": "Evening",
+          "time_range": "7:00 PM - 10:00 PM",
+          "tips": "Entry is usually free before 8 PM; drinks are reasonably priced.",
+          "why_this_fits": "Matches your party interest perfectly with its world-famous Tuesday night trance sessions."
+        }
+      ],
+      "afternoon_summary": "Healthy lunch followed by exploring the rocky shores of Anjuna Beach.",
+      "base_location": "",
+      "daily_weather_tip": "Humid; wear breathable linen and carry a reusable water bottle.",
+      "date": null,
+      "day": 1,
+      "day_total": 3300,
+      "evening_summary": "Experience the legendary sunset party at a beachside shack.",
+      "intensity_score": 5,
+      "location": "Anjuna, Goa",
+      "morning_summary": "Arrive in Anjuna and settle into your hostel before heading to the cliffs.",
+      "notes": "Scooter rental (₹450/day) starts today.",
+      "pacing_level": "Moderate",
+      "purpose": "",
+      "risk": "Low",
+      "stay_logic": "",
+      "theme": "Cliffs & Psytrance Vibes",
+      "transport_within_city": 0,
+      "travel_hours": "2 hrs",
+      "weather_sensitivity": "Low"
+    },
+    {
+      "accommodation": {
+        "booking_tip": "Use the hostel's common area to meet fellow solo travelers for the party.",
+        "cost_per_night": 1750,
+        "location": "Anjuna, Goa",
+        "name": "The Hosteller Goa, Anjuna",
+        "type": "Hostel",
+        "why_this": "Central location between Anjuna and Vagator party spots."
+      },
+      "activities": [
+        {
+          "activity": "Chapora Fort",
+          "booking_required": false,
+          "cost": 0,
+          "crowd_level": "Moderate",
+          "description": "A 17th-century laterite fort offering stunning views of Vagator Beach and the Arabian Sea.",
+          "duration": "2 hours",
+          "google_maps_search_query": "Chapora Fort, Vagator, Goa, India",
+          "how_to_reach": "Scooter — ₹50 petrol, 10 min",
+          "local_secret": "Walk to the far north corner of the ramparts for a view of Morjim beach across the river.",
+          "meal_type": null,
+          "time": "Morning",
+          "time_range": "9:30 AM - 11:30 AM",
+          "tips": "Wear shoes with grip; the climb is short but slippery.",
+          "why_this_fits": "Iconic 'Beach' viewpoint and a great spot for photography."
+        },
+        {
+          "activity": "Vinayak Family Restaurant",
+          "booking_required": false,
+          "cost": 350,
+          "crowd_level": "High",
+          "description": "A local favorite famous for its authentic and affordable Goan Fish Thali.",
+          "duration": "1.5 hours",
+          "google_maps_search_query": "Vinayak Family Restaurant, Assagao, Goa, India",
+          "how_to_reach": "Scooter — ₹30 petrol, 12 min",
+          "local_secret": "Order the 'Special Fish Thali'—it includes 3 types of seafood preparations.",
+          "meal_type": "Lunch",
+          "time": "Lunch",
+          "time_range": "12:30 PM - 2:00 PM",
+          "tips": "Reach by 12:15 PM to avoid the 30-minute lunch queue.",
+          "why_this_fits": "Best budget meal in North Goa to fuel your party night."
+        },
+        {
+          "activity": "Titlie Culinary Bar",
+          "booking_required": false,
+          "cost": 1500,
+          "crowd_level": "High",
+          "description": "A high-energy bar overlooking the Ozran cliffs with excellent music and a sophisticated crowd.",
+          "duration": "3 hours",
+          "google_maps_search_query": "Titlie Culinary Bar, Vagator, Goa, India",
+          "how_to_reach": "Scooter — ₹20 petrol, 8 min",
+          "local_secret": "The 'Small Plates' menu is more affordable and better for sharing than main courses.",
+          "meal_type": "Dinner",
+          "time": "Evening",
+          "time_range": "8:00 PM - 11:00 PM",
+          "tips": "Cover charge usually applies after 9 PM; arrive early.",
+          "why_this_fits": "Perfect for your 'Party' interest with a great mix of house music and views."
+        }
+      ],
+      "afternoon_summary": "Authentic Goan Thali lunch followed by a swim at Ozran Beach.",
+      "base_location": "",
+      "daily_weather_tip": "Sun is harsh at the fort; carry a hat and sunscreen.",
+      "date": null,
+      "day": 2,
+      "day_total": 4100,
+      "evening_summary": "Sunset cocktails at a cliffside lounge followed by clubbing.",
+      "intensity_score": 5,
+      "location": "Vagator",
+      "morning_summary": "Hike up to the 'Dil Chahta Hai' fort for panoramic ocean views.",
+      "notes": "Includes scooter rental and fuel.",
+      "pacing_level": "Moderate",
+      "purpose": "",
+      "risk": "Low",
+      "stay_logic": "",
+      "theme": "Forts & Sunset Beats",
+      "transport_within_city": 500,
+      "travel_hours": "2 hrs",
+      "weather_sensitivity": "Low"
+    },
+    {
+      "accommodation": {
+        "booking_tip": "Check out by 11 AM to avoid late fees.",
+        "cost_per_night": 1750,
+        "location": "Anjuna, Goa",
+        "name": "The Hosteller Goa, Anjuna",
+        "type": "Hostel",
+        "why_this": "Hostel allows luggage storage after checkout."
+      },
+      "activities": [
+        {
+          "activity": "Baga Beach Water Sports",
+          "booking_required": false,
+          "cost": 750,
+          "crowd_level": "High",
+          "description": "Enjoy a combo of parasailing, jet skiing, and banana boat rides.",
+          "duration": "3 hours",
+          "google_maps_search_query": "Baga Beach, Goa, India",
+          "how_to_reach": "Scooter — ₹40 petrol, 15 min",
+          "local_secret": "Walk 500m north of the main Baga entrance for shorter queues and better prices.",
+          "meal_type": null,
+          "time": "Morning",
+          "time_range": "9:00 AM - 12:00 PM",
+          "tips": "Negotiate a 'combo pack' for all 3 sports to save ₹300.",
+          "why_this_fits": "Essential 'Beach' activity for thrill-seekers."
+        },
+        {
+          "activity": "Tibetan Market, Baga",
+          "booking_required": false,
+          "cost": 0,
+          "crowd_level": "Moderate",
+          "description": "A colorful market selling authentic Himalayan artifacts, jewelry, and clothing.",
+          "duration": "2 hours",
+          "google_maps_search_query": "Tibetan Market, Baga Road, Goa, India",
+          "how_to_reach": "Walk 5 min from Baga Beach (0.3 km)",
+          "local_secret": "The singing bowls here are genuine; test them with the wooden mallet before buying.",
+          "meal_type": null,
+          "time": "Afternoon",
+          "time_range": "2:00 PM - 4:00 PM",
+          "tips": "Check for the '925' stamp on silver jewelry to ensure quality.",
+          "why_this_fits": "Great for budget-friendly souvenir shopping."
+        },
+        {
+          "activity": "Fat Fish",
+          "booking_required": false,
+          "cost": 600,
+          "crowd_level": "High",
+          "description": "A trendy yet affordable restaurant known for its massive seafood platters and Goan vibes.",
+          "duration": "1.5 hours",
+          "google_maps_search_query": "Fat Fish, Arpora, Goa, India",
+          "how_to_reach": "Scooter — ₹20 petrol, 5 min",
+          "local_secret": "The 'Prawn Curry Rice' is the most authentic dish on the menu.",
+          "meal_type": "Lunch",
+          "time": "Lunch",
+          "time_range": "12:30 PM - 2:00 PM",
+          "tips": "Try the Bebinca for dessert—it's a traditional Goan layer cake.",
+          "why_this_fits": "High-quality food at a mid-range price point."
+        }
+      ],
+      "afternoon_summary": "Last-minute souvenir shopping at the Tibetan Market.",
+      "base_location": "",
+      "daily_weather_tip": "Expect sea spray; keep electronics in waterproof bags.",
+      "date": null,
+      "day": 3,
+      "day_total": 3600,
+      "evening_summary": "Early dinner at a beach shack before boarding the bus to Mumbai.",
+      "intensity_score": 5,
+      "location": "Baga & Calangute",
+      "morning_summary": "Adrenaline-pumping water sports at Baga Beach.",
+      "notes": "Return scooter by 5 PM before heading to the bus station.",
+      "pacing_level": "Action-Packed",
+      "purpose": "",
+      "risk": "Low",
+      "stay_logic": "",
+      "theme": "Water Sports & Departure",
+      "transport_within_city": 500,
+      "travel_hours": "2 hrs",
+      "weather_sensitivity": "Low"
+    }
+  ],
+  "money_saving_hacks": [
+    "Drink local King's beer (₹60) instead of imported brands (₹250).",
+    "Use the hostel kitchen for breakfast to save ₹200 daily."
+  ],
+  "overall_vibe": "You will trade Mumbai's concrete jungle for the swaying palms of North Goa. Expect salty hair, sun-kissed skin, and neon-lit dance floors as you explore the most iconic party hubs on a backpacker's budget.",
+  "packing_tips": [
+    "Quick-dry towels for beach hops.",
+    "Power bank for long scooter navigation days.",
+    "Earplugs if staying in a party hostel dorm."
+  ],
+  "smart_insights": [
+    "Rent a scooter at Mapusa bus stand to save ₹800 on taxi fares to Anjuna.",
+    "Entry to most beach shacks is free; pay only for food and drinks."
+  ],
+  "total_cost": 15000,
+  "travel_between_cities": [
+    {
+      "alternative": "Konkan Kanya Express (Train) ₹450 (Sleeper) | ₹1200 (3AC)",
+      "arrival": "9:00 AM",
+      "booking": "Book via RedBus or AbhiBus.",
+      "cost": 1200,
+      "day": 1,
+      "departure": "9:00 PM (Previous Night)",
+      "duration": "12h 0m",
+      "from_city": "Mumbai",
+      "method": "Bus",
+      "tips": "Carry a light blanket; even non-AC buses get chilly at night.",
+      "to_city": "Goa (Mapusa)",
+      "train_name": "Atmaram Travels (Non-AC Sleeper)",
+      "travel_class": "Sleeper"
+    },
+    {
+      "alternative": "Tejas Express (Train) ₹1,500 (CC)",
+      "arrival": "7:00 AM",
+      "booking": "Book via Zingbus app for discounts.",
+      "cost": 1200,
+      "day": 3,
+      "departure": "7:00 PM",
+      "duration": "12h 0m",
+      "from_city": "Goa (Mapusa)",
+      "method": "Bus",
+      "tips": "Board from Mapusa to avoid the Panjim traffic crawl.",
+      "to_city": "Mumbai",
+      "train_name": "Zingbus (AC Sleeper)",
+      "travel_class": "Sleeper"
+    }
+  ],
+  "trip_title": "Goa Budget Blast: Sun, Sand & Neon Nights",
+  "validation_warnings": [
+    "Some activities may have generic names (e.g.: Chapora Fort, Vinayak Family Restaurant, Tibetan Market, Baga). For more specific recommendations, try providing more detailed preferences.",
+    "Note: Individual day costs sum to ₹11,000, which differs from the stated total of ₹15,000. Transport between cities may account for this difference."
+  ]
+}

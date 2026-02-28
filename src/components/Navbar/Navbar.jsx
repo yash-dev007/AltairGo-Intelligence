@@ -53,16 +53,6 @@ const Navbar = () => {
 
     const isHome = location.pathname === '/';
 
-    const handleNavClick = (id) => {
-        setIsOpen(false);
-        if (isHome && id) {
-            const element = document.getElementById(id);
-            if (element) {
-                element.scrollIntoView({ behavior: 'smooth' });
-            }
-        }
-    };
-
     return (
         <nav className={styles.navbar}>
             <div className={styles.container}>

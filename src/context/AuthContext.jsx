@@ -13,13 +13,13 @@ const AuthContext = createContext({
 // Safe localStorage wrapper to prevent SecurityError in restrictive browsers
 const safeLocalStorage = {
     getItem: (key) => {
-        try { return window.localStorage.getItem(key); } catch (e) { return null; }
+        try { return window.localStorage.getItem(key); } catch { return null; }
     },
     setItem: (key, value) => {
-        try { window.localStorage.setItem(key, value); } catch (e) { }
+        try { window.localStorage.setItem(key, value); } catch { /* ignore cross-origin error */ }
     },
     removeItem: (key) => {
-        try { window.localStorage.removeItem(key); } catch (e) { }
+        try { window.localStorage.removeItem(key); } catch { /* ignore cross-origin error */ }
     }
 };
 
@@ -29,6 +29,29 @@ export const AuthProvider = ({ children }) => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
+        const fetchUser = async (authToken) => {
+            try {
+                const res = await fetch(`${API_BASE_URL}/auth/me`, {
+                    headers: { Authorization: `Bearer ${authToken}` }
+                });
+                if (res.ok) {
+                    const userData = await res.json();
+                    setUser(userData);
+                } else {
+                    setToken(null);
+                    setUser(null);
+                    safeLocalStorage.removeItem('token');
+                }
+            } catch (err) {
+                console.error("Auth Check Failed", err);
+                setToken(null);
+                setUser(null);
+                safeLocalStorage.removeItem('token');
+            } finally {
+                setLoading(false);
+            }
+        };
+
         if (token) {
             // Validate token or just load user data if stored
             // For MVP, we'll try to fetch /auth/me or just persist user obj
@@ -37,25 +60,6 @@ export const AuthProvider = ({ children }) => {
             setLoading(false);
         }
     }, [token]);
-
-    const fetchUser = async (authToken) => {
-        try {
-            const res = await fetch(`${API_BASE_URL}/auth/me`, {
-                headers: { Authorization: `Bearer ${authToken}` }
-            });
-            if (res.ok) {
-                const userData = await res.json();
-                setUser(userData);
-            } else {
-                logout(); // Invalid token
-            }
-        } catch (err) {
-            console.error("Auth Check Failed", err);
-            logout();
-        } finally {
-            setLoading(false);
-        }
-    };
 
     const login = async (email, password) => {
         const res = await fetch(`${API_BASE_URL}/auth/login`, {

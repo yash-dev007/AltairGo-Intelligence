@@ -1,0 +1,72 @@
+============================= test session starts =============================
+platform win32 -- Python 3.13.5, pytest-8.3.4, pluggy-1.5.0
+rootdir: D:\AltairLabs\backend
+plugins: anyio-4.12.1
+collected 10 items / 2 errors
+
+=================================== ERRORS ====================================
+______________________ ERROR collecting test_endpoint.py ______________________
+C:\Users\yashp\anaconda3\Lib\site-packages\urllib3\connection.py:204: in _new_conn
+    sock = connection.create_connection(
+C:\Users\yashp\anaconda3\Lib\site-packages\urllib3\util\connection.py:85: in create_connection
+    raise err
+C:\Users\yashp\anaconda3\Lib\site-packages\urllib3\util\connection.py:73: in create_connection
+    sock.connect(sa)
+E   ConnectionRefusedError: [WinError 10061] No connection could be made because the target machine actively refused it
+
+The above exception was the direct cause of the following exception:
+C:\Users\yashp\anaconda3\Lib\site-packages\urllib3\connectionpool.py:787: in urlopen
+    response = self._make_request(
+C:\Users\yashp\anaconda3\Lib\site-packages\urllib3\connectionpool.py:493: in _make_request
+    conn.request(
+C:\Users\yashp\anaconda3\Lib\site-packages\urllib3\connection.py:500: in request
+    self.endheaders()
+C:\Users\yashp\anaconda3\Lib\http\client.py:1333: in endheaders
+    self._send_output(message_body, encode_chunked=encode_chunked)
+C:\Users\yashp\anaconda3\Lib\http\client.py:1093: in _send_output
+    self.send(msg)
+C:\Users\yashp\anaconda3\Lib\http\client.py:1037: in send
+    self.connect()
+C:\Users\yashp\anaconda3\Lib\site-packages\urllib3\connection.py:331: in connect
+    self.sock = self._new_conn()
+C:\Users\yashp\anaconda3\Lib\site-packages\urllib3\connection.py:219: in _new_conn
+    raise NewConnectionError(
+E   urllib3.exceptions.NewConnectionError: HTTPConnection(host='localhost', port=5000): Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it
+
+The above exception was the direct cause of the following exception:
+C:\Users\yashp\anaconda3\Lib\site-packages\requests\adapters.py:667: in send
+    resp = conn.urlopen(
+C:\Users\yashp\anaconda3\Lib\site-packages\urllib3\connectionpool.py:841: in urlopen
+    retries = retries.increment(
+C:\Users\yashp\anaconda3\Lib\site-packages\urllib3\util\retry.py:535: in increment
+    raise MaxRetryError(_pool, url, reason) from reason  # type: ignore[arg-type]
+E   urllib3.exceptions.MaxRetryError: HTTPConnectionPool(host='localhost', port=5000): Max retries exceeded with url: /generate-itinerary (Caused by NewConnectionError("HTTPConnection(host='localhost', port=5000): Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it"))
+
+During handling of the above exception, another exception occurred:
+test_endpoint.py:3: in <module>
+    resp = requests.post(
+C:\Users\yashp\anaconda3\Lib\site-packages\requests\api.py:115: in post
+    return request("post", url, data=data, json=json, **kwargs)
+C:\Users\yashp\anaconda3\Lib\site-packages\requests\api.py:59: in request
+    return session.request(method=method, url=url, **kwargs)
+C:\Users\yashp\anaconda3\Lib\site-packages\requests\sessions.py:589: in request
+    resp = self.send(prep, **send_kwargs)
+C:\Users\yashp\anaconda3\Lib\site-packages\requests\sessions.py:703: in send
+    r = adapter.send(request, **kwargs)
+C:\Users\yashp\anaconda3\Lib\site-packages\requests\adapters.py:700: in send
+    raise ConnectionError(e, request=request)
+E   requests.exceptions.ConnectionError: HTTPConnectionPool(host='localhost', port=5000): Max retries exceeded with url: /generate-itinerary (Caused by NewConnectionError("HTTPConnection(host='localhost', port=5000): Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it"))
+________________ ERROR collecting tests/test_image_service.py _________________
+ImportError while importing test module 'D:\AltairLabs\backend\tests\test_image_service.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+C:\Users\yashp\anaconda3\Lib\importlib\__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests\test_image_service.py:8: in <module>
+    from services.image_service import get_image_for_destination, get_curated_fallback
+E   ImportError: cannot import name 'get_curated_fallback' from 'services.image_service' (D:\AltairLabs\backend\services\image_service.py)
+=========================== short test summary info ===========================
+ERROR test_endpoint.py - requests.exceptions.ConnectionError: HTTPConnectionP...
+ERROR tests/test_image_service.py
+!!!!!!!!!!!!!!!!!!! Interrupted: 2 errors during collection !!!!!!!!!!!!!!!!!!!
+============================= 2 errors in 33.28s ==============================

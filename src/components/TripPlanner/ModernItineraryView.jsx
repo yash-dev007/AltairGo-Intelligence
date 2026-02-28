@@ -24,7 +24,7 @@ const getIconForType = (type, name) => {
     return <MapPin size={18} />;
 };
 
-const ModernItineraryView = ({ itinerary, tripContext, insight }) => {
+const ModernItineraryView = ({ itinerary, tripContext }) => {
     // Process itinerary into days
     const days = useMemo(() => {
         if (!itinerary || itinerary.length === 0) return [];

@@ -6,7 +6,7 @@ import logging
 import requests
 from dotenv import load_dotenv
 
-load_dotenv()
+load_dotenv(override=True)
 
 from services.schemas import (
     DestinationDetail, SmartDestinationInsight, TripPlan,
@@ -23,7 +23,8 @@ if not API_KEY:
 
 MODELS_TO_TRY = [
     "gemini-2.5-flash",
-    "gemini-flash-latest",
+    "gemini-2.0-flash",
+    "gemini-2.0-flash-lite",
 ]
 
 # Traveler type → behavioural prompt hint
@@ -155,7 +156,7 @@ def _flatten_schema(schema: dict, defs: dict = None) -> dict:
             schema.update(_flatten_schema(non_null[0], defs))
             schema["nullable"] = True
 
-    UNSUPPORTED = {"title", "default"}  # 'description' deliberately excluded
+    UNSUPPORTED = {"title", "default", "minimum", "maximum", "exclusiveMinimum", "exclusiveMaximum", "minLength", "maxLength", "pattern", "format"}  # 'description' deliberately excluded
 
     result = {}
     for k, v in schema.items():
@@ -168,9 +169,18 @@ def _flatten_schema(schema: dict, defs: dict = None) -> dict:
                     if rk not in UNSUPPORTED:
                         result[rk] = rv
             continue
-        result[k] = (_flatten_schema(v, defs) if isinstance(v, dict)
-                     else [_flatten_schema(i, defs) if isinstance(i, dict) else i for i in v]
-                     if isinstance(v, list) else v)
+        
+        # Format the value for Gemini
+        formatted_val = (_flatten_schema(v, defs) if isinstance(v, dict)
+                         else [_flatten_schema(i, defs) if isinstance(i, dict) else i for i in v]
+                         if isinstance(v, list) else v)
+        
+        # Gemini API strict uppercase type requirement
+        if k == "type" and isinstance(formatted_val, str):
+            formatted_val = formatted_val.upper()
+            
+        result[k] = formatted_val
+        
     return result
 
 
@@ -200,7 +210,7 @@ def _generate_content_http(prompt: str, model_name: str,
 
     for attempt in range(3):
         try:
-            resp = requests.post(url, headers=headers, json=payload, timeout=90)
+            resp = requests.post(url, headers=headers, json=payload, timeout=180)
 
             if resp.status_code == 200:
                 try:
@@ -217,7 +227,8 @@ def _generate_content_http(prompt: str, model_name: str,
                 raise RuntimeError(f"HTTP {resp.status_code} after {attempt+1} retries")
 
             elif resp.status_code == 400:
-                logger.warning("HTTP 400 on %s — retrying without responseSchema", model_name)
+                logger.error("HTTP 400 on %s. Body: %s", model_name, resp.text)
+                logger.warning("Failing back to responseSchema-less prompt.")
                 fallback_config  = {k: v for k, v in gen_config.items()
                                     if k not in ('responseMimeType', 'responseSchema')}
                 # FIX (LOW): Build a fresh payload dict — don't mutate the original

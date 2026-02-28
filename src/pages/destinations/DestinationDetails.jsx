@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, Link, useLocation, useNavigate } from 'react-router-dom';
-import { MapPin, Star, Calendar, CheckCircle, ArrowLeft, Sparkles } from 'lucide-react';
+import { useParams, Link } from 'react-router-dom';
+import { Star } from 'lucide-react';
 import { API_BASE_URL } from '../../config';
 import { DetailPageSkeleton } from '../../components/Skeleton/Skeleton';
 
@@ -9,13 +9,8 @@ import DestinationContent from '../../components/Destinations/DestinationContent
 
 const DestinationDetails = () => {
     const { id } = useParams();
-    const location = useLocation();
-    const navigate = useNavigate();
     const [destination, setDestination] = useState(null);
     const [loading, setLoading] = useState(true);
-
-    const backPath = location.state?.from || '/destinations';
-    const backLabel = location.state?.from ? 'Back to Planner' : 'Back to all destinations';
 
     // ... existing state ...
 
@@ -24,8 +19,6 @@ const DestinationDetails = () => {
     const [reviews, setReviews] = useState([]);
     const [newReview, setNewReview] = useState({ name: '', rating: 5, text: '' });
     const [hoverRating, setHoverRating] = useState(0);
-    const [visibleReviews, setVisibleReviews] = useState(3);
-    const [sortBy, setSortBy] = useState('newest');
 
     const [error, setError] = useState(null);
 
@@ -78,20 +71,6 @@ const DestinationDetails = () => {
         if (starCounts[rRating] !== undefined) starCounts[rRating]++;
     });
 
-    // Sorting Logic
-    const getSortedReviews = () => {
-        // Create copy to sort
-        const sorted = [...reviews];
-        if (sortBy === 'newest') {
-            return sorted;
-        } else if (sortBy === 'highest') {
-            return sorted.sort((a, b) => b.rating - a.rating);
-        } else if (sortBy === 'lowest') {
-            return sorted.sort((a, b) => a.rating - b.rating);
-        }
-        return sorted;
-    };
-
     const handleSubmitReview = (e) => {
         e.preventDefault();
         if (!newReview.name || !newReview.text) return;
@@ -121,10 +100,6 @@ const DestinationDetails = () => {
                 console.error("Failed to submit review:", err);
                 alert("Failed to submit review. Please try again.");
             });
-    };
-
-    const handleLoadMore = () => {
-        setVisibleReviews(prev => prev + 3);
     };
 
     if (loading) {

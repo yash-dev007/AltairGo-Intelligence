@@ -89,7 +89,6 @@ const TripPlannerPage = () => {
 
     // AI Decision Flags
     const [isAiRegionDecide, setIsAiRegionDecide] = useState(false);
-    const [isAiDestDecide, setIsAiDestDecide] = useState(false);
 
     // OSM Search State
     const [locationSuggestions, setLocationSuggestions] = useState([]);
@@ -625,52 +624,6 @@ const TripPlannerPage = () => {
         const filteredStates = availableStates.filter(s =>
             s.name.toLowerCase().includes(regionSearch.trim().toLowerCase())
         );
-
-        const handleAISelectRegions = async () => {
-            const btn = document.getElementById('ai-region-btn');
-            if (btn) {
-                btn.innerText = "Consulting Experts...";
-                btn.disabled = true;
-            }
-
-            try {
-                const aiSuggestions = await TripAI.recommendRegions(selectedCountry);
-                // aiSuggestions = [{ name, reason }]
-
-                const matchedIds = [];
-                const reasonMap = {};
-
-                aiSuggestions.forEach(sug => {
-                    // Match name to availableStates
-                    const match = availableStates.find(state => state.name.toLowerCase().includes(sug.name.toLowerCase()) || sug.name.toLowerCase().includes(state.name.toLowerCase()));
-                    if (match) {
-                        matchedIds.push(match.id);
-                        reasonMap[match.id] = sug.reason;
-                    }
-                });
-
-                if (matchedIds.length > 0) {
-                    setSelectedStates(matchedIds);
-                    setAiRegionReasons(reasonMap);
-                } else {
-                    // Fallback if AI names don't match our DB (rare but possible)
-                    if (availableStates.length > 0) {
-                        const shuffled = [...availableStates].sort(() => 0.5 - Math.random());
-                        const selected = shuffled.slice(0, 2).map(s => s.id);
-                        setSelectedStates(selected);
-                        alert("AI couldn't find exact matches in our database, so we picked some popular favorites!");
-                    }
-                }
-
-            } catch (e) {
-                console.error("AI Region Select Failed", e);
-            } finally {
-                if (btn) {
-                    btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg> Let AI Decide';
-                    btn.disabled = false;
-                }
-            }
-        };
 
         return (
             <>

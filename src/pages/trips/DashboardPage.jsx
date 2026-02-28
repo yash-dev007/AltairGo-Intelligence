@@ -34,7 +34,7 @@ const DashboardPage = () => {
             }
         };
         fetchTrips();
-    }, [user, loading, navigate]);
+    }, [user, loading, navigate, token]);
 
     // Show loading state while auth is being validated
     if (loading) {

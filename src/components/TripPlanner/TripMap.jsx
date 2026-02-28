@@ -64,7 +64,7 @@ async function geocodeQuery(query) {
         if (data && data.length > 0) {
             return [parseFloat(data[0].lat), parseFloat(data[0].lon)];
         }
-    } catch (e) {
+    } catch (e) { // eslint-disable-line no-unused-vars
         // silently fail
     }
     return null;

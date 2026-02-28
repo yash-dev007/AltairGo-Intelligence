@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import styles from './ItineraryTimeline.module.css';
 import {
     DndContext,
@@ -20,14 +20,11 @@ import ActivitySwapModal from './ActivitySwapModal';
 const ItineraryTimeline = ({ itinerary, onItineraryChange }) => {
     // 1. Add unique IDs to itinerary items if they don't have them
     // This is crucial for DnD to track items accurately
-    const [items, setItems] = useState([]);
-    const [activeId, setActiveId] = useState(null);
-
-    useEffect(() => {
-        // Flatten detailed_activities into sortable items if not already flat
+    const flattenItinerary = (sourceData) => {
         const flatItems = [];
-        if (itinerary.length > 0 && itinerary[0].detailed_activities) {
-            itinerary.forEach((dayItem, dayIdx) => {
+        if (!sourceData || sourceData.length === 0) return [];
+        if (sourceData[0].detailed_activities) {
+            sourceData.forEach((dayItem, dayIdx) => {
                 dayItem.detailed_activities.forEach((act, actIdx) => {
                     flatItems.push({
                         ...act,
@@ -39,16 +36,23 @@ const ItineraryTimeline = ({ itinerary, onItineraryChange }) => {
                     });
                 });
             });
-            setItems(flatItems);
+            return flatItems;
         } else {
-            // Already flat or simple structure
-            const enrichedItems = itinerary.map((item, idx) => ({
+            return sourceData.map((item, idx) => ({
                 ...item,
                 _id: item._id || `item-${Date.now()}-${idx}`
             }));
-            setItems(enrichedItems);
         }
-    }, [itinerary]);
+    };
+
+    const [prevItinerary, setPrevItinerary] = useState(itinerary);
+    const [items, setItems] = useState(() => flattenItinerary(itinerary));
+    const [activeId, setActiveId] = useState(null);
+
+    if (itinerary !== prevItinerary) {
+        setPrevItinerary(itinerary);
+        setItems(flattenItinerary(itinerary));
+    }
 
     const sensors = useSensors(
         useSensor(PointerSensor, {

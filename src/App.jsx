@@ -19,6 +19,22 @@ import DashboardPage from './pages/trips/DashboardPage';
 import AdminLogin from './pages/admin/AdminLogin';
 import AdminDashboard from './pages/admin/AdminDashboard';
 
+// Company Pages
+import AboutUsPage from './pages/company/AboutUsPage';
+import CareersPage from './pages/company/CareersPage';
+import PressPage from './pages/company/PressPage';
+import PartnersPage from './pages/company/PartnersPage';
+
+// Support Pages
+import HelpCenterPage from './pages/support/HelpCenterPage';
+import SafetyPage from './pages/support/SafetyPage';
+import CancellationPolicyPage from './pages/support/CancellationPolicyPage';
+
+// Legal Pages
+import PrivacyPolicyPage from './pages/legal/PrivacyPolicyPage';
+import TermsOfServicePage from './pages/legal/TermsOfServicePage';
+import CookiePolicyPage from './pages/legal/CookiePolicyPage';
+
 function AppLayout() {
   const location = useLocation();
   const isAdmin = location.pathname.startsWith('/admin');
@@ -49,6 +65,22 @@ function AppLayout() {
         {/* Admin Routes */}
         <Route path="/admin/login" element={<AdminLogin />} />
         <Route path="/admin" element={<AdminDashboard />} />
+
+        {/* Company Routes */}
+        <Route path="/about" element={<AboutUsPage />} />
+        <Route path="/careers" element={<CareersPage />} />
+        <Route path="/press" element={<PressPage />} />
+        <Route path="/partners" element={<PartnersPage />} />
+
+        {/* Support Routes */}
+        <Route path="/help" element={<HelpCenterPage />} />
+        <Route path="/safety" element={<SafetyPage />} />
+        <Route path="/cancellation" element={<CancellationPolicyPage />} />
+
+        {/* Legal Routes */}
+        <Route path="/privacy" element={<PrivacyPolicyPage />} />
+        <Route path="/terms" element={<TermsOfServicePage />} />
+        <Route path="/cookies" element={<CookiePolicyPage />} />
       </Routes>
       {!shouldHideLayout && <Footer />}
     </main>
