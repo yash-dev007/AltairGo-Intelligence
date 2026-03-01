@@ -18,6 +18,11 @@
 *   **🎟️ Affiliate & Booking System**: Seamless integration with booking services for attractions, stays, and flights via curated affiliate links.
 *   **🛡️ Admin Control Plane**: Dedicated dashboard for administrators to manage destination requests and site content.
 
+## 🆕 Recent Updates (March 2026)
+*   **Admin Panel UI Overhaul**: completely redesigned with a pristine white theme, live visitor charts, KPI stat cards, and full CRUD modals for destinations and content.
+*   **Enhanced QA & Testing**: Implemented a comprehensive automated test suite (`pytest`) for the AI itinerary generator, covering edge cases like multi-city trips and budget constraints.
+*   **Project Organization**: Cleaned up the file structure, removed legacy linting outputs, and established strict feature-based directory groupings.
+
 ## 🛠️ Tech Stack
 
 ### Frontend
