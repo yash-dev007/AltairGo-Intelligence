@@ -2,8 +2,9 @@ import os
 import sys
 from dotenv import load_dotenv
 
-sys.path.append('d:/AltairLabs/backend')
-load_dotenv('d:/AltairLabs/backend/.env')
+project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(project_root)
+load_dotenv(os.path.join(project_root, '.env'))
 
 from services.gemini_service import MODELS_TO_TRY, _generate_content_http, _extract_json_from_text
 from services.schemas import TripPlan

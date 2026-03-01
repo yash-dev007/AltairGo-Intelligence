@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>AltairGo Intelligence - Project Overview</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    line-height: 1.72;
+    color: #ccd6e0;
+    background: #1e1e2e;
+    padding: 44px 56px;
+    max-width: 1020px;
+    margin: 0 auto;
+    font-size: 13px;
+  }
+
+  /* ── Headings ── */
+  h1 {
+    font-size: 26px; font-weight: 700; color: #e2e8f0;
+    margin: 32px 0 10px; padding-bottom: 8px;
+    border-bottom: 3px solid #7c3aed;
+  }
+  h2 {
+    font-size: 19px; font-weight: 600; color: #c4b5fd;
+    margin: 28px 0 10px; padding-bottom: 5px;
+    border-bottom: 1px solid #3f3f5a;
+  }
+  h3 {
+    font-size: 15px; font-weight: 600; color: #a5b4fc;
+    margin: 20px 0 6px;
+  }
+  h4 {
+    font-size: 13.5px; font-weight: 600; color: #94a3b8;
+    margin: 14px 0 5px;
+  }
+
+  p  { margin: 5px 0; color: #b0bec5; }
+  strong { color: #e2e8f0; }
+
+  /* ── Blockquote ── */
+  blockquote {
+    border-left: 4px solid #7c3aed;
+    background: #2a2a3d;
+    padding: 12px 18px; margin: 14px 0;
+    border-radius: 0 8px 8px 0;
+    font-style: italic; color: #c4b5fd;
+  }
+
+  hr {
+    border: none; height: 1px;
+    background: linear-gradient(to right, #7c3aed, #3f3f5a, transparent);
+    margin: 24px 0;
+  }
+
+  /* ── Tables ── */
+  table {
+    width: 100%; border-collapse: collapse;
+    margin: 12px 0; font-size: 12.5px;
+    border-radius: 8px; overflow: hidden;
+    border: 1px solid #3f3f5a;
+  }
+  th {
+    background: #2d2d44; color: #c4b5fd;
+    padding: 10px 14px; text-align: left;
+    font-weight: 600; font-size: 12px;
+    border-bottom: 2px solid #7c3aed;
+  }
+  td {
+    padding: 8px 14px; border-bottom: 1px solid #2f2f45;
+    color: #b0bec5; vertical-align: top;
+  }
+  tr:nth-child(even) td { background: #252536; }
+  tr:hover td { background: #2a2a3d; }
+
+  /* ── Code ── */
+  code {
+    font-family: 'JetBrains Mono', monospace;
+    background: #2a2a3d; color: #a78bfa;
+    padding: 2px 6px; border-radius: 4px;
+    font-size: 12px;
+  }
+  pre {
+    background: #16161e; color: #a0aec0;
+    padding: 16px 20px; border-radius: 8px;
+    overflow-x: auto; margin: 12px 0;
+    font-size: 11.5px; line-height: 1.6;
+    border: 1px solid #2f2f45;
+  }
+  pre code {
+    background: none; color: inherit;
+    padding: 0; font-size: inherit;
+  }
+
+  /* ── Lists ── */
+  li {
+    margin: 4px 0 4px 24px; color: #b0bec5;
+  }
+  li::marker { color: #7c3aed; }
+
+  a { color: #a78bfa; text-decoration: none; }
+
+  /* ── Diagram boxes ── */
+  .diagram-box {
+    background: #252536;
+    border: 1px solid #3f3f5a;
+    border-radius: 8px; padding: 16px;
+    margin: 12px 0;
+  }
+  .diagram-box .diagram-label {
+    color: #7c3aed; font-weight: 600;
+    font-size: 12px; margin-bottom: 8px;
+    text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .diagram-box pre {
+    background: #1a1a2a; margin: 0;
+    border: none; font-size: 10.5px;
+    color: #8892b0;
+  }
+
+  /* ── Footer ── */
+  .doc-footer {
+    margin-top: 40px; padding-top: 16px;
+    border-top: 1px solid #3f3f5a;
+    text-align: center; color: #555; font-size: 11px;
+  }
+
+  @media print {
+    body { background: #1e1e2e; padding: 20px 30px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    pre  { border: 1px solid #3f3f5a; }
+    table { border: 1px solid #3f3f5a; }
+    h2 { page-break-after: avoid; }
+    pre, table { page-break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+<h1>AltairGo Intelligence — Complete Project Deep Dive</h1>
+
+<blockquote><strong>One-liner</strong>: An AI-powered travel planning platform that uses Google Gemini LLM to generate hyper-personalized, budget-accurate, day-by-day itineraries — with real images, affiliate monetization, and an admin control plane.</blockquote>
+
+<hr>
+
+<h2>1. Project Identity</h2>
+
+<table>
+<tr><th>Field</th><th>Value</th></tr>
+<tr><td><strong>Name</strong></td><td>AltairGo Intelligence</td></tr>
+<tr><td><strong>Repo</strong></td><td><code>yash-dev007/AltairGo-Intelligence</code></td></tr>
+<tr><td><strong>License</strong></td><td>MIT</td></tr>
+<tr><td><strong>Status</strong></td><td>In Active Development</td></tr>
+<tr><td><strong>Deployment Target</strong></td><td>Vercel (frontend SPA) + Flask server (backend)</td></tr>
+</table>
+
+
+<hr>
+
+<h2>2. Tech Stack</h2>
+
+<h3>Frontend</h3>
+<table>
+<tr><th>Layer</th><th>Technology</th></tr>
+<tr><td>Framework</td><td><strong>React 19</strong> (Vite 7)</td></tr>
+<tr><td>Routing</td><td>React Router DOM v7</td></tr>
+<tr><td>Styling</td><td>CSS Modules with Glassmorphism aesthetics</td></tr>
+<tr><td>Animation</td><td>Framer Motion</td></tr>
+<tr><td>Maps</td><td>Leaflet + React-Leaflet</td></tr>
+<tr><td>Drag & Drop</td><td>@dnd-kit (sortable activities)</td></tr>
+<tr><td>Icons</td><td>Lucide React</td></tr>
+<tr><td>State Mgmt</td><td>React Context API (<code>AuthContext</code>)</td></tr>
+<tr><td>API Layer</td><td>Native <code>fetch</code> via <code>TripAI.js</code> service</td></tr>
+</table>
+
+
+<h3>Backend</h3>
+<table>
+<tr><th>Layer</th><th>Technology</th></tr>
+<tr><td>Framework</td><td><strong>Python Flask</strong></td></tr>
+<tr><td>AI Engine</td><td>Google Gemini API (via REST HTTP, <code>gemini-2.0-flash</code>)</td></tr>
+<tr><td>Database</td><td><strong>SQLite</strong> (dev) / PostgreSQL (prod) via <strong>SQLAlchemy ORM</strong></td></tr>
+<tr><td>Auth</td><td><strong>Flask-JWT-Extended</strong> (7-day tokens, <code>werkzeug</code> password hashing)</td></tr>
+<tr><td>Validation</td><td><strong>Pydantic</strong> schemas + custom <code>ItineraryValidator</code></td></tr>
+<tr><td>Image Fetching</td><td>5-source priority chain (Cache → Wikipedia → Wikidata → Pexels → SVG Placeholder)</td></tr>
+<tr><td>Geo Services</td><td>OpenStreetMap Nominatim + Overpass API</td></tr>
+</table>
+
+
+<h3>DevOps / Config</h3>
+<table>
+<tr><th>Tool</th><th>Purpose</th></tr>
+<tr><td>Vite</td><td>Dev server with smart proxy (HTML bypass for SPA routes)</td></tr>
+<tr><td>Vercel</td><td>Frontend deployment (<code>vercel.json</code> SPA rewrites)</td></tr>
+<tr><td>Gunicorn</td><td>Production backend server</td></tr>
+<tr><td>dotenv</td><td>Environment variable management</td></tr>
+<tr><td>ESLint</td><td>Code quality</td></tr>
+</table>
+
+
+<hr>
+
+<h2>3. Architecture Overview</h2>
+
+<div class="diagram-box"><div class="diagram-label">Diagram (Mermaid notation)</div><pre>graph TB
+    subgraph Frontend["React 19 Frontend (Vite)"]
+        App["App.jsx — Router + Layout"]
+        Pages["20+ Page Components"]
+        Components["16 Component Groups"]
+        TripAI["TripAI.js — API Client"]
+        Auth["AuthContext — JWT State"]
+    end
+
+    subgraph Backend["Flask Backend"]
+        AppPy["app.py — Factory + Blueprint Registry"]
+        subgraph Routes["8 Blueprints"]
+            R1["auth — Register/Login/Me"]
+            R2["ai — Recommendations/Chat/Insights"]
+            R3["trips — CRUD + Itinerary Generation"]
+            R4["destinations — Countries/Regions/Destinations"]
+            R5["admin — Dashboard/CRUD/Analytics"]
+            R6["affiliates — Booking Tracking/Revenue"]
+            R7["content — Blogs/Packages"]
+            R8["subscribe — Newsletter"]
+        end
+        subgraph Services["5 Service Modules"]
+            S1["gemini_service — LLM Integration"]
+            S2["ai_destination_service — Destination Generation"]
+            S3["image_service — 5-Source Image Pipeline"]
+            S4["affiliate_service — URL Builder/Tracker/Revenue"]
+            S5["generation_service — OSM POI Discovery"]
+        end
+        subgraph Data["Data Layer"]
+            Models["10 SQLAlchemy Models"]
+            Schemas["20+ Pydantic Schemas"]
+            Validator["ItineraryValidator"]
+            DB["SQLite / PostgreSQL"]
+        end
+    end
+
+    subgraph External["External APIs"]
+        Gemini["Google Gemini API"]
+        Wiki["Wikipedia/Wikidata"]
+        Pexels["Pexels API"]
+        OSM["OpenStreetMap Nominatim"]
+        Overpass["Overpass API"]
+    end
+
+    Frontend --&gt;|REST JSON| Backend
+    S1 --&gt; Gemini
+    S3 --&gt; Wiki
+    S3 --&gt; Pexels
+    S5 --&gt; OSM
+    S5 --&gt; Overpass</pre></div>
+
+<hr>
+
+<h2>4. Database Schema (10 Models)</h2>
+
+<div class="diagram-box"><div class="diagram-label">Diagram (Mermaid notation)</div><pre>erDiagram
+    Country ||--o{ State : has
+    State ||--o{ Destination : has
+    Destination ||--o{ Attraction : has
+    Destination ||--o{ DestinationTip : has
+    User ||--o{ Trip : creates
+    User ||--o{ AnalyticsEvent : generates
+    User ||--o{ BookingClick : clicks
+
+    Country {
+        int id PK
+        string name UK
+        string code
+        string currency
+        string image
+    }
+    State {
+        int id PK
+        string name
+        string image
+        int country_id FK
+    }
+    Destination {
+        int id PK
+        string name
+        string slug
+        string desc
+        text description
+        string image
+        string location
+        string price_str
+        int estimated_cost_per_day
+        float rating
+        string tag
+        json highlights
+        json itinerary
+        json activities
+        json gallery_images
+        json best_time_months
+        json vibe_tags
+        int state_id FK
+    }
+    Attraction {
+        int id PK
+        string name
+        text description
+        int entry_cost
+        string duration
+        float rating
+        string type
+        int destination_id FK
+    }
+    DestinationTip {
+        int id PK
+        text tip
+        string category
+        bool is_ai_generated
+        int destination_id FK
+    }
+    DestinationRequest {
+        int id PK
+        string name
+        text description
+        int cost
+        string tag
+        string status
+        datetime created_at
+    }
+    Trip {
+        string id PK
+        string title
+        string destination_country
+        string start_city
+        int budget
+        int duration
+        int travelers
+        string style
+        string date_type
+        json itinerary_json
+        int total_cost
+        int user_id FK
+    }
+    User {
+        int id PK
+        string email UK
+        string password_hash
+        string name
+        datetime created_at
+    }
+    AnalyticsEvent {
+        int id PK
+        string event_type
+        json event_data
+        int user_id FK
+        datetime created_at
+    }
+    BookingClick {
+        int id PK
+        string link_type
+        string destination
+        string partner
+        string tracking_id UK
+        float estimated_revenue
+        bool is_converted
+        int user_id FK
+    }
+    Subscriber {
+        int id PK
+        string email UK
+        bool is_active
+        datetime subscribed_at
+    }</pre></div>
+
+<hr>
+
+<h2>5. Core Features — Deep Breakdown</h2>
+
+<h3>5.1 🤖 AI-Powered Itinerary Generation (The Heart of the App)</h3>
+
+<p><strong>Flow</strong>: User selects destinations → Sends preferences → Gemini generates day-by-day plan → Validator auto-corrects → Image enrichment → Response.</p>
+
+<p><strong>Pipeline Steps</strong>:</p>
+<li>1. <strong>Prompt Construction</strong> (<code>gemini_service.py</code>):</li>
+<li>Loads style-specific prompt templates (<code>base_template.txt</code>, <code>budget_trip.txt</code>, <code>luxury_trip.txt</code>, <code>multi_city.txt</code>)</li>
+<li>Injects user preferences: origin, country, budget, duration, style, dates, interests, traveler type</li>
+<li>Formats selected destination data for context injection</li>
+<li>Applies traveler-type behavioral hints (solo male, solo female, couple, family, etc.)</li>
+
+<li>2. <strong>Gemini API Call</strong> (<code>_generate_content_http</code>):</li>
+<li>Uses HTTP REST calls (not SDK) for <code>responseSchema</code> support</li>
+<li>Enforces <strong>structured JSON output</strong> via Pydantic schema flattening</li>
+<li>Model fallback chain: <code>gemini-2.0-flash</code> → <code>gemini-2.0-flash-lite</code></li>
+<li>Temperature control per function</li>
+<li>Retry logic with exponential backoff</li>
+
+<li>3. <strong>Validation Layer</strong> (<code>validation.py</code> — <code>ItineraryValidator</code>):</li>
+<li><strong>Budget Check</strong>: Verifies total_cost within ±5% of user budget; auto-scales all costs proportionally if over</li>
+<li><strong>Activity Count Check</strong>: Flags days with >5 activities as overpacked</li>
+<li><strong>Generic Name Detection</strong>: Regex patterns catch lazy AI output like "local market" or "beach" without specifics</li>
+<li><strong>Cost Consistency</strong>: Verifies individual day totals sum to ~total_cost (15% tolerance)</li>
+<li><strong>Required Fields</strong>: Ensures <code>trip_title</code>, <code>total_cost</code>, <code>itinerary</code> exist</li>
+
+<li>4. <strong>Image Enrichment</strong> (<code>image_service.py</code>):</li>
+<li>Attaches real images to itinerary days and the trip header</li>
+<li>Uses <code>image_keyword</code> from AI response as search term</li>
+<li>Fallback to Unsplash default if no keyword</li>
+
+<li>5. <strong>Analytics Logging</strong>: Every generation (success/failure/validation) logged to <code>AnalyticsEvent</code> table</li>
+
+<p><strong>Pydantic Schema</strong> (<code>schemas.py</code>) enforces this structure for Gemini output:</p>
+
+<table>
+<tr><th>Schema</th><th>Key Fields</th></tr>
+<tr><td><code>TripPlan</code></td><td>trip_title, total_cost, cost_breakdown, itinerary[], travel_between_cities[], smart_insights, packing_tips</td></tr>
+<tr><td><code>ItineraryDay</code></td><td>day, date, location, theme, pacing_level, activities[], accommodation, day_total, travel_hours, intensity_score</td></tr>
+<tr><td><code>ActivityList</code></td><td>time, time_range, activity, description, why_this_fits, local_secret, cost, how_to_reach, crowd_level, meal_type, google_maps_search_query</td></tr>
+<tr><td><code>AccommodationConfig</code></td><td>name, type (enum), cost_per_night, location, why_this, booking_tip</td></tr>
+<tr><td><code>InterCityTravel</code></td><td>day, from_city, to_city, method, duration, travel_class, cost, alternative</td></tr>
+</table>
+
+
+<h3>5.2 🏗️ AI Destination Architect</h3>
+
+<p><strong>What it does</strong>: Users can suggest new destinations. The system uses AI to validate and enrich destination details before admin approval.</p>
+
+<li><code>DestinationRequest</code> model tracks submissions (pending → approved → rejected)</li>
+<li>AI generates full destination profiles via <code>ai_destination_service.py</code></li>
+<li>SQLite-based <strong>caching layer</strong> (60-day TTL) prevents redundant API calls</li>
+<li>Model fallback chain with 3 retries per model</li>
+<li>Response validation: normalizes costs (<code>_parse_cost</code> handles "₹500", "Free", "500-1000"), checks required fields</li>
+<li>Auto-attaches images via the image pipeline</li>
+
+<h3>5.3 🌍 Smart Destination Discovery (OSM Integration)</h3>
+
+<p><code>generation_service.py</code> provides an alternative, data-driven destination discovery:</p>
+
+<li>1. <strong>Geocode</strong> city name → (lat, lon) via Nominatim</li>
+<li>2. <strong>Fetch POIs</strong> within 5km radius via Overpass API (tourism attractions, historic sites, parks, museums)</li>
+<li>3. <strong>Score</strong> each POI based on tags (Wikipedia link = +5, Wikidata = +3, website = +2, etc.)</li>
+<li>4. <strong>Parallel image fetch</strong> for top 10 scored POIs using ThreadPoolExecutor</li>
+<li>5. <strong>Store</strong> as <code>Destination</code> records in the database</li>
+
+<h3>5.4 📸 5-Source Image Pipeline</h3>
+
+<p><code>image_service.py</code> (660 lines) — the most sophisticated service:</p>
+
+<table>
+<tr><th>Priority</th><th>Source</th><th>How</th></tr>
+<tr><td>1</td><td><strong>SQLite Cache</strong></td><td>Instant lookup, 60-day TTL</td></tr>
+<tr><td>2</td><td><strong>Wikipedia REST</strong></td><td>Page summary API → main image</td></tr>
+<tr><td>3</td><td><strong>Wikidata P18</strong></td><td>Direct property lookup → Commons CDN</td></tr>
+<tr><td>4</td><td><strong>Pexels</strong></td><td>Rate-limited search (200/hr, 20k/month) with smart query building</td></tr>
+<tr><td>5</td><td><strong>SVG Placeholder</strong></td><td>Deterministic emoji-based SVG data URIs by category</td></tr>
+</table>
+
+
+<p>Features:</p>
+<li><strong>Smart query builder</strong>: Uses landmark knowledge map → type keywords → location context</li>
+<li><strong>Rate limiter</strong>: Pexels calls tracked with thread-safe counter</li>
+<li><strong>Batch helper</strong>: <code>get_images_batch()</code> with configurable delay between requests</li>
+<li><strong>Wikipedia search fallback</strong>: If direct lookup fails, searches for article first</li>
+
+<h3>5.5 🎟️ Affiliate & Booking System</h3>
+
+<p>Complete monetization pipeline:</p>
+
+<li><strong><code>AffiliateURLBuilder</code></strong>: Constructs partner-specific URLs with UTM params and tracking IDs</li>
+<li><strong><code>ClickTracker</code></strong>: Records every click to <code>BookingClick</code> table with user agent, IP, referrer</li>
+<li><strong><code>RevenueCalculator</code></strong>: Probabilistic revenue estimation per click</li>
+<li>Commission rates: Flight 3%, Hotel 5%, Activity 10%</li>
+<li>Conversion rate: 8%</li>
+<li>Average booking values: Flight ₹8,000, Hotel ₹6,000, Activity ₹2,000</li>
+<li><strong>Partners configured</strong>: MakeMyTrip, Booking.com</li>
+<li><strong>Admin stats endpoint</strong>: Aggregated clicks, revenue, breakdowns</li>
+
+<h3>5.6 🔐 Authentication System</h3>
+
+<li><strong>JWT-based</strong> (Flask-JWT-Extended, 7-day token expiry)</li>
+<li>Endpoints: <code>/auth/register</code>, <code>/auth/login</code>, <code>/auth/me</code></li>
+<li>Password hashing via <code>werkzeug.security</code></li>
+<li>Frontend: <code>AuthContext.jsx</code> with safe localStorage wrapper (handles cross-origin errors)</li>
+<li>Protected routes: Trip save, user dashboard</li>
+<li>Optional JWT extraction for analytics (guest users can still generate itineraries)</li>
+
+<h3>5.7 🛡️ Admin Control Plane</h3>
+
+<p>Full admin dashboard with access-key authentication:</p>
+
+<table>
+<tr><th>Endpoint</th><th>Function</th></tr>
+<tr><td><code>POST /api/admin/verify-key</code></td><td>Verify admin access key</td></tr>
+<tr><td><code>GET /api/admin/stats</code></td><td>Dashboard overview stats</td></tr>
+<tr><td><code>GET/PUT/DELETE /api/admin/destinations</code></td><td>CRUD destinations</td></tr>
+<tr><td><code>GET /api/admin/blogs</code></td><td>Manage blog content</td></tr>
+<tr><td><code>GET /api/admin/packages</code></td><td>Manage travel packages</td></tr>
+<tr><td><code>GET /api/admin/users</code></td><td>User management</td></tr>
+<tr><td><code>GET /api/admin/trips</code></td><td>View all trips</td></tr>
+<tr><td><code>GET /api/admin/requests</code></td><td>Destination request queue</td></tr>
+<tr><td><code>POST /api/admin/requests/:id/approve</code></td><td>Approve → creates Destination</td></tr>
+<tr><td><code>POST /api/admin/requests/:id/reject</code></td><td>Reject request</td></tr>
+<tr><td><code>GET /api/admin/visitors</code></td><td>Real-time visitor tracking</td></tr>
+<tr><td><code>GET /api/admin/analytics/events</code></td><td>Event log viewer</td></tr>
+<tr><td><code>GET /api/admin/analytics/summary</code></td><td>Event counts by type</td></tr>
+</table>
+
+
+<h3>5.8 💬 AI Chat Agent</h3>
+
+<li>Users can chat with a travel-knowledgeable AI assistant</li>
+<li>Context-aware responses using destination database</li>
+<li>Endpoint: <code>/chat</code> → <code>gemini_service.chat_with_data()</code></li>
+<li>Frontend: <code>ChatWidget</code> component (always accessible)</li>
+
+<h3>5.9 📅 Flexible Date Planning</h3>
+
+<p>Three scheduling modes:</p>
+<li>1. <strong>Fixed Dates</strong>: Calendar integration with start/end dates</li>
+<li>2. <strong>Duration-Based</strong>: "10 days in October" (month + duration)</li>
+<li>3. <strong>Anytime</strong>: Exploratory planning, no date constraints</li>
+
+<h3>5.10 💰 Dynamic Budget Intelligence</h3>
+
+<li>Real-time budget estimation from selected destinations</li>
+<li>Style multipliers: Budget ×0.7, Standard ×1.0, Luxury ×1.5</li>
+<li>Cost breakdown: Transport 20%, Accommodation 35%, Food 25%, Activities 15%, Misc 5%</li>
+<li>Endpoint: <code>/calculate-budget</code></li>
+<li>Post-generation validation auto-scales overbudget itineraries</li>
+
+<hr>
+
+<h2>6. Frontend Architecture</h2>
+
+<h3>Page Structure (20+ Routes)</h3>
+
+<pre><code>/                     → Home (Hero + Features + Destinations + Blogs)
+/destinations         → DestinationsPage (Browse all)
+/destinations/:id     → DestinationDetails
+/destination/:id      → DestinationDetailsPage (alternate)
+/plan-trip            → TripPlannerPage (THE main feature)
+/trip/:tripId         → TripViewerPage (saved itineraries)
+/booking              → BookingPage (affiliate links)
+/blogs                → BlogsPage
+/blogs/:id            → BlogDetails
+/packages             → PackagesPage
+/packages/:id         → PackageDetails
+/login                → LoginPage
+/register             → RegisterPage
+/dashboard            → DashboardPage (user's saved trips)
+/admin/login          → AdminLogin
+/admin                → AdminDashboard
+/about                → AboutUsPage
+/careers              → CareersPage
+/press                → PressPage
+/partners             → PartnersPage
+/help                 → HelpCenterPage
+/safety               → SafetyPage
+/cancellation         → CancellationPolicyPage
+/privacy              → PrivacyPolicyPage
+/terms                → TermsOfServicePage
+/cookies              → CookiePolicyPage</code></pre>
+
+<h3>Component Library (16 Groups)</h3>
+
+<table>
+<tr><th>Component</th><th>Purpose</th></tr>
+<tr><td><code>Hero/</code></td><td>Landing page hero section (6 files)</td></tr>
+<tr><td><code>Navbar/</code></td><td>Global navigation bar</td></tr>
+<tr><td><code>Footer/</code></td><td>Global footer with links</td></tr>
+<tr><td><code>TripPlanner/</code></td><td><strong>17 files</strong> — The main trip planning wizard</td></tr>
+<tr><td><code>Destinations/</code></td><td>Destination browsing grid</td></tr>
+<tr><td><code>DestinationCard/</code></td><td>Individual destination card</td></tr>
+<tr><td><code>AddDestinationModal/</code></td><td>"Architect" — suggest new destinations</td></tr>
+<tr><td><code>Packages/</code></td><td>Travel package cards</td></tr>
+<tr><td><code>Blogs/</code></td><td>Blog card/listing components</td></tr>
+<tr><td><code>Booking/</code></td><td>Booking flow UI</td></tr>
+<tr><td><code>ChatWidget/</code></td><td>AI chat floating widget</td></tr>
+<tr><td><code>Features/</code></td><td>Feature showcase section</td></tr>
+<tr><td><code>AboutUs/</code></td><td>Company about section</td></tr>
+<tr><td><code>Skeleton/</code></td><td>Loading skeleton animations</td></tr>
+<tr><td><code>LoadingOverlay/</code></td><td>Full-screen loading state</td></tr>
+<tr><td><code>ErrorBoundary/</code></td><td>React error boundary</td></tr>
+</table>
+
+
+<h3>TripPlanner Sub-Components (The Core Feature)</h3>
+
+<table>
+<tr><th>File</th><th>Role</th></tr>
+<tr><td><code>ModernItineraryView.jsx</code></td><td>Main itinerary display (20KB — largest component)</td></tr>
+<tr><td><code>DateSelectionModal.jsx</code></td><td>Calendar + flexible date picker</td></tr>
+<tr><td><code>BudgetSelectionModal.jsx</code></td><td>Budget range + style selection</td></tr>
+<tr><td><code>AIDestinationDetailsModal.jsx</code></td><td>AI-generated destination deep-dive</td></tr>
+<tr><td><code>DestinationCard.jsx</code></td><td>Destination selection cards</td></tr>
+<tr><td><code>TripOptions.jsx</code></td><td>Trip configuration panel</td></tr>
+<tr><td><code>ItineraryTimeline.jsx</code></td><td>Day-by-day timeline view</td></tr>
+<tr><td><code>TripMap.jsx</code></td><td>Leaflet map with route visualization</td></tr>
+<tr><td><code>BookingSection.jsx</code></td><td>Integrated booking links</td></tr>
+<tr><td><code>SortableActivityItem.jsx</code></td><td>Drag-and-drop activity reordering</td></tr>
+<tr><td><code>SortableDayColumn.jsx</code></td><td>Drag-and-drop day reordering</td></tr>
+<tr><td><code>ActivitySwapModal.jsx</code></td><td>Swap activities between days</td></tr>
+</table>
+
+
+<hr>
+
+<h2>7. API Endpoints (Complete Map)</h2>
+
+<h3>Auth (<code>/auth</code>)</h3>
+<table>
+<tr><th>Method</th><th>Path</th><th>Auth</th><th>Description</th></tr>
+<tr><td>POST</td><td><code>/auth/register</code></td><td>—</td><td>Create account</td></tr>
+<tr><td>POST</td><td><code>/auth/login</code></td><td>—</td><td>Login → JWT token</td></tr>
+<tr><td>GET</td><td><code>/auth/me</code></td><td>JWT</td><td>Current user profile</td></tr>
+</table>
+
+
+<h3>AI (<code>/</code>)</h3>
+<table>
+<tr><th>Method</th><th>Path</th><th>Auth</th><th>Description</th></tr>
+<tr><td>POST</td><td><code>/recommend-destinations</code></td><td>—</td><td>AI recommends destinations for country/regions</td></tr>
+<tr><td>POST</td><td><code>/recommend-regions</code></td><td>—</td><td>AI recommends regions for a country</td></tr>
+<tr><td>POST</td><td><code>/destination-details-ai</code></td><td>—</td><td>AI deep-dive on a destination</td></tr>
+<tr><td>POST</td><td><code>/calculate-budget</code></td><td>—</td><td>Dynamic budget calculation</td></tr>
+<tr><td>POST</td><td><code>/smart-insight</code></td><td>—</td><td>AI trip composition insights</td></tr>
+<tr><td>POST</td><td><code>/chat</code></td><td>—</td><td>Chat with AI agent</td></tr>
+<tr><td>POST</td><td><code>/generate-destination</code></td><td>—</td><td>Generate new AI destination</td></tr>
+</table>
+
+
+<h3>Trips (<code>/</code>)</h3>
+<table>
+<tr><th>Method</th><th>Path</th><th>Auth</th><th>Description</th></tr>
+<tr><td>POST</td><td><code>/generate-itinerary</code></td><td>Optional</td><td>Generate day-by-day AI itinerary</td></tr>
+<tr><td>POST</td><td><code>/api/save-trip</code></td><td>JWT</td><td>Save trip to user account</td></tr>
+<tr><td>GET</td><td><code>/get-trip/:tripId</code></td><td>—</td><td>Retrieve saved trip</td></tr>
+<tr><td>GET</td><td><code>/api/user/trips</code></td><td>JWT</td><td>List user's trips</td></tr>
+<tr><td>POST</td><td><code>/api/feedback</code></td><td>Optional</td><td>Submit itinerary feedback</td></tr>
+</table>
+
+
+<h3>Destinations (<code>/</code>)</h3>
+<table>
+<tr><th>Method</th><th>Path</th><th>Auth</th><th>Description</th></tr>
+<tr><td>GET</td><td><code>/countries</code></td><td>—</td><td>List all countries</td></tr>
+<tr><td>GET</td><td><code>/regions</code></td><td>—</td><td>List regions for a country</td></tr>
+<tr><td>GET/POST</td><td><code>/destinations</code></td><td>—</td><td>List/filter destinations</td></tr>
+<tr><td>GET</td><td><code>/destinations/:id</code></td><td>—</td><td>Destination detail + attractions</td></tr>
+<tr><td>POST</td><td><code>/destinations/:id/reviews</code></td><td>—</td><td>Add review</td></tr>
+<tr><td>POST</td><td><code>/api/populate-region/:id</code></td><td>—</td><td>AI-populate a region with destinations</td></tr>
+<tr><td>POST</td><td><code>/api/destination-request</code></td><td>—</td><td>Submit new destination request</td></tr>
+</table>
+
+
+<h3>Admin (<code>/api/admin</code>)</h3>
+<table>
+<tr><th>Method</th><th>Path</th><th>Auth</th><th>Description</th></tr>
+<tr><td>POST</td><td><code>/api/admin/verify-key</code></td><td>Admin Key</td><td>Authenticate admin</td></tr>
+<tr><td>GET</td><td><code>/api/admin/stats</code></td><td>Admin</td><td>Dashboard stats</td></tr>
+<tr><td>GET/PUT/DELETE</td><td><code>/api/admin/destinations</code></td><td>Admin</td><td>Full CRUD</td></tr>
+<tr><td>GET</td><td><code>/api/admin/users</code></td><td>Admin</td><td>User list</td></tr>
+<tr><td>GET</td><td><code>/api/admin/trips</code></td><td>Admin</td><td>All trips</td></tr>
+<tr><td>GET/POST</td><td><code>/api/admin/requests</code></td><td>Admin</td><td>Destination requests</td></tr>
+<tr><td>GET</td><td><code>/api/admin/visitors</code></td><td>Admin</td><td>Visitor analytics</td></tr>
+<tr><td>GET</td><td><code>/api/admin/analytics/*</code></td><td>Admin</td><td>Event logs & summaries</td></tr>
+</table>
+
+
+<h3>Affiliates (<code>/api</code>)</h3>
+<table>
+<tr><th>Method</th><th>Path</th><th>Auth</th><th>Description</th></tr>
+<tr><td>GET</td><td><code>/api/book/:type</code></td><td>—</td><td>Track click → redirect to partner</td></tr>
+<tr><td>GET</td><td><code>/api/admin/affiliate-stats</code></td><td>Admin</td><td>Revenue analytics</td></tr>
+</table>
+
+
+<h3>Content (<code>/</code>)</h3>
+<table>
+<tr><th>Method</th><th>Path</th><th>Auth</th><th>Description</th></tr>
+<tr><td>GET</td><td><code>/blogs</code></td><td>—</td><td>Blog listings</td></tr>
+<tr><td>GET</td><td><code>/packages</code></td><td>—</td><td>Package listings</td></tr>
+</table>
+
+
+<hr>
+
+<h2>8. Data Flow — Trip Planning Workflow</h2>
+
+<div class="diagram-box"><div class="diagram-label">Diagram (Mermaid notation)</div><pre>sequenceDiagram
+    participant U as User (Browser)
+    participant FE as React Frontend
+    participant BE as Flask Backend
+    participant AI as Gemini API
+    participant IMG as Image Pipeline
+    participant DB as SQLite/PostgreSQL
+
+    U-&gt;&gt;FE: 1. Select Country
+    FE-&gt;&gt;BE: GET /countries
+    BE-&gt;&gt;DB: Query Countries
+    DB--&gt;&gt;BE: Country list
+    BE--&gt;&gt;FE: JSON countries
+
+    U-&gt;&gt;FE: 2. Choose Regions
+    FE-&gt;&gt;BE: POST /recommend-regions
+    BE-&gt;&gt;AI: Generate region recommendations
+    AI--&gt;&gt;BE: Region list + reasoning
+    BE-&gt;&gt;IMG: Attach images
+    IMG--&gt;&gt;BE: Enriched regions
+    BE--&gt;&gt;FE: Regions with images
+
+    U-&gt;&gt;FE: 3. Select Destinations
+    FE-&gt;&gt;BE: POST /recommend-destinations
+    BE-&gt;&gt;AI: Generate destination suggestions
+    AI--&gt;&gt;BE: Destinations + details
+    BE--&gt;&gt;FE: Destination cards
+
+    U-&gt;&gt;FE: 4. Set Preferences (budget, dates, style, interests)
+
+    U-&gt;&gt;FE: 5. Generate Itinerary
+    FE-&gt;&gt;BE: POST /generate-itinerary
+    BE-&gt;&gt;DB: Fetch selected destination data
+    DB--&gt;&gt;BE: Destination records
+    BE-&gt;&gt;AI: Structured prompt + schema
+    AI--&gt;&gt;BE: Full itinerary JSON
+    BE-&gt;&gt;BE: ItineraryValidator (budget/quality checks)
+    BE-&gt;&gt;IMG: Enrich with images
+    IMG--&gt;&gt;BE: Images attached
+    BE-&gt;&gt;DB: Log AnalyticsEvent
+    BE--&gt;&gt;FE: Complete itinerary
+
+    U-&gt;&gt;FE: 6. View &amp; Customize
+    Note over FE: Drag-drop activities, swap days, view map
+
+    U-&gt;&gt;FE: 7. Save Trip
+    FE-&gt;&gt;BE: POST /api/save-trip (JWT)
+    BE-&gt;&gt;DB: Insert Trip record
+    DB--&gt;&gt;BE: Trip ID
+    BE--&gt;&gt;FE: Confirmation + share link</pre></div>
+
+<hr>
+
+<h2>9. Environment Variables</h2>
+
+<pre><code># Backend (.env in /backend/)
+GEMINI_API_KEY=&lt;Google Gemini API key&gt;
+JWT_SECRET_KEY=&lt;secret for JWT signing&gt;
+DATABASE_URL=sqlite:///travel.db          # or postgresql://...
+ADMIN_ACCESS_KEY=altair-admin-2026
+PEXELS_API_KEY=&lt;optional, for image fetching&gt;
+VALIDATION_STRICT=true                    # auto-scale overbudget itineraries
+SECRET_KEY=&lt;Flask session secret&gt;
+
+# Frontend (.env in root)
+VITE_API_URL=                             # empty for dev (uses Vite proxy), set for production</code></pre>
+
+<hr>
+
+<h2>10. How to Run</h2>
+
+<pre><code># 1. Backend
+cd backend
+pip install -r requirements.txt
+# Create .env with API keys
+python app.py                             # → http://localhost:5000
+
+# 2. Frontend
+cd ..   # project root
+npm install
+npm run dev                               # → http://localhost:5173 (proxied to backend)
+
+# 3. Production Build
+npm run build                             # → /dist/ folder
+# Backend serves /dist/ as SPA fallback</code></pre>
+
+<hr>
+
+<h2>11. Project File Map</h2>
+
+<pre><code>AltairGo-Intelligence/
+├── backend/
+│   ├── app.py                      # Flask app factory, 8 blueprints, JWT, CORS, SPA fallback
+│   ├── database.py                 # SQLAlchemy engine, session, init_db()
+│   ├── models.py                   # 10 SQLAlchemy models (Country→Subscriber)
+│   ├── validation.py               # ItineraryValidator (budget, quality, consistency)
+│   ├── migrate_v1_init.py          # Initial data seeding script
+│   ├── requirements.txt            # flask, sqlalchemy, google-genai, flask-jwt-extended...
+│   ├── routes/
+│   │   ├── auth.py                 # Register, Login, Me (JWT)
+│   │   ├── ai.py                   # 7 AI endpoints (recommend, chat, insight, generate)
+│   │   ├── trips.py                # Itinerary generation, CRUD, feedback
+│   │   ├── destinations.py         # Countries, regions, destinations, reviews, requests
+│   │   ├── admin.py                # 15+ admin endpoints + analytics
+│   │   ├── affiliates.py           # Booking redirect + revenue stats
+│   │   ├── content.py              # Blog/package content API
+│   │   └── subscribe.py            # Newsletter subscription
+│   ├── services/
+│   │   ├── gemini_service.py       # Core Gemini integration (478 lines)
+│   │   ├── ai_destination_service.py # AI destination generation + cache (669 lines)
+│   │   ├── image_service.py        # 5-source image pipeline (660 lines)
+│   │   ├── affiliate_service.py    # URL builder, click tracker, revenue calculator
+│   │   ├── generation_service.py   # OSM/Overpass POI discovery + scoring
+│   │   └── schemas.py             # 20+ Pydantic schemas for AI output
+│   ├── prompts/
+│   │   ├── base_template.txt       # Master prompt (170 lines, few-shot examples)
+│   │   ├── budget_trip.txt         # Budget-specific prompt overlay
+│   │   ├── luxury_trip.txt         # Luxury-specific prompt overlay
+│   │   └── multi_city.txt          # Multi-city routing prompt
+│   ├── data/                       # Static data files
+│   └── tests/                      # pytest test suite
+│
+├── src/
+│   ├── App.jsx                     # React Router (20+ routes, conditional layout)
+│   ├── main.jsx                    # React entry point
+│   ├── config.js                   # API_BASE_URL configuration
+│   ├── index.css                   # Global styles
+│   ├── context/
+│   │   └── AuthContext.jsx         # JWT auth state management
+│   ├── services/
+│   │   └── TripAI.js              # 9-method API client for backend
+│   ├── components/
+│   │   ├── TripPlanner/            # 17 files — core trip planning wizard
+│   │   ├── Hero/                   # Landing hero (6 files)
+│   │   ├── Navbar/, Footer/        # Global layout
+│   │   ├── ChatWidget/             # AI chat floating widget
+│   │   ├── Destinations/, DestinationCard/
+│   │   ├── Packages/, Blogs/
+│   │   ├── Booking/
+│   │   ├── AddDestinationModal/    # Destination Architect
+│   │   ├── Skeleton/, LoadingOverlay/, ErrorBoundary/
+│   │   └── Features/, AboutUs/
+│   ├── pages/
+│   │   ├── Home.jsx
+│   │   ├── trips/                  # TripPlannerPage, TripViewerPage, DashboardPage
+│   │   ├── destinations/           # Browse, detail pages (5 files)
+│   │   ├── auth/                   # Login, Register
+│   │   ├── admin/                  # Admin login + dashboard
+│   │   ├── booking/                # Booking page
+│   │   ├── blogs/, packages/       # Content pages
+│   │   ├── company/                # About, Careers, Press, Partners
+│   │   ├── support/                # Help, Safety, Cancellation
+│   │   └── legal/                  # Privacy, Terms, Cookies
+│   └── data/                       # Static data (blogs.js, destinations.js, packages.js)
+│
+├── public/                         # Static assets
+├── vite.config.js                  # Smart proxy config (HTML bypass for SPA routes)
+├── vercel.json                     # SPA rewrite rules
+├── package.json                    # React 19, Vite 7, Framer Motion, Leaflet, dnd-kit
+└── README.md</code></pre>
+
+<hr>
+
+<h2>12. Key Differentiators / Unique Technical Aspects</h2>
+
+<li>1. <strong>Structured AI Output</strong>: Uses Gemini's <code>responseSchema</code> with flattened Pydantic schemas — not just free-text generation</li>
+<li>2. <strong>Post-Generation Validation</strong>: Custom <code>ItineraryValidator</code> catches and auto-corrects budget overruns, generic names, and inconsistent costs</li>
+<li>3. <strong>5-Source Image Pipeline</strong>: Cache → Wikipedia → Wikidata → Pexels → SVG — ensures every destination always has an image</li>
+<li>4. <strong>Smart Proxy Architecture</strong>: Vite config distinguishes HTML navigation (→ React SPA) from API calls (→ Flask) on conflicting routes like <code>/destinations</code></li>
+<li>5. <strong>Prompt Engineering</strong>: 170-line master prompt with few-shot examples, strict rules, and budget math instructions</li>
+<li>6. <strong>OSM Integration</strong>: Real POI discovery using Overpass API with relevance scoring algorithm</li>
+<li>7. <strong>Affiliate Revenue Layer</strong>: Complete click tracking → estimated revenue pipeline with per-partner URL construction</li>
+<li>8. <strong>Traveler-Type Awareness</strong>: Different prompt hints for solo male, solo female, couple, family, group, elderly travelers</li>
+
+<div class="doc-footer">AltairGo Intelligence &mdash; Project Deep Dive &bull; March 2026</div>
+</body>
+</html>

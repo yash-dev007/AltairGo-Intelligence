@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>AltairGo Intelligence — QA Bug Report</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    line-height: 1.72;
+    color: #ccd6e0;
+    background: #1e1e2e;
+    padding: 44px 56px;
+    max-width: 1080px;
+    margin: 0 auto;
+    font-size: 13.5px;
+  }
+
+  h1 {
+    font-size: 28px; font-weight: 700; color: #e2e8f0;
+    margin: 32px 0 10px; padding-bottom: 8px;
+    border-bottom: 3px solid #7c3aed;
+  }
+  h2 {
+    font-size: 20px; font-weight: 600; color: #c4b5fd;
+    margin: 32px 0 12px; padding-bottom: 5px;
+    border-bottom: 1px solid #3f3f5a;
+  }
+  h3 {
+    font-size: 15px; font-weight: 600; color: #a5b4fc;
+    margin: 20px 0 8px;
+  }
+
+  p  { margin: 6px 0; color: #b0bec5; }
+  strong { color: #e2e8f0; }
+  em { color: #94a3b8; }
+
+  blockquote {
+    border-left: 4px solid #7c3aed;
+    background: #2a2a3d;
+    padding: 14px 20px; margin: 16px 0;
+    border-radius: 0 8px 8px 0;
+    color: #c4b5fd;
+  }
+
+  hr {
+    border: none; height: 1px;
+    background: linear-gradient(to right, #7c3aed, #3f3f5a, transparent);
+    margin: 28px 0;
+  }
+
+  /* Tables */
+  table {
+    width: 100%; border-collapse: collapse;
+    margin: 14px 0; font-size: 13px;
+    border: 1px solid #3f3f5a;
+    border-radius: 8px; overflow: hidden;
+  }
+  th {
+    background: #2d2d44; color: #c4b5fd;
+    padding: 11px 14px; text-align: left;
+    font-weight: 600; font-size: 12px;
+    border-bottom: 2px solid #7c3aed;
+  }
+  td {
+    padding: 9px 14px; border-bottom: 1px solid #2f2f45;
+    color: #b0bec5; vertical-align: top;
+  }
+  tr:nth-child(even) td { background: #252536; }
+  tr:hover td { background: #2a2a3d; }
+
+  /* Code */
+  code {
+    font-family: 'JetBrains Mono', monospace;
+    background: #2a2a3d; color: #a78bfa;
+    padding: 2px 6px; border-radius: 4px; font-size: 12px;
+  }
+
+  /* Lists */
+  li { margin: 5px 0 5px 24px; color: #b0bec5; }
+  li::marker { color: #7c3aed; }
+  ul, ol { margin: 6px 0; }
+
+  a { color: #a78bfa; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  /* Verdict banner */
+  .verdict {
+    background: linear-gradient(135deg, #1a3a2a 0%, #1e2e1e 100%);
+    border: 1px solid #2d6a4f;
+    border-radius: 10px;
+    padding: 16px 24px;
+    margin: 18px 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #52b788;
+  }
+
+  /* Severity badges */
+  .sev-high   { color: #ff6b6b; font-weight: 600; }
+  .sev-med    { color: #ffd43b; font-weight: 600; }
+  .sev-low    { color: #51cf66; font-weight: 600; }
+
+  /* Screenshot gallery */
+  .screenshot-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin: 18px 0;
+  }
+  .screenshot-card {
+    background: #252536;
+    border: 1px solid #3f3f5a;
+    border-radius: 10px;
+    overflow: hidden;
+    transition: transform 0.2s;
+  }
+  .screenshot-card:hover { transform: translateY(-3px); }
+  .screenshot-card img {
+    width: 100%;
+    display: block;
+    border-bottom: 1px solid #3f3f5a;
+  }
+  .screenshot-card .caption {
+    padding: 10px 14px;
+    font-size: 12px;
+    color: #94a3b8;
+    font-weight: 500;
+  }
+
+  /* Status pill */
+  .status-pass { background: #2d6a4f; color: #52b788; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+  .status-warn { background: #5a4a20; color: #ffd43b; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+
+  /* Recommendation cards */
+  .rec-card {
+    background: #252536;
+    border-left: 4px solid #7c3aed;
+    border-radius: 0 8px 8px 0;
+    padding: 14px 18px;
+    margin: 10px 0;
+  }
+  .rec-card strong { color: #c4b5fd; }
+
+  .doc-footer {
+    margin-top: 40px; padding-top: 16px;
+    border-top: 1px solid #3f3f5a;
+    text-align: center; color: #555; font-size: 11px;
+  }
+
+  @media print {
+    body { background: #1e1e2e; padding: 20px 30px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .screenshot-grid { grid-template-columns: 1fr; }
+    h2 { page-break-after: avoid; }
+    table { page-break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<h1>AltairGo Intelligence &mdash; Full Manual QA Report</h1>
+
+<blockquote>
+  <strong>Date:</strong> March 1, 2026 &nbsp;&bull;&nbsp;
+  <strong>Tested on:</strong> localhost (Vite :5173 &rarr; Flask :5000) &nbsp;&bull;&nbsp;
+  <strong>Method:</strong> Automated browser QA
+</blockquote>
+
+<div class="verdict">&#9989; Overall Verdict: Stable with Minor Issues</div>
+
+<p>The application is <strong>visually polished and functionally stable</strong> across all pages. The only blocking issue is the <code>/recommend-destinations</code> API being slow (~45 seconds due to sequential Wikipedia image fetching) &mdash; it eventually returns 200, but the frontend times out and shows no error feedback.</p>
+
+<hr>
+
+<h2>Screenshots</h2>
+
+<div class="screenshot-grid">
+  <div class="screenshot-card">
+    <img src="C:/Users/yashp/.gemini/antigravity/brain/6d522e9a-9fb4-41f1-8ec5-cc0bf05cf46d/hero_section_1772343425561.png" alt="Home Page" />
+    <div class="caption">Home Page &mdash; Hero section with CTAs and scenic mountain background</div>
+  </div>
+  <div class="screenshot-card">
+    <img src="C:/Users/yashp/.gemini/antigravity/brain/6d522e9a-9fb4-41f1-8ec5-cc0bf05cf46d/destinations_page_main_1772343588801.png" alt="Destinations" />
+    <div class="caption">Destinations &mdash; Grid with search bar, cards showing ratings</div>
+  </div>
+  <div class="screenshot-card">
+    <img src="C:/Users/yashp/.gemini/antigravity/brain/6d522e9a-9fb4-41f1-8ec5-cc0bf05cf46d/trip_planner_load_1772343966259.png" alt="Trip Planner" />
+    <div class="caption">Trip Planner &mdash; Step 1 with origin cities, country grid, 250 locations</div>
+  </div>
+  <div class="screenshot-card">
+    <img src="C:/Users/yashp/.gemini/antigravity/brain/6d522e9a-9fb4-41f1-8ec5-cc0bf05cf46d/login_page_screenshot_1772346944173.png" alt="Login Page" />
+    <div class="caption">Login Page &mdash; Split layout with travel imagery and auth form</div>
+  </div>
+</div>
+
+<hr>
+
+<h2>Page-by-Page Results</h2>
+
+<table>
+  <tr>
+    <th>Page</th>
+    <th>Route</th>
+    <th>Status</th>
+    <th>Notes</th>
+  </tr>
+  <tr>
+    <td><strong>Home</strong></td>
+    <td><code>/</code></td>
+    <td><span class="status-pass">&#10003; Pass</span></td>
+    <td>Hero, stats, trending destinations, packages, blogs, newsletter, footer &mdash; all render perfectly. 0 console errors, 0 broken images.</td>
+  </tr>
+  <tr>
+    <td><strong>Destinations</strong></td>
+    <td><code>/destinations</code></td>
+    <td><span class="status-pass">&#10003; Pass</span></td>
+    <td>Cards load with images, titles, ratings. Search filter works in real-time.</td>
+  </tr>
+  <tr>
+    <td><strong>Destination Detail</strong></td>
+    <td><code>/destinations/:id</code></td>
+    <td><span class="status-warn">&#9888; Minor</span></td>
+    <td>Content, highlights, and vibes display. <strong>Missing: price info</strong>. Back button occasionally unresponsive. Reviews section empty (0 reviews).</td>
+  </tr>
+  <tr>
+    <td><strong>Trip Planner</strong></td>
+    <td><code>/plan-trip</code></td>
+    <td><span class="status-warn">&#9888; Slow API</span></td>
+    <td>5-step wizard UI renders well. Country &amp; region selection work. <code>/recommend-destinations</code> takes ~45s due to image fetching &mdash; frontend shows stuck loading.</td>
+  </tr>
+  <tr>
+    <td><strong>Blogs</strong></td>
+    <td><code>/blogs</code></td>
+    <td><span class="status-pass">&#10003; Pass</span></td>
+    <td>Cards with images, titles, and tags load correctly.</td>
+  </tr>
+  <tr>
+    <td><strong>Packages</strong></td>
+    <td><code>/packages</code></td>
+    <td><span class="status-pass">&#10003; Pass</span></td>
+    <td>Package cards with pricing and imagery load correctly.</td>
+  </tr>
+  <tr>
+    <td><strong>Login</strong></td>
+    <td><code>/login</code></td>
+    <td><span class="status-pass">&#10003; Pass</span></td>
+    <td>Split layout with travel imagery + form (email/password). &ldquo;Create one&rdquo; link works.</td>
+  </tr>
+  <tr>
+    <td><strong>Register</strong></td>
+    <td><code>/register</code></td>
+    <td><span class="status-pass">&#10003; Pass</span></td>
+    <td>Form with name/email/password fields renders correctly.</td>
+  </tr>
+  <tr>
+    <td><strong>Dashboard</strong></td>
+    <td><code>/dashboard</code></td>
+    <td><span class="status-pass">&#10003; Pass</span></td>
+    <td>Renders (requires login to show trips).</td>
+  </tr>
+  <tr>
+    <td><strong>About Us</strong></td>
+    <td><code>/about</code></td>
+    <td><span class="status-pass">&#10003; Pass</span></td>
+    <td>Mission statement and company info.</td>
+  </tr>
+  <tr>
+    <td><strong>Help Center</strong></td>
+    <td><code>/help</code></td>
+    <td><span class="status-pass">&#10003; Pass</span></td>
+    <td>Support categories display correctly.</td>
+  </tr>
+  <tr>
+    <td><strong>Privacy / Terms / Cookies</strong></td>
+    <td><code>/privacy</code> etc.</td>
+    <td><span class="status-pass">&#10003; Pass</span></td>
+    <td>Legal content renders correctly.</td>
+  </tr>
+  <tr>
+    <td><strong>Cancellation</strong></td>
+    <td><code>/cancellation</code></td>
+    <td><span class="status-pass">&#10003; Pass</span></td>
+    <td>Policy page renders correctly.</td>
+  </tr>
+  <tr>
+    <td><strong>Admin Login</strong></td>
+    <td><code>/admin/login</code></td>
+    <td><span class="status-pass">&#10003; Pass</span></td>
+    <td>Admin form with &ldquo;Access Key&rdquo; input renders.</td>
+  </tr>
+  <tr>
+    <td><strong>Navbar</strong></td>
+    <td>(global)</td>
+    <td><span class="status-pass">&#10003; Pass</span></td>
+    <td>Sticky, all links functional.</td>
+  </tr>
+  <tr>
+    <td><strong>Footer</strong></td>
+    <td>(global)</td>
+    <td><span class="status-pass">&#10003; Pass</span></td>
+    <td>Structured links, social icons, legal disclaimers.</td>
+  </tr>
+</table>
+
+<hr>
+
+<h2>Bug Report</h2>
+
+<table>
+  <tr>
+    <th>#</th>
+    <th>Severity</th>
+    <th>Component</th>
+    <th>Bug Description</th>
+    <th>Root Cause</th>
+  </tr>
+  <tr>
+    <td>1</td>
+    <td><span class="sev-high">&#128308; HIGH</span></td>
+    <td>Trip Planner Step 3</td>
+    <td><code>/recommend-destinations</code> appears to timeout &mdash; UI stuck on &ldquo;Scanning Satellite Data&rdquo; with no error message shown to user</td>
+    <td>Backend actually succeeds (~45 sec) but frontend <code>fetch</code> likely times out. Delay is caused by sequential Wikipedia image fetching for every AI-recommended destination.</td>
+  </tr>
+  <tr>
+    <td>2</td>
+    <td><span class="sev-med">&#128993; MEDIUM</span></td>
+    <td>Trip Planner Step 1</td>
+    <td>&ldquo;Next Step&rdquo; button stays disabled without clear feedback &mdash; users don&rsquo;t know they must also set budget AND date before continuing</td>
+    <td>No validation message or required-field indicator near the Next button.</td>
+  </tr>
+  <tr>
+    <td>3</td>
+    <td><span class="sev-med">&#128993; MEDIUM</span></td>
+    <td>Destination Cards</td>
+    <td><strong>Prices missing</strong> from destination cards and detail pages</td>
+    <td><code>price_str</code> field may be null/empty in the DB for seeded destinations.</td>
+  </tr>
+  <tr>
+    <td>4</td>
+    <td><span class="sev-med">&#128993; MEDIUM</span></td>
+    <td>Chat Widget</td>
+    <td><strong>Chat widget not found</strong> &mdash; no floating chat button in the DOM on any page</td>
+    <td><code>ChatWidget</code> component exists in <code>/src/components/ChatWidget/</code> but may not be rendered in <code>App.jsx</code> or <code>Home.jsx</code>.</td>
+  </tr>
+  <tr>
+    <td>5</td>
+    <td><span class="sev-low">&#128994; LOW</span></td>
+    <td>Trip Planner</td>
+    <td>Step indicators (1-5 circles at top) are <strong>non-clickable</strong> &mdash; users expect to click them to jump between steps</td>
+    <td>Missing <code>onClick</code> handlers on step indicator elements.</td>
+  </tr>
+  <tr>
+    <td>6</td>
+    <td><span class="sev-low">&#128994; LOW</span></td>
+    <td>Destination Detail</td>
+    <td>&ldquo;Back to all destinations&rdquo; button occasionally unresponsive (may require multiple clicks)</td>
+    <td>Possible event handler issue or navigation guard.</td>
+  </tr>
+  <tr>
+    <td>7</td>
+    <td><span class="sev-low">&#128994; LOW</span></td>
+    <td>Destination Detail</td>
+    <td><strong>Reviews section always shows 0 reviews</strong></td>
+    <td>Review data not seeded in DB; <code>reviews.json</code> may not be loaded for all destinations.</td>
+  </tr>
+  <tr>
+    <td>8</td>
+    <td><span class="sev-low">&#128994; LOW</span></td>
+    <td>Trip Planner</td>
+    <td>Country search input doesn&rsquo;t auto-filter the grid effectively</td>
+    <td>Search may only match exact names, or filtering logic has a debouncing issue.</td>
+  </tr>
+</table>
+
+<hr>
+
+<h2>Recommendations</h2>
+
+<div class="rec-card">
+  <strong>1. Fix the <code>/recommend-destinations</code> timeout</strong>
+  <p>Add a loading timeout on the frontend (60 seconds) with a user-friendly error message and retry button. Alternatively, move image fetching to a background job so the API returns quickly with placeholder images.</p>
+</div>
+
+<div class="rec-card">
+  <strong>2. Add Chat Widget to layout</strong>
+  <p>Verify <code>ChatWidget</code> is imported and rendered in <code>App.jsx</code> or the global layout component.</p>
+</div>
+
+<div class="rec-card">
+  <strong>3. Seed price data</strong>
+  <p>Populate <code>price_str</code> and <code>estimated_cost_per_day</code> during the migration script for all destinations.</p>
+</div>
+
+<div class="rec-card">
+  <strong>4. Add validation feedback in Step 1</strong>
+  <p>Show a tooltip or inline message near the &ldquo;Next Step&rdquo; button explaining that budget and travel dates must be set first.</p>
+</div>
+
+<div class="doc-footer">
+  AltairGo Intelligence &mdash; QA Bug Report &bull; March 2026
+</div>
+
+</body>
+</html>
